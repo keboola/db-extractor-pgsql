@@ -1,0 +1,17 @@
+parameters:
+    db:
+        driver: pgsql
+        host: pgsql
+        port: 5432
+        database: postgres
+        user: postgres
+        password: mysecretpassword
+
+    tables:
+        -
+            name: employee
+            query: "SELECT * from employee"
+            outputTable: in.c-main.employee
+            incremental: false
+            primaryKey: EMP_NO
+            enabled: true
