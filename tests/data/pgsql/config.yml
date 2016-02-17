@@ -9,9 +9,9 @@ parameters:
 
     tables:
         -
-            name: employee
-            query: "SELECT * from employee"
-            outputTable: in.c-main.employee
+            name: escaping
+            query: "SELECT * FROM escaping"
+            outputTable: in.c-main.escaping
             incremental: false
-            primaryKey: EMP_NO
+            primaryKey: ~
             enabled: true

@@ -25,7 +25,7 @@ class PgsqlTest extends ExtractorTest
     public function testRun()
     {
         $result = $this->app->run();
-        $expectedCsvFile = ROOT_PATH . '/tests/data/escaping.csv';
+        $expectedCsvFile = ROOT_PATH . 'vendor/keboola/db-extractor-common/tests/data/escaping.csv';
 //        $expectedManifestFile = ROOT_PATH . '/tests/data/firebird/' . $result['imported'][0] . '.csv.manifest';
         $outputCsvFile = $this->dataDir . '/out/tables/' . $result['imported'][0] . '.csv';
         $outputManifestFile = $this->dataDir . '/out/tables/' . $result['imported'][0] . '.csv.manifest';
