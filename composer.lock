@@ -40,16 +40,16 @@
         },
         {
             "name": "keboola/db-extractor-common",
-            "version": "1.0.0",
+            "version": "1.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/db-extractor-common.git",
-                "reference": "d9798e73918a6ef9798c3f184a7ce10896f66809"
+                "reference": "92569220296c1e7cb7b570efe1d32629f1c52e6a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/db-extractor-common/zipball/d9798e73918a6ef9798c3f184a7ce10896f66809",
-                "reference": "d9798e73918a6ef9798c3f184a7ce10896f66809",
+                "url": "https://api.github.com/repos/keboola/db-extractor-common/zipball/92569220296c1e7cb7b570efe1d32629f1c52e6a",
+                "reference": "92569220296c1e7cb7b570efe1d32629f1c52e6a",
                 "shasum": ""
             },
             "require": {
@@ -57,6 +57,7 @@
                 "monolog/monolog": "^1.17",
                 "php": ">=5.6",
                 "pimple/pimple": "^3.0",
+                "symfony/process": "^3.0",
                 "symfony/yaml": "~2.6"
             },
             "require-dev": {
@@ -75,7 +76,7 @@
                     "email": "miro@keboola.com"
                 }
             ],
-            "time": "2016-02-16 12:26:58"
+            "time": "2016-02-19 15:34:51"
         },
         {
             "name": "monolog/monolog",
@@ -237,6 +238,55 @@
                 "psr-3"
             ],
             "time": "2012-12-21 11:40:51"
+        },
+        {
+            "name": "symfony/process",
+            "version": "v3.0.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/process.git",
+                "reference": "dfecef47506179db2501430e732adbf3793099c8"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/process/zipball/dfecef47506179db2501430e732adbf3793099c8",
+                "reference": "dfecef47506179db2501430e732adbf3793099c8",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.5.9"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "3.0-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\Process\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony Process Component",
+            "homepage": "https://symfony.com",
+            "time": "2016-02-02 13:44:19"
         },
         {
             "name": "symfony/yaml",
