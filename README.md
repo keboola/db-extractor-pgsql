@@ -1,4 +1,34 @@
-# Firebird DB Extractor
+# PostgreSQL DB Extractor
 
-This is just a container with Firebird PDO driver. 
-Actual PHP application can be found [here](https://github.com/keboola/db-extractor).
+
+## Example configuration
+
+
+    {
+      "db": {
+        "driver": "pgsql",
+        "host": "HOST",
+        "port": "PORT",
+        "database": "DATABASE",
+        "user": "USERNAME",
+        "password": "PASSWORD",
+        "ssh": {
+          "enabled": true,
+          "keys": {
+            "private": "ENCRYPTED_PRIVATE_SSH_KEY",
+            "public": "PUBLIC_SSH_KEY"
+          },
+          "sshHost": "PROXY_HOSTNAME"
+        }
+      },
+      "tables": [
+        {
+          "name": "employees",
+          "query": "SELECT * FROM employees",
+          "outputTable": "in.c-main.employees",
+          "incremental": false,
+          "enabled": true,
+          "primaryKey": null
+        }
+      ]
+    }
