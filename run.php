@@ -5,7 +5,7 @@ use Keboola\DbExtractor\Exception\ApplicationException;
 use Keboola\DbExtractor\Exception\UserException;
 use Symfony\Component\Yaml\Yaml;
 
-define('APP_NAME', 'ex-db-firebird');
+define('APP_NAME', 'ex-db-pgsql');
 define('ROOT_PATH', __DIR__);
 
 require_once(dirname(__FILE__) . "/vendor/keboola/db-extractor-common/bootstrap.php");
