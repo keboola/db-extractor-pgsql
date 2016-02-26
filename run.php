@@ -43,5 +43,5 @@ try {
 
 }
 
-$app['logger']->log('info', "Writer finished successfully.");
+$app['logger']->log('info', "Extractor finished successfully.");
 exit(0);

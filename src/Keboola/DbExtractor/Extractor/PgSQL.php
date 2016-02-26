@@ -41,6 +41,7 @@ class PgSQL extends Extractor
             $dbParams['user'],
             $dbParams['password']
         );
+
         $pdo = new \PDO($dsn, $dbParams['user'], $dbParams['password'], $options);
         $pdo->exec("SET NAMES 'UTF8';");
 
