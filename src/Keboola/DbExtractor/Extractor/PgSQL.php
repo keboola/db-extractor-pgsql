@@ -57,7 +57,13 @@ class PgSQL extends Extractor
      */
     public function export(array $table)
     {
+        if (empty($table['outputTable'])) {
+            throw new UserException("Missing attribute 'outputTable'");
+        }
         $outputTable = $table['outputTable'];
+        if (empty($table['query'])) {
+            throw new UserException("Missing attribute 'query'");
+        }
         $query = $table['query'];
 
         $this->logger->info("Exporting to " . $outputTable);
