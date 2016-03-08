@@ -19,7 +19,14 @@ class PgsqlTest extends ExtractorTest
     public function setUp()
     {
         define('APP_NAME', 'ex-db-pgsql');
-        $this->app = new Application($this->getConfig('pgsql'));
+        $this->app = new Application($this->getConfig());
+    }
+
+    public function getConfig($driver = 'pgsql')
+    {
+        $config = parent::getConfig($driver);
+        $config['extractor_class'] = 'PgSQL';
+        return $config;
     }
 
     public function testRun()

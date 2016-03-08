@@ -1,6 +1,5 @@
 parameters:
     db:
-        driver: pgsql
         host: pgsql
         port: 5432
         database: postgres
