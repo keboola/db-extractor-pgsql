@@ -17,7 +17,7 @@ try {
     }
 
     $config = Yaml::parse(file_get_contents($arguments["data"] . "/config.yml"));
-    $config['dataDir'] = $arguments['data'];
+    $config['data_dir'] = $arguments['data'];
     $config['extractor_class'] = 'PgSQL';
 
     $app = new Application($config);
@@ -41,7 +41,6 @@ try {
         'trace' => $e->getTrace()
     ]);
     exit(2);
-
 }
 
 $app['logger']->log('info', "Extractor finished successfully.");
