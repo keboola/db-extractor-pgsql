@@ -8,6 +8,7 @@ parameters:
 
     tables:
         -
+            id: 0
             name: escaping
             query: "SELECT * FROM escaping"
             outputTable: in.c-main.escaping
