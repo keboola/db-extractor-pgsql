@@ -40,16 +40,16 @@
         },
         {
             "name": "keboola/db-extractor-common",
-            "version": "2.0.7",
+            "version": "2.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/db-extractor-common.git",
-                "reference": "263c80f7cd690ab160cffdea961646f82f46b7ee"
+                "reference": "e79b9ca677a23cdec11e1749a9ff8e20a8659a28"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/db-extractor-common/zipball/263c80f7cd690ab160cffdea961646f82f46b7ee",
-                "reference": "263c80f7cd690ab160cffdea961646f82f46b7ee",
+                "url": "https://api.github.com/repos/keboola/db-extractor-common/zipball/e79b9ca677a23cdec11e1749a9ff8e20a8659a28",
+                "reference": "e79b9ca677a23cdec11e1749a9ff8e20a8659a28",
                 "shasum": ""
             },
             "require": {
@@ -77,20 +77,20 @@
                     "email": "miro@keboola.com"
                 }
             ],
-            "time": "2016-03-21 15:39:13"
+            "time": "2016-03-09 12:53:14"
         },
         {
             "name": "monolog/monolog",
-            "version": "1.18.1",
+            "version": "1.18.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Seldaek/monolog.git",
-                "reference": "a5f2734e8c16f3aa21b3da09715d10e15b4d2d45"
+                "reference": "e19b764b5c855580e8ffa7e615f72c10fd2f99cc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/a5f2734e8c16f3aa21b3da09715d10e15b4d2d45",
-                "reference": "a5f2734e8c16f3aa21b3da09715d10e15b4d2d45",
+                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/e19b764b5c855580e8ffa7e615f72c10fd2f99cc",
+                "reference": "e19b764b5c855580e8ffa7e615f72c10fd2f99cc",
                 "shasum": ""
             },
             "require": {
@@ -155,7 +155,7 @@
                 "logging",
                 "psr-3"
             ],
-            "time": "2016-03-13 16:08:35"
+            "time": "2016-03-01 18:00:40"
         },
         {
             "name": "pimple/pimple",
