@@ -23,6 +23,7 @@
       },
       "tables": [
         {
+          "id": 1,
           "name": "employees",
           "query": "SELECT * FROM employees",
           "outputTable": "in.c-main.employees",
