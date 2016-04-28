@@ -25,7 +25,7 @@ class PgsqlTest extends ExtractorTest
     public function getConfig($driver = 'pgsql')
     {
         $config = parent::getConfig($driver);
-        $config['extractor_class'] = 'PgSQL';
+        $config['parameters']['extractor_class'] = 'PgSQL';
         return $config;
     }
 

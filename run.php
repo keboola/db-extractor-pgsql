@@ -17,8 +17,8 @@ try {
     }
 
     $config = Yaml::parse(file_get_contents($arguments["data"] . "/config.yml"));
-    $config['data_dir'] = $arguments['data'];
-    $config['extractor_class'] = 'PgSQL';
+    $config['parameters']['data_dir'] = $arguments['data'];
+    $config['parameters']['extractor_class'] = 'PgSQL';
 
     $app = new Application($config);
     $app->run();
