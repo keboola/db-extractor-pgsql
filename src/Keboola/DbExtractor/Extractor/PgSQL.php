@@ -143,4 +143,8 @@ class PgSQL extends Extractor
         return $row;
     }
 
+    public function testConnection()
+    {
+        $this->db->query("SELECT 1");
+    }
 }
