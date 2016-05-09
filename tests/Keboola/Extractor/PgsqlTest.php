@@ -18,7 +18,9 @@ class PgsqlTest extends ExtractorTest
 
     public function setUp()
     {
-        define('APP_NAME', 'ex-db-pgsql');
+        if (!defined('APP_NAME')) {
+            define('APP_NAME', 'ex-db-pgsql');
+        }
         $this->app = new Application($this->getConfig());
     }
 
@@ -33,7 +35,6 @@ class PgsqlTest extends ExtractorTest
     {
         $result = $this->app->run();
         $expectedCsvFile = ROOT_PATH . 'vendor/keboola/db-extractor-common/tests/data/escaping.csv';
-//        $expectedManifestFile = ROOT_PATH . '/tests/data/firebird/' . $result['imported'][0] . '.csv.manifest';
         $outputCsvFile = $this->dataDir . '/out/tables/' . $result['imported'][0] . '.csv';
         $outputManifestFile = $this->dataDir . '/out/tables/' . $result['imported'][0] . '.csv.manifest';
 
@@ -41,7 +42,15 @@ class PgsqlTest extends ExtractorTest
         $this->assertFileExists($outputCsvFile);
         $this->assertFileExists($outputManifestFile);
         $this->assertEquals(file_get_contents($expectedCsvFile), file_get_contents($outputCsvFile));
-//        $this->assertEquals(file_get_contents($expectedManifestFile), file_get_contents($outputManifestFile));
     }
 
+    public function testTestConnection()
+    {
+        $config = $this->getConfig();
+        $config['action'] = 'testConnection';
+        $app = new Application($config);
+
+        $result = $app->run();
+        $this->assertEquals('ok', $result['status']);
+    }
 }

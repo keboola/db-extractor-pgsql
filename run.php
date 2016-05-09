@@ -10,38 +10,30 @@ define('ROOT_PATH', __DIR__);
 
 require_once(dirname(__FILE__) . "/vendor/keboola/db-extractor-common/bootstrap.php");
 
+$logger = new \Keboola\DbExtractor\Logger(APP_NAME);
+
 try {
     $arguments = getopt("d::", ["data::"]);
     if (!isset($arguments["data"])) {
         throw new UserException('Data folder not set.');
     }
-
     $config = Yaml::parse(file_get_contents($arguments["data"] . "/config.yml"));
-    $config['data_dir'] = $arguments['data'];
-    $config['extractor_class'] = 'PgSQL';
-
+    $config['parameters']['data_dir'] = $arguments['data'];
+    $config['parameters']['extractor_class'] = 'PgSQL';
     $app = new Application($config);
-    $app->run();
-
+    echo json_encode($app->run());
 } catch(UserException $e) {
-
-    $app['logger']->log('error', $e->getMessage(), (array) $e->getData());
+    $logger->log('error', $e->getMessage(), (array) $e->getData());
     exit(1);
-
 } catch(ApplicationException $e) {
-
-    $app['logger']->log('error', $e->getMessage(), (array) $e->getData());
+    $logger->log('error', $e->getMessage(), (array) $e->getData());
     exit($e->getCode() > 1 ? $e->getCode(): 2);
-
 } catch(\Exception $e) {
-
-    $app['logger']->log('error', $e->getMessage(), [
+    $logger->log('error', $e->getMessage(), [
         'errFile' => $e->getFile(),
         'errLine' => $e->getLine(),
         'trace' => $e->getTrace()
     ]);
     exit(2);
 }
-
-$app['logger']->log('info', "Extractor finished successfully.");
 exit(0);
