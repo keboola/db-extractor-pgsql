@@ -20,6 +20,7 @@ try {
     $config = Yaml::parse(file_get_contents($arguments["data"] . "/config.yml"));
     $config['parameters']['data_dir'] = $arguments['data'];
     $config['parameters']['extractor_class'] = 'PgSQL';
+
     $app = new Application($config);
     echo json_encode($app->run());
 } catch(UserException $e) {
