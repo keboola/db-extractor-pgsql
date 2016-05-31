@@ -72,10 +72,11 @@ class PgSQL extends Extractor
         $tries = 0;
         $exception = null;
 
+        $csvCreated = false;
         while ($tries < $maxTries) {
             $exception = null;
             try {
-                $this->executeQuery($query, $csv);
+                $csvCreated = $this->executeQuery($query, $csv);
             } catch (\PDOException $e) {
                 $exception = new UserException("DB query failed: " . $e->getMessage(), 0, $e);
             }
@@ -88,10 +89,12 @@ class PgSQL extends Extractor
             throw $exception;
         }
 
-        if ($this->createManifest($table) === false) {
-            throw new ApplicationException("Unable to create manifest", 0, null, [
-                'table' => $table
-            ]);
+        if ($csvCreated) {
+            if ($this->createManifest($table) === false) {
+                throw new ApplicationException("Unable to create manifest", 0, null, [
+                    'table' => $table
+                ]);
+            }
         }
 
         return $outputTable;
@@ -136,10 +139,13 @@ class PgSQL extends Extractor
                 // close the cursor
                 $this->db->exec("CLOSE $cursorName");
                 $this->db->commit();
+
+                return true;
             } else {
                 $this->logger->warning("Query returned empty result. Nothing was imported.");
-            }
 
+                return false;
+            }
         } catch (\PDOException $e) {
             try {
                 $this->db->rollBack();
