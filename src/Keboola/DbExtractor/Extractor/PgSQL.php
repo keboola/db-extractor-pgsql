@@ -8,6 +8,7 @@
 
 namespace Keboola\DbExtractor\Extractor;
 
+use Keboola\Csv\CsvFile;
 use Keboola\DbExtractor\Exception\ApplicationException;
 use Keboola\DbExtractor\Exception\UserException;
 
@@ -48,28 +49,56 @@ class PgSQL extends Extractor
         return $pdo;
     }
 
-    /**
-     * @param array $table
-     * @return $outputTable output table name
-     * @throws ApplicationException
-     * @throws UserException
-     * @throws \Keboola\Csv\Exception
-     */
+    private function restartConnection()
+    {
+        $this->db = null;
+        try {
+            $this->db = $this->createConnection($this->dbConfig);
+        } catch (\Exception $e) {
+            throw new UserException(sprintf("Error connecting to DB: %s", $e->getMessage()), $e);
+        }
+    }
+
     public function export(array $table)
     {
-        if (empty($table['outputTable'])) {
-            throw new UserException("Missing attribute 'outputTable'");
-        }
         $outputTable = $table['outputTable'];
-        if (empty($table['query'])) {
-            throw new UserException("Missing attribute 'query'");
-        }
-        $query = $table['query'];
+        $csv = $this->createOutputCsv($outputTable);
 
         $this->logger->info("Exporting to " . $outputTable);
 
-        $csv = $this->createOutputCsv($outputTable);
+        $query = $table['query'];
 
+        $maxTries = (isset($table['retries']) && $table['retries'])?$table['retries']:1;
+        $tries = 0;
+        $exception = null;
+
+        while ($tries < $maxTries) {
+            $exception = null;
+            try {
+                $this->executeQuery($query, $csv);
+            } catch (\PDOException $e) {
+                $exception = new UserException("DB query failed: " . $e->getMessage(), 0, $e);
+            }
+            sleep(pow($tries, 2));
+            $this->restartConnection();
+            $tries++;
+        }
+
+        if ($exception) {
+            throw $exception;
+        }
+
+        if ($this->createManifest($table) === false) {
+            throw new ApplicationException("Unable to create manifest", 0, null, [
+                'table' => $table
+            ]);
+        }
+
+        return $outputTable;
+    }
+
+    protected function executeQuery($query, CsvFile $csv)
+    {
         $cursorName = 'exdbcursor' . intval(microtime(true));
 
         $curSql = "DECLARE $cursorName CURSOR FOR $query";
@@ -80,27 +109,19 @@ class PgSQL extends Extractor
             $stmt->execute();
             $innerStatement = $this->db->prepare("FETCH 1 FROM $cursorName");
             $innerStatement->execute();
-        } catch (\PDOException $e) {
-            throw new UserException("DB query failed: " . $e->getMessage(), 0, $e);
-        }
 
-        // write header and first line
-        try {
+            // write header and first line
             $resultRow = $innerStatement->fetch(\PDO::FETCH_ASSOC);
-        } catch (\PDOException $e) {
-            throw new UserException("DB query failed: " . $e->getMessage(), 0, $e);
-        }
 
-        if (is_array($resultRow) && !empty($resultRow)) {
-            $csv->writeRow(array_keys($resultRow));
+            if (is_array($resultRow) && !empty($resultRow)) {
+                $csv->writeRow(array_keys($resultRow));
 
-            if (isset($this->dbConfig['replaceNull'])) {
-                $resultRow = $this->replaceNull($resultRow, $this->dbConfig['replaceNull']);
-            }
-            $csv->writeRow($resultRow);
+                if (isset($this->dbConfig['replaceNull'])) {
+                    $resultRow = $this->replaceNull($resultRow, $this->dbConfig['replaceNull']);
+                }
+                $csv->writeRow($resultRow);
 
-            // write the rest
-            try {
+                // write the rest
                 $innerStatement = $this->db->prepare("FETCH 5000 FROM $cursorName");
 
                 while ($innerStatement->execute() && count($resultRows = $innerStatement->fetchAll(\PDO::FETCH_ASSOC)) > 0) {
@@ -115,21 +136,20 @@ class PgSQL extends Extractor
                 // close the cursor
                 $this->db->exec("CLOSE $cursorName");
                 $this->db->commit();
-
-            } catch (\PDOException $e) {
-                throw new UserException("DB query failed: " . $e->getMessage(), 0, $e);
+            } else {
+                $this->logger->warning("Query returned empty result. Nothing was imported.");
             }
-        } else {
-            $this->logger->warning("Query returned empty result. Nothing was imported.");
-        }
 
-        if ($this->createManifest($table) === false) {
-            throw new ApplicationException("Unable to create manifest", 0, null, [
-                'table' => $table
-            ]);
-        }
+        } catch (\PDOException $e) {
+            try {
+                $this->db->rollBack();
+            } catch (\Exception $e2) {
 
-        return $outputTable;
+            }
+            $innerStatement = null;
+            $stmt = null;
+            throw $e;
+        }
     }
 
     private function replaceNull($row, $value)
