@@ -55,7 +55,7 @@ class PgSQL extends Extractor
         try {
             $this->db = $this->createConnection($this->dbConfig);
         } catch (\Exception $e) {
-            throw new UserException(sprintf("Error connecting to DB: %s", $e->getMessage()), $e);
+            throw new UserException(sprintf("Error connecting to DB: %s", $e->getMessage()), 0, $e);
         }
     }
 
