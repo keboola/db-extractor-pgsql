@@ -76,12 +76,15 @@ class PgSQL extends Extractor
         while ($tries < $maxTries) {
             $exception = null;
             try {
+                if ($tries > 0) {
+                    $this->restartConnection();
+                }
                 $csvCreated = $this->executeQuery($query, $csv);
+                break;
             } catch (\PDOException $e) {
                 $exception = new UserException("DB query failed: " . $e->getMessage(), 0, $e);
             }
             sleep(pow($tries, 2));
-            $this->restartConnection();
             $tries++;
         }
 
