@@ -68,12 +68,11 @@ class PgSQL extends Extractor
 
         $query = $table['query'];
 
-        $maxTries = (isset($table['retries']) && $table['retries'])?$table['retries']:1;
         $tries = 0;
         $exception = null;
 
         $csvCreated = false;
-        while ($tries < $maxTries) {
+        while ($tries < 5) {
             $exception = null;
             try {
                 if ($tries > 0) {
