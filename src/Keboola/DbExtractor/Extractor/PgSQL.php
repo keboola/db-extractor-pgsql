@@ -62,7 +62,6 @@ class PgSQL extends Extractor
     public function export(array $table)
     {
         $outputTable = $table['outputTable'];
-        $csv = $this->createOutputCsv($outputTable);
 
         $this->logger->info("Exporting to " . $outputTable);
 
@@ -76,13 +75,15 @@ class PgSQL extends Extractor
             $exception = null;
             try {
                 if ($tries > 0) {
+                    $this->logger->info("Retrying query");
                     $this->restartConnection();
                 }
-                $csvCreated = $this->executeQuery($query, $csv);
+                $csvCreated = $this->executeQuery($query, $this->createOutputCsv($outputTable));
                 break;
             } catch (\PDOException $e) {
                 $exception = new UserException("DB query failed: " . $e->getMessage(), 0, $e);
             }
+
             sleep(pow($tries, 2));
             $tries++;
         }
