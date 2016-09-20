@@ -4,7 +4,7 @@ parameters:
         port: 5432
         database: postgres
         user: postgres
-        password: mysecretpassword
+        password: some password
 
     tables:
         -

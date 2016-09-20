@@ -35,12 +35,10 @@ class PgSQL extends Extractor
         $port = isset($dbParams['port']) ? $dbParams['port'] : '5432';
 
         $dsn = sprintf(
-            "pgsql:host=%s;port=%s;dbname=%s;user=%s;password=%s",
+            "pgsql:host=%s;port=%s;dbname=%s",
             $dbParams['host'],
             $port,
-            $dbParams['database'],
-            $dbParams['user'],
-            $dbParams['password']
+            $dbParams['database']
         );
 
         $pdo = new \PDO($dsn, $dbParams['user'], $dbParams['password'], $options);
