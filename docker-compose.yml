@@ -12,6 +12,7 @@ app:
     - PGSQL_DB_DATABASE=postgres
     - PGSQL_DB_USER=postgres
     - PGSQL_DB_PASSWORD=some password
+    - PGPASSWORD=some password
   links:
     - pgsql
 

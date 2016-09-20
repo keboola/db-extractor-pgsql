@@ -38,7 +38,7 @@ class PgSQL extends Extractor
             "pgsql:host=%s;port=%s;dbname=%s",
             $dbParams['host'],
             $port,
-            $dbParams['database'],
+            $dbParams['database']
         );
 
         $pdo = new \PDO($dsn, $dbParams['user'], $dbParams['password'], $options);
