@@ -22,4 +22,4 @@ pgsql:
     - PGSQL_DB_PORT=5432
     - PGSQL_DB_DATABASE=postgres
     - PGSQL_DB_USER=postgres
-    - PGSQL_DB_PASSWORD=some password
+    - POSTGRES_PASSWORD=some password
