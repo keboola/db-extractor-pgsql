@@ -2,10 +2,7 @@ version: "2"
 services:
   app:
     build: .
-    volumes:
-      - .:/code
-    working_dir: /code
-    image: keboola/db-extrator-pgsql
+    image: keboola/db-extractor-pgsql
     tty: true
     stdin_open: true
     command: ./phpunit.sh
