@@ -44,6 +44,35 @@ class PgsqlTest extends ExtractorTest
         $this->assertEquals(file_get_contents($expectedCsvFile), file_get_contents($outputCsvFile));
     }
 
+    public function testRunWithSSH()
+    {
+        $config = $this->getConfig();
+        $config['parameters']['db']['ssh'] = [
+            'enabled' => true,
+            'keys' => [
+                '#private' => $this->getEnv('pgsql', 'DB_SSH_KEY_PRIVATE', true),
+                'public' => $this->getEnv('pgsql', 'DB_SSH_KEY_PUBLIC', true)
+            ],
+            'user' => 'root',
+            'sshHost' => 'sshproxy',
+            'remoteHost' => 'pgsql',
+            'remotePort' => '5432',
+            'localPort' => '55432',
+        ];
+
+        $app = new Application($config);
+        $result = $app->run();
+
+        $expectedCsvFile = ROOT_PATH . 'vendor/keboola/db-extractor-common/tests/data/escaping.csv';
+        $outputCsvFile = $this->dataDir . '/out/tables/' . $result['imported'][0] . '.csv';
+        $outputManifestFile = $this->dataDir . '/out/tables/' . $result['imported'][0] . '.csv.manifest';
+
+        $this->assertEquals('success', $result['status']);
+        $this->assertFileExists($outputCsvFile);
+        $this->assertFileExists($outputManifestFile);
+        $this->assertEquals(file_get_contents($expectedCsvFile), file_get_contents($outputCsvFile));
+    }
+
     public function testTestConnection()
     {
         $config = $this->getConfig();

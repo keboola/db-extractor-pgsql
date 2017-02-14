@@ -1,22 +1,36 @@
-app:
-  build: .
-  volumes:
+version: "2"
+services:
+  app:
+    build: .
+    volumes:
       - .:/code
-  working_dir: /code
-  entrypoint: "./phpunit.sh"
-  tty: true
-  stdin_open: true
-  environment:
-    - PGSQL_DB_HOST=pgsql
-    - PGSQL_DB_PORT=5432
-    - PGSQL_DB_DATABASE=postgres
-    - PGSQL_DB_USER=postgres
-    - PGSQL_DB_PASSWORD=some password
-    - PGPASSWORD=some password
-  links:
-    - pgsql
+    working_dir: /code
+    image: keboola/db-extrator-pgsql
+    tty: true
+    stdin_open: true
+    command: ./phpunit.sh
+    environment:
+      - PGSQL_DB_HOST=pgsql
+      - PGSQL_DB_PORT=5432
+      - PGSQL_DB_DATABASE=postgres
+      - PGSQL_DB_USER=postgres
+      - PGSQL_DB_PASSWORD=some password
+      - PGPASSWORD=some password
+    links:
+      - pgsql
+      - sshproxy
 
-pgsql:
-  image: postgres
-  environment:
-    - POSTGRES_PASSWORD=some password
+  pgsql:
+    image: postgres
+    environment:
+      - POSTGRES_PASSWORD=some password
+
+  sshproxy:
+    build: ./tests/env/sshproxy
+    volumes:
+        - ./tests/env/sshproxy:/code
+    working_dir: /code
+    ports:
+      - "2222:22"
+    links:
+      - pgsql

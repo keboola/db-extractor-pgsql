@@ -1,10 +1,8 @@
-#VERSION 1.0.0
-FROM keboola/base-php56
+FROM quay.io/keboola/docker-base-php56:0.0.2
 MAINTAINER Miro Cillik <miro@keboola.com>
 
 # Install dependencies
-RUN yum -y --enablerepo=epel,remi,remi-php56 install php-devel
-RUN yum -y --enablerepo=epel,remi,remi-php56 install php-pgsql
+RUN yum -y --enablerepo=epel,remi,remi-php56 install php-devel php-pgsql; yum clean all
 
 ADD . /code
 WORKDIR /code
@@ -12,4 +10,4 @@ WORKDIR /code
 RUN echo "memory_limit = -1" >> /etc/php.ini
 RUN composer install --no-interaction
 
-ENTRYPOINT php ./run.php --data=/data
+CMD php ./run.php --data=/data
