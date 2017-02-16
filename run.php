@@ -3,6 +3,8 @@
 use Keboola\DbExtractor\Application;
 use Keboola\DbExtractor\Exception\ApplicationException;
 use Keboola\DbExtractor\Exception\UserException;
+use Keboola\DbExtractor\Logger;
+use Monolog\Handler\NullHandler;
 use Symfony\Component\Yaml\Yaml;
 
 define('APP_NAME', 'ex-db-pgsql');
@@ -10,7 +12,7 @@ define('ROOT_PATH', __DIR__);
 
 require_once(dirname(__FILE__) . "/vendor/keboola/db-extractor-common/bootstrap.php");
 
-$logger = new \Keboola\DbExtractor\Logger(APP_NAME);
+$logger = new Logger(APP_NAME);
 
 try {
     $arguments = getopt("d::", ["data::"]);
@@ -22,6 +24,12 @@ try {
     $config['parameters']['extractor_class'] = 'PgSQL';
 
     $app = new Application($config);
+
+    if ($app['action'] !== 'run') {
+        $app['logger']->setHandlers(array(new NullHandler(Logger::INFO)));
+        $runAction = false;
+    }
+
     echo json_encode($app->run());
 } catch(UserException $e) {
     $logger->log('error', $e->getMessage(), (array) $e->getData());
