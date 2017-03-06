@@ -39,16 +39,16 @@
         },
         {
             "name": "keboola/db-extractor-common",
-            "version": "4.1.0",
+            "version": "4.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/db-extractor-common.git",
-                "reference": "8adc42a127902e98ca54524bc0b7e058a46cd71b"
+                "reference": "86a0e7d937ebab9c3a8ae2055e15cf2e649310e4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/db-extractor-common/zipball/8adc42a127902e98ca54524bc0b7e058a46cd71b",
-                "reference": "8adc42a127902e98ca54524bc0b7e058a46cd71b",
+                "url": "https://api.github.com/repos/keboola/db-extractor-common/zipball/86a0e7d937ebab9c3a8ae2055e15cf2e649310e4",
+                "reference": "86a0e7d937ebab9c3a8ae2055e15cf2e649310e4",
                 "shasum": ""
             },
             "require": {
@@ -77,7 +77,7 @@
                     "email": "miro@keboola.com"
                 }
             ],
-            "time": "2017-03-06T12:32:38+00:00"
+            "time": "2017-03-06T13:47:51+00:00"
         },
         {
             "name": "keboola/ssh-tunnel",
