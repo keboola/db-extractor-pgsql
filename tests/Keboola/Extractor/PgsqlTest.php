@@ -54,10 +54,7 @@ class PgsqlTest extends ExtractorTest
                 'public' => $this->getEnv('pgsql', 'DB_SSH_KEY_PUBLIC', true)
             ],
             'user' => 'root',
-            'sshHost' => 'sshproxy',
-            'remoteHost' => 'pgsql',
-            'remotePort' => '5432',
-            'localPort' => '55432',
+            'sshHost' => 'sshproxy'
         ];
 
         $app = new Application($config);

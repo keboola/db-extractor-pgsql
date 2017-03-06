@@ -5,3 +5,4 @@ composer.phar
 runtests.sh
 test.php
 tests/data/out/
+.DS_Store
