@@ -164,7 +164,7 @@ class PgsqlTest extends ExtractorTest
             $this->assertStringStartsWith("Error connecting", $exception->getMessage());
         }
     }
-
+    
     public function testGetTables()
     {
         $config = $this->getConfig();
