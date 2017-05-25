@@ -212,4 +212,46 @@ class PgSQL extends Extractor
             throw new UserException("Failed psql connection: " . $process->getErrorOutput());
         }
     }
+
+    public function listTables()
+    {
+        $res = $this->db->query(
+            "SELECT * FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema'"
+        );
+        $output = $res->fetchAll();
+        return array_column($output, 'tablename');
+    }
+
+    public function describeTable($tableName)
+    {
+        $res = $this->db->query(
+            sprintf(
+                "SELECT c.column_name as column_name, column_default, is_nullable, data_type,
+                        character_maximum_length, numeric_precision, numeric_scale, is_identity, constraint_type         
+                    FROM information_schema.columns as c 
+                    LEFT JOIN information_schema.table_constraints as tc JOIN information_schema.constraint_column_usage as ccu USING (constraint_schema, constraint_name)
+                    ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name 
+                    WHERE c.table_name   = %s", $this->db->quote($tableName)));
+
+        $columns = [];
+        while ($column = $res->fetch(\PDO::FETCH_ASSOC)) {
+            $length = ($column['character_maximum_length']) ? $column['character_maximum_length'] : null;
+            if (is_null($length) && !is_null($column['numeric_precision'])) {
+                if ($column['numeric_scale'] > 0) {
+                    $length = $column['numeric_precision'] . "," . $column['numeric_scale'];
+                } else {
+                    $length = $column['numeric_precision'];
+                }
+            }
+            $columns[] = [
+                "name" => $column['column_name'],
+                "type" => $column['data_type'],
+                "primary" => ($column['constraint_type'] === "PRIMARY KEY") ? true : false,
+                "length" => $length,
+                "nullable" => ($column['is_nullable'] === "NO") ? false : true,
+                "default" => $column['column_default']
+            ];
+        }
+        return $columns;
+    }
 }

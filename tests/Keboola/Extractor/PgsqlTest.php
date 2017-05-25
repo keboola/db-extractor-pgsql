@@ -164,4 +164,32 @@ class PgsqlTest extends ExtractorTest
             $this->assertStringStartsWith("Error connecting", $exception->getMessage());
         }
     }
+
+    public function testGetTables()
+    {
+        $config = $this->getConfig();
+        $config['action'] = 'getTables';
+        $app = new Application($config);
+
+        $result = $app->run();
+        $this->assertArrayHasKey('status', $result);
+        $this->assertArrayHasKey('tables', $result);
+        $this->assertCount(1, $result['tables']);
+        $this->assertArrayHasKey('name', $result['tables'][0]);
+        $this->assertEquals("escaping", $result['tables'][0]['name']);
+        $this->assertArrayHasKey('columns', $result['tables'][0]);
+        $this->assertCount(2, $result['tables'][0]['columns']);
+        $this->assertArrayHasKey('name', $result['tables'][0]['columns'][0]);
+        $this->assertEquals("col1", $result['tables'][0]['columns'][0]['name']);
+        $this->assertArrayHasKey('type', $result['tables'][0]['columns'][0]);
+        $this->assertEquals("character varying", $result['tables'][0]['columns'][0]['type']);
+        $this->assertArrayHasKey('length', $result['tables'][0]['columns'][0]);
+        $this->assertEquals(255, $result['tables'][0]['columns'][0]['length']);
+        $this->assertArrayHasKey('nullable', $result['tables'][0]['columns'][0]);
+        $this->assertFalse($result['tables'][0]['columns'][0]['nullable']);
+        $this->assertArrayHasKey('default', $result['tables'][0]['columns'][0]);
+        $this->assertNull($result['tables'][0]['columns'][0]['default']);
+        $this->assertArrayHasKey('primary', $result['tables'][0]['columns'][0]);
+        $this->asserttrue($result['tables'][0]['columns'][0]['primary']);
+    }
 }
