@@ -107,6 +107,8 @@ class PgSQL extends Extractor
 
         $curSql = "DECLARE $cursorName CURSOR FOR $query";
 
+        $this->logger->info("Executing query...");
+
         try {
             $this->db->beginTransaction(); // cursors require a transaction.
             $stmt = $this->db->prepare($curSql);
@@ -117,36 +119,39 @@ class PgSQL extends Extractor
             // write header and first line
             $resultRow = $innerStatement->fetch(\PDO::FETCH_ASSOC);
 
-            if (is_array($resultRow) && !empty($resultRow)) {
-                $csv->writeRow(array_keys($resultRow));
-
-                if (isset($this->dbConfig['replaceNull'])) {
-                    $resultRow = $this->replaceNull($resultRow, $this->dbConfig['replaceNull']);
-                }
-                $csv->writeRow($resultRow);
-
-                // write the rest
-                $innerStatement = $this->db->prepare("FETCH 5000 FROM $cursorName");
-
-                while ($innerStatement->execute() && count($resultRows = $innerStatement->fetchAll(\PDO::FETCH_ASSOC)) > 0) {
-                    foreach ($resultRows as $resultRow) {
-                        if (isset($this->dbConfig['replaceNull'])) {
-                            $resultRow = $this->replaceNull($resultRow, $this->dbConfig['replaceNull']);
-                        }
-                        $csv->writeRow($resultRow);
-                    }
-                }
-
-                // close the cursor
-                $this->db->exec("CLOSE $cursorName");
-                $this->db->commit();
-
-                return true;
-            } else {
-                $this->logger->warning("Query returned empty result. Nothing was imported.");
-
+            if (!is_array($resultRow) || empty($resultRow)) {
+                $this->logger->warning("Query returned empty result. Nothing was imported");
                 return false;
             }
+
+            $csv->writeRow(array_keys($resultRow));
+
+            if (isset($this->dbConfig['replaceNull'])) {
+                $resultRow = $this->replaceNull($resultRow, $this->dbConfig['replaceNull']);
+            }
+            $csv->writeRow($resultRow);
+
+            // write the rest
+            $this->logger->info("Fetching data...");
+            $innerStatement = $this->db->prepare("FETCH 10000 FROM $cursorName");
+
+            while ($innerStatement->execute() && count($resultRows = $innerStatement->fetchAll(\PDO::FETCH_ASSOC)) > 0) {
+                foreach ($resultRows as $resultRow) {
+                    if (isset($this->dbConfig['replaceNull'])) {
+                        $resultRow = $this->replaceNull($resultRow, $this->dbConfig['replaceNull']);
+                    }
+                    $csv->writeRow($resultRow);
+                }
+            }
+
+            // close the cursor
+            $this->db->exec("CLOSE $cursorName");
+            $this->db->commit();
+
+            $this->logger->info("Extraction completed");
+
+            return true;
+
         } catch (\PDOException $e) {
             try {
                 $this->db->rollBack();
