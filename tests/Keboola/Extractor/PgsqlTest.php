@@ -9,7 +9,9 @@
 
 namespace Keboola\DbExtractor;
 
+use Keboola\Csv\CsvFile;
 use Keboola\DbExtractor\Test\ExtractorTest;
+use Symfony\Component\Process\Process;
 
 class PgsqlTest extends ExtractorTest
 {
@@ -21,7 +23,50 @@ class PgsqlTest extends ExtractorTest
         if (!defined('APP_NAME')) {
             define('APP_NAME', 'ex-db-pgsql');
         }
-        $this->app = new Application($this->getConfig());
+        $config = $this->getConfig();
+        $this->app = new Application($config);
+
+        $dbConfig = $config['parameters']['db'];
+
+        // Create the pass file to be able to use psql when password required
+        $passfile = new \SplFileObject("/root/.pgpass", 'w');
+        $passfile->fwrite(sprintf(
+            "%s:%s:%s:%s:%s",
+            $dbConfig['host'],
+            ($dbConfig['port']) ? $dbConfig['port'] : "5432",
+            $dbConfig['database'],
+            $dbConfig['user'],
+            $dbConfig['password']
+        ));
+
+        // create test tables
+        $process = new Process(sprintf(
+            "psql -h pgsql -U %s -d %s -w -c \"DROP TABLE IF EXISTS escaping;\"",
+            $dbConfig['user'],
+            $dbConfig['database']
+        ));
+        $process->run();
+        if (!$process->isSuccessful()) {
+            $this->fail($process->getErrorOutput());
+        }
+        $process = new Process(sprintf(
+            "psql -h pgsql -U %s -d %s -w -c \"CREATE TABLE escaping (col1 VARCHAR NOT NULL, col2 VARCHAR NOT NULL);\"",
+            $dbConfig['user'],
+            $dbConfig['database']
+        ));
+        $process->run();
+        if (!$process->isSuccessful()) {
+            $this->fail($process->getErrorOutput());
+        }
+        $process = new Process(sprintf(
+            "psql -h pgsql -U %s -d %s -w -c \"\COPY escaping FROM 'vendor/keboola/db-extractor-common/tests/data/escaping.csv' WITH DELIMITER ',' CSV HEADER;\"",
+            $dbConfig['user'],
+            $dbConfig['database']
+        ));
+        $process->run();
+        if (!$process->isSuccessful()) {
+            $this->fail($process->getErrorOutput());
+        }
     }
 
     public function getConfig($driver = 'pgsql')
@@ -34,14 +79,19 @@ class PgsqlTest extends ExtractorTest
     public function testRun()
     {
         $result = $this->app->run();
-        $expectedCsvFile = ROOT_PATH . 'vendor/keboola/db-extractor-common/tests/data/escaping.csv';
-        $outputCsvFile = $this->dataDir . '/out/tables/' . $result['imported'][0] . '.csv';
+        $expectedCsvFile = new CsvFile(ROOT_PATH . 'vendor/keboola/db-extractor-common/tests/data/escaping.csv');
+        $outputCsvFile = new CsvFile($this->dataDir . '/out/tables/' . $result['imported'][0] . '.csv');
         $outputManifestFile = $this->dataDir . '/out/tables/' . $result['imported'][0] . '.csv.manifest';
 
         $this->assertEquals('success', $result['status']);
-        $this->assertFileExists($outputCsvFile);
+        $this->assertTrue($outputCsvFile->isFile());
         $this->assertFileExists($outputManifestFile);
-        $this->assertEquals(file_get_contents($expectedCsvFile), file_get_contents($outputCsvFile));
+        $this->assertEquals($expectedCsvFile->getHeader(), $outputCsvFile->getHeader());
+        $outputArr = iterator_to_array($outputCsvFile);
+        $expectedArr = iterator_to_array($expectedCsvFile);
+        for ($i = 1; $i < count($expectedArr); $i++) {
+            $this->assertEquals($expectedArr[$i], $outputArr[$i]);
+        }
     }
 
     public function testRunWithSSH()
@@ -60,14 +110,19 @@ class PgsqlTest extends ExtractorTest
         $app = new Application($config);
         $result = $app->run();
 
-        $expectedCsvFile = ROOT_PATH . 'vendor/keboola/db-extractor-common/tests/data/escaping.csv';
-        $outputCsvFile = $this->dataDir . '/out/tables/' . $result['imported'][0] . '.csv';
+        $expectedCsvFile = new CsvFile(ROOT_PATH . 'vendor/keboola/db-extractor-common/tests/data/escaping.csv');
+        $outputCsvFile = new CsvFile($this->dataDir . '/out/tables/' . $result['imported'][0] . '.csv');
         $outputManifestFile = $this->dataDir . '/out/tables/' . $result['imported'][0] . '.csv.manifest';
 
         $this->assertEquals('success', $result['status']);
-        $this->assertFileExists($outputCsvFile);
+        $this->assertTrue($outputCsvFile->isFile());
         $this->assertFileExists($outputManifestFile);
-        $this->assertEquals(file_get_contents($expectedCsvFile), file_get_contents($outputCsvFile));
+        $this->assertEquals($expectedCsvFile->getHeader(), $outputCsvFile->getHeader());
+        $outputArr = iterator_to_array($outputCsvFile);
+        $expectedArr = iterator_to_array($expectedCsvFile);
+        for ($i = 1; $i < count($expectedArr); $i++) {
+            $this->assertEquals($expectedArr[$i], $outputArr[$i]);
+        }
     }
 
     public function testTestConnection()
