@@ -5,6 +5,8 @@ services:
     image: keboola/db-extractor-pgsql
     tty: true
     stdin_open: true
+    volumes:
+      - .:/code
     command: ./phpunit.sh
     environment:
       - PGSQL_DB_HOST=pgsql
@@ -20,6 +22,7 @@ services:
   pgsql:
     image: postgres
     environment:
+      - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=some password
 
   sshproxy:
