@@ -138,7 +138,7 @@ class PgSQL extends Extractor
         $process->run();
         if (!$process->isSuccessful()) {
             $this->logger->error($process->getErrorOutput());
-            throw new \Exception("Error occurred copying query output to file.");
+            throw new ApplicationException("Error occurred copying query output to file.");
         }
         return true;
     }

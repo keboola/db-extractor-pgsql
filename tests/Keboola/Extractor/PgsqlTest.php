@@ -10,6 +10,7 @@
 namespace Keboola\DbExtractor;
 
 use Keboola\Csv\CsvFile;
+use Keboola\DbExtractor\Exception\UserException;
 use Keboola\DbExtractor\Test\ExtractorTest;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Filesystem;
@@ -142,5 +143,35 @@ class PgsqlTest extends ExtractorTest
 
         $result = $app->run();
         $this->assertEquals('success', $result['status']);
+    }
+
+    public function testInvalidCredentialsTestConnection()
+    {
+        $config = $this->getConfig();
+        $config['action'] = 'testConnection';
+
+        $config['parameters']['db']['user'] = "fakeguy";
+        $app = new Application($config);
+
+        try {
+            $result = $app->run();
+            $this->fail("Invalid credentials should throw exception");
+        } catch (UserException $exception) {
+            $this->assertStringStartsWith("Connection failed", $exception->getMessage());
+        }
+    }
+
+    public function testInvalidCredentialsAppRun()
+    {
+        $config = $this->getConfig();
+        $config['parameters']['db']['#password'] = "fakepass";
+
+        $app = new Application($config);
+        try {
+            $result = $app->run();
+            $this->fail("Invalid credentials should throw exception");
+        } catch (UserException $exception) {
+            $this->assertStringStartsWith("Error connecting", $exception->getMessage());
+        }
     }
 }
