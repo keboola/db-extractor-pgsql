@@ -41,7 +41,9 @@ class PgsqlTest extends ExtractorTest
 
         // create test tables
         $process = new Process(sprintf(
-            "psql -h pgsql -U %s -d %s -w -c \"DROP TABLE IF EXISTS escaping;\"",
+            "psql -h %s -p %s -U %s -d %s -w -c \"DROP TABLE IF EXISTS escaping;\"",
+            $dbConfig['host'],
+            $dbConfig['port'],
             $dbConfig['user'],
             $dbConfig['database']
         ));
@@ -50,7 +52,9 @@ class PgsqlTest extends ExtractorTest
             $this->fail($process->getErrorOutput());
         }
         $process = new Process(sprintf(
-            "psql -h pgsql -U %s -d %s -w -c \"CREATE TABLE escaping (col1 VARCHAR NOT NULL, col2 VARCHAR NOT NULL);\"",
+            "psql -h %s -p %s -U %s -d %s -w -c \"CREATE TABLE escaping (col1 VARCHAR NOT NULL, col2 VARCHAR NOT NULL);\"",
+            $dbConfig['host'],
+            $dbConfig['port'],
             $dbConfig['user'],
             $dbConfig['database']
         ));
@@ -59,7 +63,9 @@ class PgsqlTest extends ExtractorTest
             $this->fail($process->getErrorOutput());
         }
         $process = new Process(sprintf(
-            "psql -h pgsql -U %s -d %s -w -c \"\COPY escaping FROM 'vendor/keboola/db-extractor-common/tests/data/escaping.csv' WITH DELIMITER ',' CSV HEADER;\"",
+            "psql -h %s -p %s -U %s -d %s -w -c \"\COPY escaping FROM 'vendor/keboola/db-extractor-common/tests/data/escaping.csv' WITH DELIMITER ',' CSV HEADER;\"",
+            $dbConfig['host'],
+            $dbConfig['port'],
             $dbConfig['user'],
             $dbConfig['database']
         ));

@@ -12,6 +12,7 @@ use Keboola\Csv\CsvFile;
 use Keboola\DbExtractor\Exception\ApplicationException;
 use Keboola\DbExtractor\Exception\UserException;
 use Symfony\Component\Process\Process;
+use Symfony\Component\Filesystem;
 
 class PgSQL extends Extractor
 {
@@ -122,7 +123,9 @@ class PgSQL extends Extractor
         $this->logger->info("Executing query...");
 
         $command = sprintf(
-            "psql -h pgsql -U %s -d %s -w -c \"\COPY (%s) TO '%s' WITH CSV HEADER DELIMITER ',' FORCE QUOTE *;\"",
+            "psql -h %s -p %s -U %s -d %s -w -c \"\COPY (%s) TO '%s' WITH CSV HEADER DELIMITER ',' FORCE QUOTE *;\"",
+            $this->dbConfig['host'],
+            $this->dbConfig['port'],
             $this->dbConfig['user'],
             $this->dbConfig['database'],
             $query,
