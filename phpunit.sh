@@ -4,6 +4,9 @@
 composer selfupdate
 composer install -n
 
+# load data to database
+yum install -y postgresql postgresql-contrib; yum clean all
+
 export PGSQL_DB_SSH_KEY_PRIVATE="-----BEGIN RSA PRIVATE KEY-----
 MIIEogIBAAKCAQEAtrRqT7d6qyPxuEDiXj+5ANooQvVP3GONhjWbnnayqHDRhkAY
 L4xjUT9ZAnsV3miduSlLYvrRWz41a3besYagC4sFLqUmBbrGgFRA3MJeiizBgDh1

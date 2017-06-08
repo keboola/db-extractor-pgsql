@@ -3,8 +3,6 @@ MAINTAINER Miro Cillik <miro@keboola.com>
 
 # Install dependencies
 RUN yum -y --enablerepo=epel,remi,remi-php56 install php-devel php-pgsql; yum clean all
-# Install psql client
-RUN yum install -y postgresql postgresql-contrib; yum clean all
 
 ADD . /code
 WORKDIR /code
