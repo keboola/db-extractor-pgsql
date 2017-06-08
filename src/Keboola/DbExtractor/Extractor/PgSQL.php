@@ -30,6 +30,9 @@ class PgSQL extends Extractor
             $this->dbConfig['user'],
             $this->dbConfig['password']
         ));
+
+        $fs = new Filesystem\Filesystem();
+        $fs->chmod($passfile->getRealPath(), 600);
     }
 
     public function createConnection($dbParams)

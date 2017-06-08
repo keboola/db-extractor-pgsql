@@ -12,6 +12,7 @@ namespace Keboola\DbExtractor;
 use Keboola\Csv\CsvFile;
 use Keboola\DbExtractor\Test\ExtractorTest;
 use Symfony\Component\Process\Process;
+use Symfony\Component\Filesystem;
 
 class PgsqlTest extends ExtractorTest
 {
@@ -38,6 +39,8 @@ class PgsqlTest extends ExtractorTest
             $dbConfig['user'],
             $dbConfig['password']
         ));
+        $fs = new Filesystem\Filesystem();
+        $fs->chmod($passfile->getRealPath(), 0600);
 
         // create test tables
         $process = new Process(sprintf(
