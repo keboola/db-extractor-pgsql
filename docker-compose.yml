@@ -3,9 +3,12 @@ services:
   app:
     build: .
     image: keboola/db-extractor-pgsql
+    volumes:
+      - .:/code
+    working_dir: /code
     tty: true
     stdin_open: true
-    command: ./phpunit.sh
+    command: "./phpunit.sh"
     environment:
       - PGSQL_DB_HOST=pgsql
       - PGSQL_DB_PORT=5432
