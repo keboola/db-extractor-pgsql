@@ -1,5 +1,7 @@
 # PostgreSQL DB Extractor
 
+[![Build Status](https://travis-ci.org/keboola/db-extractor-pgsql.svg?branch=master)](https://travis-ci.org/keboola/db-extractor-pgsql)
+
 
 ## Example configuration
 
