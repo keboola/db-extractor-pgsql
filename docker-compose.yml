@@ -23,6 +23,7 @@ services:
   pgsql:
     image: postgres
     environment:
+      - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=some password
 
   sshproxy:

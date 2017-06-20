@@ -11,15 +11,35 @@ namespace Keboola\DbExtractor\Extractor;
 use Keboola\Csv\CsvFile;
 use Keboola\DbExtractor\Exception\ApplicationException;
 use Keboola\DbExtractor\Exception\UserException;
+use Symfony\Component\Process\Process;
+use Symfony\Component\Filesystem;
 
 class PgSQL extends Extractor
 {
     private $dbConfig;
 
+    private function writePgPass()
+    {
+        $passfile = new \SplFileObject("/root/.pgpass", 'w');
+
+        $passfile->fwrite(sprintf(
+            "%s:%s:%s:%s:%s",
+            $this->dbConfig['host'],
+            ($this->dbConfig['port']) ? $this->dbConfig['port'] : "5432",
+            $this->dbConfig['database'],
+            $this->dbConfig['user'],
+            $this->dbConfig['password']
+        ));
+
+        $fs = new Filesystem\Filesystem();
+        $fs->chmod($passfile->getRealPath(), 600);
+    }
+
     public function createConnection($dbParams)
     {
         $this->dbConfig = $dbParams;
 
+        $this->writePgPass();
         // convert errors to PDOExceptions
         $options = [
             \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION
@@ -101,78 +121,26 @@ class PgSQL extends Extractor
         return $outputTable;
     }
 
-    protected function executeQuery($query, CsvFile $csv)
+    protected function executeQuery($query, CsvFile $csvFile)
     {
-        $cursorName = 'exdbcursor' . intval(microtime(true));
-
-        $curSql = "DECLARE $cursorName CURSOR FOR $query";
-
         $this->logger->info("Executing query...");
 
-        try {
-            $this->db->beginTransaction(); // cursors require a transaction.
-            $stmt = $this->db->prepare($curSql);
-            $stmt->execute();
-            $innerStatement = $this->db->prepare("FETCH 1 FROM $cursorName");
-            $innerStatement->execute();
-
-            // write header and first line
-            $resultRow = $innerStatement->fetch(\PDO::FETCH_ASSOC);
-
-            if (!is_array($resultRow) || empty($resultRow)) {
-                $this->logger->warning("Query returned empty result. Nothing was imported");
-                return false;
-            }
-
-            $csv->writeRow(array_keys($resultRow));
-
-            if (isset($this->dbConfig['replaceNull'])) {
-                $resultRow = $this->replaceNull($resultRow, $this->dbConfig['replaceNull']);
-            }
-            $csv->writeRow($resultRow);
-
-            // write the rest
-            $this->logger->info("Fetching data...");
-            $innerStatement = $this->db->prepare("FETCH 10000 FROM $cursorName");
-
-            while ($innerStatement->execute() && count($resultRows = $innerStatement->fetchAll(\PDO::FETCH_ASSOC)) > 0) {
-                foreach ($resultRows as $resultRow) {
-                    if (isset($this->dbConfig['replaceNull'])) {
-                        $resultRow = $this->replaceNull($resultRow, $this->dbConfig['replaceNull']);
-                    }
-                    $csv->writeRow($resultRow);
-                }
-            }
-
-            // close the cursor
-            $this->db->exec("CLOSE $cursorName");
-            $this->db->commit();
-
-            $this->logger->info("Extraction completed");
-
-            return true;
-
-        } catch (\PDOException $e) {
-            try {
-                $this->db->rollBack();
-            } catch (\Exception $e2) {
-
-            }
-            $innerStatement = null;
-            $stmt = null;
-            throw $e;
+        $command = sprintf(
+            "psql -h %s -p %s -U %s -d %s -w -c \"\COPY (%s) TO '%s' WITH CSV HEADER DELIMITER ',' FORCE QUOTE *;\"",
+            $this->dbConfig['host'],
+            $this->dbConfig['port'],
+            $this->dbConfig['user'],
+            $this->dbConfig['database'],
+            $query,
+            $csvFile
+        );
+        $process = new Process($command);
+        $process->run();
+        if (!$process->isSuccessful()) {
+            $this->logger->error($process->getErrorOutput());
+            throw new ApplicationException("Error occurred copying query output to file.");
         }
-    }
-
-    private function replaceNull($row, $value)
-    {
-        foreach ($row as $k => $v) {
-            if ($v === null) {
-                $row[$k] = $value;
-            }
-        }
-
-        return $row;
+        return true;
     }
 
     public function testConnection()
