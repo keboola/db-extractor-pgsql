@@ -3,19 +3,23 @@ services:
   app:
     build: .
     image: keboola/db-extractor-pgsql
-    volumes:
-      - .:/code
     working_dir: /code
     tty: true
     stdin_open: true
+    volumes:
+      - ./:/code
     command: "./phpunit.sh"
     environment:
-      - PGSQL_DB_HOST=pgsql
-      - PGSQL_DB_PORT=5432
-      - PGSQL_DB_DATABASE=postgres
-      - PGSQL_DB_USER=postgres
-      - PGSQL_DB_PASSWORD=some password
-      - PGPASSWORD=some password
+      - EXTERNAL_PG_HOST
+      - EXTERNAL_PG_PORT
+      - EXTERNAL_PG_DATABASE
+      - EXTERNAL_PG_USER
+      - EXTERNAL_PG_PASSWORD
+      - PGSQL_DB_HOST
+      - PGSQL_DB_PORT
+      - PGSQL_DB_DATABASE
+      - PGSQL_DB_USER
+      - PGSQL_DB_PASSWORD
     links:
       - pgsql
       - sshproxy

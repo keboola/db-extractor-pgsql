@@ -30,22 +30,10 @@ class PgsqlTest extends ExtractorTest
 
         $dbConfig = $config['parameters']['db'];
 
-        // Create the pass file to be able to use psql when password required
-        $passfile = new \SplFileObject("/root/.pgpass", 'w');
-        $passfile->fwrite(sprintf(
-            "%s:%s:%s:%s:%s",
-            $dbConfig['host'],
-            ($dbConfig['port']) ? $dbConfig['port'] : "5432",
-            $dbConfig['database'],
-            $dbConfig['user'],
-            $dbConfig['password']
-        ));
-        $fs = new Filesystem\Filesystem();
-        $fs->chmod($passfile->getRealPath(), 0600);
-
         // create test tables
         $process = new Process(sprintf(
-            "psql -h %s -p %s -U %s -d %s -w -c \"DROP TABLE IF EXISTS escaping;\"",
+            "PGPASSWORD='%s' psql -h %s -p %s -U %s -d %s -w -c \"DROP TABLE IF EXISTS escaping;\"",
+            $dbConfig['password'],
             $dbConfig['host'],
             $dbConfig['port'],
             $dbConfig['user'],
@@ -56,7 +44,8 @@ class PgsqlTest extends ExtractorTest
             $this->fail($process->getErrorOutput());
         }
         $process = new Process(sprintf(
-            "psql -h %s -p %s -U %s -d %s -w -c \"CREATE TABLE escaping (col1 VARCHAR NOT NULL, col2 VARCHAR NOT NULL);\"",
+            "PGPASSWORD='%s' psql -h %s -p %s -U %s -d %s -w -c \"CREATE TABLE escaping (col1 VARCHAR NOT NULL, col2 VARCHAR NOT NULL);\"",
+            $dbConfig['password'],
             $dbConfig['host'],
             $dbConfig['port'],
             $dbConfig['user'],
@@ -67,7 +56,8 @@ class PgsqlTest extends ExtractorTest
             $this->fail($process->getErrorOutput());
         }
         $process = new Process(sprintf(
-            "psql -h %s -p %s -U %s -d %s -w -c \"\COPY escaping FROM 'vendor/keboola/db-extractor-common/tests/data/escaping.csv' WITH DELIMITER ',' CSV HEADER;\"",
+            "PGPASSWORD='%s' psql -h %s -p %s -U %s -d %s -w -c \"\COPY escaping FROM 'vendor/keboola/db-extractor-common/tests/data/escaping.csv' WITH DELIMITER ',' CSV HEADER;\"",
+            $dbConfig['password'],
             $dbConfig['host'],
             $dbConfig['port'],
             $dbConfig['user'],
