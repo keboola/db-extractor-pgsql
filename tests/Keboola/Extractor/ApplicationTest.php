@@ -17,16 +17,16 @@ class ApplicationTest extends ExtractorTest
     public function setUp()
     {
         parent::setUp();
-        if (getenv('EXTERNAL_PG_HOST') !== false) {
+        if (getenv('EXTERNAL_PG_HOST') === false) {
             $this->fail("Missing environment var 'EXTERNAL_PG_HOST'");
         }
-        if (getenv('EXTERNAL_PG_DATABASE') !== false) {
+        if (getenv('EXTERNAL_PG_DATABASE') === false) {
             $this->fail("Missing environment var 'EXTERNAL_PG_DATABASE'");
         }
-        if (getenv('EXTERNAL_PG_USER') !== false) {
+        if (getenv('EXTERNAL_PG_USER') === false) {
             $this->fail("Missing environment var 'EXTERNAL_PG_USER'");
         }
-        if (getenv('EXTERNAL_PG_PASSWORD') !== false) {
+        if (getenv('EXTERNAL_PG_PASSWORD') === false) {
             $this->fail("Missing environment var 'EXTERNAL_PG_PASSWORD'");
         }
         $this->dbConfig['host'] = getenv('EXTERNAL_PG_HOST');
@@ -45,7 +45,6 @@ class ApplicationTest extends ExtractorTest
 
         $config = Yaml::parse(file_get_contents($this->dataDir . '/pgsql/external_config.yml'));
         $config['parameters']['db'] = $this->dbConfig;
-        var_dump($config);
         @unlink($this->dataDir . '/config.yml');
         file_put_contents($this->dataDir . '/config.yml', Yaml::dump($config));
 

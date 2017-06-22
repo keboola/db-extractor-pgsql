@@ -35,3 +35,16 @@
         }
       ]
     }
+
+### Tests
+
+The `ApplicationTest` tests are supposed to run versus an external db somewhere (rather than the pgsql image in the docker-compose)
+They need the following environment variables set
+```$xslt
+EXTERNAL_PG_HOST=my.db.domain
+EXTERNAL_PG_PORT=5432
+EXTERNAL_PG_DATABASE=postgres
+EXTERNAL_PG_USER=whoever
+EXTERNAL_PG_PASSWORD=whoever's password
+```
+As per keboola convention, it is convenient to put this in a `.env` file and source it prior to running `docker-compose run --rm app`
