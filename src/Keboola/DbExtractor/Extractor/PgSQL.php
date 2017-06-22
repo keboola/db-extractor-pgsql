@@ -113,7 +113,7 @@ class PgSQL extends Extractor
             $this->dbConfig['port'],
             $this->dbConfig['user'],
             $this->dbConfig['database'],
-            $query,
+            rtrim($query, ';'),
             $csvFile
         );
 
