@@ -95,4 +95,38 @@ class ApplicationTest extends ExtractorTest
         $this->assertEquals(0, $process->getExitCode());
         $this->assertEquals("", $process->getErrorOutput());
     }
+
+    public function testProcessTimeout()
+    {
+        $config = Yaml::parse(file_get_contents($this->dataDir . '/pgsql/external_config.yml'));
+        $config['parameters']['db'] = $this->dbConfig;
+        $config['parameters']['tables'][0]['query'] = "SELECT pg_sleep(65), 1";
+        @unlink($this->dataDir . '/config.yml');
+        file_put_contents($this->dataDir . '/config.yml', Yaml::dump($config));
+
+        $process = new Process('php ' . ROOT_PATH . '/run.php --data=' . $this->dataDir);
+        $process->setTimeout(300);
+        $process->run();
+        var_dump($process->getOutput());
+        var_dump($process->getErrorOutput());
+        $this->assertEquals(0, $process->getExitCode());
+        $this->assertEquals("", $process->getErrorOutput());
+    }
+
+    public function testUserError() {
+        $config = Yaml::parse(file_get_contents($this->dataDir . '/pgsql/external_config.yml'));
+        $config['parameters']['db'] = $this->dbConfig;
+        $config['parameters']['tables'][0]['query'] = "SELECT something, fake";
+        @unlink($this->dataDir . '/config.yml');
+        file_put_contents($this->dataDir . '/config.yml', Yaml::dump($config));
+
+        $process = new Process('php ' . ROOT_PATH . '/run.php --data=' . $this->dataDir);
+        $process->setTimeout(300);
+        $process->run();
+        var_dump($process->getOutput());
+        var_dump($process->getErrorOutput());
+
+        $this->assertFalse(strstr($process->getErrorOutput(), "PGPASSWORD"));
+        $this->assertEquals(1, $process->getExitCode());
+    }
 }

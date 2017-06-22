@@ -117,13 +117,14 @@ class PgSQL extends Extractor
             $csvFile
         );
 
-        $this->logger->debug("Copy Command: " . $command);
-
         $process = new Process($command);
+        // allow it to run for as long as it needs
+        $process->setTimeout(null);
         $process->run();
         if (!$process->isSuccessful()) {
-            $this->logger->error($process->getErrorOutput());
-            throw new ApplicationException("Error occurred copying query output to file.");
+            $cleanError = preg_replace('/PGPASSWORD\=\'.*\'/', 'REDACTED', $process->getErrorOutput());
+            $this->logger->error($cleanError);
+            throw new UserException("Error occurred copying query output to file.");
         }
         return true;
     }
