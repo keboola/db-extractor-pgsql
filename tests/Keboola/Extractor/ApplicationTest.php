@@ -121,6 +121,11 @@ class ApplicationTest extends ExtractorTest
     }
 
     public function testPDOFallback() {
+        $outputCsvFile = new CsvFile($this->dataDir . '/out/tables/in.c-main.info_schema.csv');
+        $manifestFile = $this->dataDir . '/out/tables/in.c-main.info_schema.csv.manifest';
+        @unlink($outputCsvFile);
+        @unlink($manifestFile);
+
         $config = Yaml::parse(file_get_contents($this->dataDir . '/pgsql/external_config.yml'));
         $config['parameters']['db'] = $this->dbConfig;
         // queries with comments will break the () in the \copy command.
@@ -142,5 +147,7 @@ class ApplicationTest extends ExtractorTest
         $this->assertContains('WARNING: Failed \copy command', $process->getErrorOutput());
         // assert that PDO attempt succeeded
         $this->assertEquals(0, $process->getExitCode());
+        $this->assertTrue($outputCsvFile->isFile());
+        $this->assertFileExists($manifestFile);
     }
 }
