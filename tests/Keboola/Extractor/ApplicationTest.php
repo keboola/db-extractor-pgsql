@@ -51,8 +51,6 @@ class ApplicationTest extends ExtractorTest
         $process = new Process('php ' . ROOT_PATH . '/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
         $process->run();
-        var_dump($process->getOutput());
-        var_dump($process->getErrorOutput());
         $this->assertEquals(0, $process->getExitCode());
         $this->assertEquals("", $process->getErrorOutput());
 
@@ -71,8 +69,6 @@ class ApplicationTest extends ExtractorTest
         $process = new Process('php ' . ROOT_PATH . '/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
         $process->run();
-        var_dump($process->getOutput());
-        var_dump($process->getErrorOutput());
         $this->assertJson($process->getOutput());
         $this->assertEquals(0, $process->getExitCode());
         $this->assertEquals("", $process->getErrorOutput());
@@ -90,8 +86,6 @@ class ApplicationTest extends ExtractorTest
         $process = new Process('php ' . ROOT_PATH . '/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
         $process->run();
-        var_dump($process->getOutput());
-        var_dump($process->getErrorOutput());
         $this->assertEquals(0, $process->getExitCode());
         $this->assertEquals("", $process->getErrorOutput());
     }
@@ -107,8 +101,6 @@ class ApplicationTest extends ExtractorTest
         $process = new Process('php ' . ROOT_PATH . '/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
         $process->run();
-        var_dump($process->getOutput());
-        var_dump($process->getErrorOutput());
         $this->assertEquals(0, $process->getExitCode());
         $this->assertEquals("", $process->getErrorOutput());
     }
@@ -123,10 +115,32 @@ class ApplicationTest extends ExtractorTest
         $process = new Process('php ' . ROOT_PATH . '/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
         $process->run();
-        var_dump($process->getOutput());
-        var_dump($process->getErrorOutput());
 
         $this->assertFalse(strstr($process->getErrorOutput(), "PGPASSWORD"));
         $this->assertEquals(1, $process->getExitCode());
+    }
+
+    public function testPDOFallback() {
+        $config = Yaml::parse(file_get_contents($this->dataDir . '/pgsql/external_config.yml'));
+        $config['parameters']['db'] = $this->dbConfig;
+        // queries with comments will break the () in the \copy command.
+        // Failed \copy commands should fallback to using the old PDO method
+        $config['parameters']['tables'][0]['query'] = "
+            select * from information_schema.TABLES as tables JOIN (
+                -- this is a comment --
+                select * from information_schema.columns
+            ) as columns ON tables.table_schema = columns.table_schema AND tables.table_name = columns.table_name;
+        ";
+        @unlink($this->dataDir . '/config.yml');
+        file_put_contents($this->dataDir . '/config.yml', Yaml::dump($config));
+
+        $process = new Process('php ' . ROOT_PATH . '/run.php --data=' . $this->dataDir);
+        $process->setTimeout(300);
+        $process->run();
+
+        // valid query should not error
+        $this->assertContains('WARNING: Failed \copy command', $process->getErrorOutput());
+        // assert that PDO attempt succeeded
+        $this->assertEquals(0, $process->getExitCode());
     }
 }
