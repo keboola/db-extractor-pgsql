@@ -144,7 +144,7 @@ class ApplicationTest extends ExtractorTest
         $process->run();
 
         // valid query should not error
-        $this->assertContains('NOTICE: Failed \copy command', $process->getErrorOutput());
+        $this->assertContains('Failed \copy command', $process->getOutput());
         // assert that PDO attempt succeeded
         $this->assertEquals(0, $process->getExitCode());
         $this->assertTrue($outputCsvFile->isFile());
