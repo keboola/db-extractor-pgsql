@@ -213,29 +213,60 @@ class PgSQL extends Extractor
         }
     }
 
-    public function listTables()
+    public function getTables(array $tables = null)
     {
-        $res = $this->db->query(
-            "SELECT * FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema'"
-        );
-        $output = $res->fetchAll();
-        return array_column($output, 'tablename');
+        $sql = "SELECT * FROM information_schema.tables 
+                WHERE table_schema != 'pg_catalog' AND table_schema != 'information_schema'";
+
+        if (!is_null($tables) && count($tables) > 0) {
+            $sql .= sprintf(
+                " AND TABLE_NAME IN (%s)",
+                implode(',', array_map(function ($table) {
+                    return $this->db->quote($table);
+                }, $tables))
+            );
+        }
+
+        $res = $this->db->query($sql);
+        $arr = $res->fetchAll(\PDO::FETCH_ASSOC);
+        $output = [];
+        foreach ($arr as $table) {
+            $command = sprintf(
+                "PGPASSWORD='%s' psql -h %s -p %s -U %s -d %s -w -c \"\d+ escaping;\"",
+                $this->dbConfig['password'],
+                $this->dbConfig['host'],
+                $this->dbConfig['port'],
+                $this->dbConfig['user'],
+                $this->dbConfig['database']
+            );
+            $process = new Process($command);
+            $process->run();
+            $output[] = $this->describeTable($table);
+        }
+        return $output;
     }
 
-    public function describeTable($tableName)
+    protected function describeTable(array $table)
     {
+        $tabledef = [
+            'name' => $table['table_name'],
+            'schema' => (isset($table['table_schema'])) ? $table['table_schema'] : null,
+            'type' => (isset($table['table_type'])) ? $table['table_type'] : null
+        ];
+
         $res = $this->db->query(
             sprintf(
-                "SELECT c.column_name as column_name, column_default, is_nullable, data_type,
-                        character_maximum_length, numeric_precision, numeric_scale, is_identity, constraint_type         
+                "SELECT c.*, c.column_name as column_name, column_default, is_nullable, data_type, ordinal_position
+                        character_maximum_length, numeric_precision, numeric_scale, is_identity, constraint_type, pga.atttypmod - 4 as varlength         
                     FROM information_schema.columns as c 
+                    LEFT JOIN pg_catalog.pg_attribute as pga ON c.table_name::regclass = pga.attrelid AND c.column_name = pga.attname 
                     LEFT JOIN information_schema.table_constraints as tc JOIN information_schema.constraint_column_usage as ccu USING (constraint_schema, constraint_name)
                     ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name 
-                    WHERE c.table_name   = %s", $this->db->quote($tableName)));
+                    WHERE c.table_name   = %s ORDER BY ordinal_position", $this->db->quote($table['table_name'])));
 
         $columns = [];
         while ($column = $res->fetch(\PDO::FETCH_ASSOC)) {
-            $length = ($column['character_maximum_length']) ? $column['character_maximum_length'] : null;
+            $length = ($column['data_type'] === 'character varying') ? $column['varlength'] : null;
             if (is_null($length) && !is_null($column['numeric_precision'])) {
                 if ($column['numeric_scale'] > 0) {
                     $length = $column['numeric_precision'] . "," . $column['numeric_scale'];
@@ -243,15 +274,21 @@ class PgSQL extends Extractor
                     $length = $column['numeric_precision'];
                 }
             }
+            $default = $column['column_default'];
+            if ($column['data_type'] === 'character varying') {
+                $default = str_replace("'", "", explode("::", $column['column_default'])[0]);
+            }
             $columns[] = [
                 "name" => $column['column_name'],
                 "type" => $column['data_type'],
-                "primary" => ($column['constraint_type'] === "PRIMARY KEY") ? true : false,
+                "primaryKey" => ($column['constraint_type'] === "PRIMARY KEY") ? true : false,
                 "length" => $length,
                 "nullable" => ($column['is_nullable'] === "NO") ? false : true,
-                "default" => $column['column_default']
+                "default" => $default,
+                "ordinalPosition" => $column['ordinal_position']
             ];
         }
-        return $columns;
+        $tabledef['columns'] = $columns;
+        return $tabledef;
     }
 }

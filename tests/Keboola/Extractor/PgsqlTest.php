@@ -13,7 +13,7 @@ use Keboola\Csv\CsvFile;
 use Keboola\DbExtractor\Exception\UserException;
 use Keboola\DbExtractor\Test\ExtractorTest;
 use Symfony\Component\Process\Process;
-use Symfony\Component\Filesystem;
+use Symfony\Component\Yaml\Yaml;
 
 class PgsqlTest extends ExtractorTest
 {
@@ -44,7 +44,7 @@ class PgsqlTest extends ExtractorTest
             $this->fail($process->getErrorOutput());
         }
         $process = new Process(sprintf(
-            "PGPASSWORD='%s' psql -h %s -p %s -U %s -d %s -w -c \"CREATE TABLE escaping (col1 VARCHAR NOT NULL, col2 VARCHAR NOT NULL);\"",
+            "PGPASSWORD='%s' psql -h %s -p %s -U %s -d %s -w -c \"CREATE TABLE escaping (col1 varchar(123) NOT NULL DEFAULT 'column 1', col2 varchar(221) NOT NULL DEFAULT 'column 2', PRIMARY KEY (col1, col2));\"",
             $dbConfig['password'],
             $dbConfig['host'],
             $dbConfig['port'],
@@ -57,6 +57,48 @@ class PgsqlTest extends ExtractorTest
         }
         $process = new Process(sprintf(
             "PGPASSWORD='%s' psql -h %s -p %s -U %s -d %s -w -c \"\COPY escaping FROM 'vendor/keboola/db-extractor-common/tests/data/escaping.csv' WITH DELIMITER ',' CSV HEADER;\"",
+            $dbConfig['password'],
+            $dbConfig['host'],
+            $dbConfig['port'],
+            $dbConfig['user'],
+            $dbConfig['database']
+        ));
+        $process->run();
+        if (!$process->isSuccessful()) {
+            $this->fail($process->getErrorOutput());
+        }
+
+        // create test tables
+        $process = new Process(sprintf(
+            "PGPASSWORD='%s' psql -h %s -p %s -U %s -d %s -w -c \"DROP TABLE IF EXISTS types;\"",
+            $dbConfig['password'],
+            $dbConfig['host'],
+            $dbConfig['port'],
+            $dbConfig['user'],
+            $dbConfig['database']
+        ));
+        $process->run();
+        if (!$process->isSuccessful()) {
+            $this->fail($process->getErrorOutput());
+        }
+        $process = new Process(sprintf(
+            "PGPASSWORD='%s' psql -h %s -p %s -U %s -d %s -w -c \"CREATE TABLE types " .
+                    "(character varchar(123) NOT NULL DEFAULT 'default string', " .
+                    "integer integer NOT NULL DEFAULT 42, " .
+                    "decimal decimal(5,3) NOT NULL DEFAULT 1.2, " .
+                    "date date DEFAULT NULL);\"",
+            $dbConfig['password'],
+            $dbConfig['host'],
+            $dbConfig['port'],
+            $dbConfig['user'],
+            $dbConfig['database']
+        ));
+        $process->run();
+        if (!$process->isSuccessful()) {
+            $this->fail($process->getErrorOutput());
+        }
+        $process = new Process(sprintf(
+            "PGPASSWORD='%s' psql -h %s -p %s -U %s -d %s -w -c \"\COPY types FROM 'tests/data/pgsql/types.csv' WITH DELIMITER ',' CSV HEADER;\"",
             $dbConfig['password'],
             $dbConfig['host'],
             $dbConfig['port'],
@@ -174,22 +216,166 @@ class PgsqlTest extends ExtractorTest
         $result = $app->run();
         $this->assertArrayHasKey('status', $result);
         $this->assertArrayHasKey('tables', $result);
-        $this->assertCount(1, $result['tables']);
-        $this->assertArrayHasKey('name', $result['tables'][0]);
-        $this->assertEquals("escaping", $result['tables'][0]['name']);
-        $this->assertArrayHasKey('columns', $result['tables'][0]);
-        $this->assertCount(2, $result['tables'][0]['columns']);
-        $this->assertArrayHasKey('name', $result['tables'][0]['columns'][0]);
-        $this->assertEquals("col1", $result['tables'][0]['columns'][0]['name']);
-        $this->assertArrayHasKey('type', $result['tables'][0]['columns'][0]);
-        $this->assertEquals("character varying", $result['tables'][0]['columns'][0]['type']);
-        $this->assertArrayHasKey('length', $result['tables'][0]['columns'][0]);
-        $this->assertEquals(255, $result['tables'][0]['columns'][0]['length']);
-        $this->assertArrayHasKey('nullable', $result['tables'][0]['columns'][0]);
-        $this->assertFalse($result['tables'][0]['columns'][0]['nullable']);
-        $this->assertArrayHasKey('default', $result['tables'][0]['columns'][0]);
-        $this->assertNull($result['tables'][0]['columns'][0]['default']);
-        $this->assertArrayHasKey('primary', $result['tables'][0]['columns'][0]);
-        $this->asserttrue($result['tables'][0]['columns'][0]['primary']);
+        $this->assertCount(2, $result['tables']);
+        foreach ($result['tables'] as $table) {
+            $this->assertArrayHasKey('name', $table);
+            $this->assertArrayHasKey('columns', $table);
+            switch ($table['name']) {
+                case 'escaping':
+                    $this->assertCount(2, $table['columns']);
+                    break;
+                case 'types':
+                    $this->assertCount(4, $table['columns']);
+                    break;
+                default:
+                    $this->fail("Unexpected table found: " . $table['name']);
+            }
+            foreach ($table['columns'] as $i => $column) {
+                // keys
+                $this->assertArrayHasKey('name', $column);
+                $this->assertArrayHasKey('type', $column);
+                $this->assertArrayHasKey('length', $column);
+                $this->assertArrayHasKey('default', $column);
+                $this->assertArrayHasKey('nullable', $column);
+                $this->assertArrayHasKey('primaryKey', $column);
+                $this->assertArrayHasKey('ordinalPosition', $column);
+
+                $this->assertEquals($i + 1, $column['ordinalPosition']);
+                switch ($column['name']) {
+                    case 'col1':
+                        $this->assertEquals("character varying", $column['type']);
+                        $this->assertEquals(123, $column['length']);
+                        $this->assertFalse($column['nullable']);
+                        $this->assertEquals('column 1', $column['default']);
+                        $this->asserttrue($column['primaryKey']);
+                        break;
+                    case 'col2':
+                        $this->assertEquals("character varying", $column['type']);
+                        $this->assertEquals(221, $column['length']);
+                        $this->assertFalse($column['nullable']);
+                        $this->assertEquals('column 2', $column['default']);
+                        $this->asserttrue($column['primaryKey']);
+                        break;
+                    case 'character':
+                        $this->assertEquals("character varying", $column['type']);
+                        $this->assertEquals(123, $column['length']);
+                        $this->assertFalse($column['nullable']);
+                        $this->assertEquals('default string', $column['default']);
+                        $this->assertFalse($column['primaryKey']);
+                        break;
+                    case 'integer':
+                        $this->assertEquals("integer", $column['type']);
+                        $this->assertEquals(32, $column['length']);
+                        $this->assertFalse($column['nullable']);
+                        $this->assertEquals(42, $column['default']);
+                        $this->assertFalse($column['primaryKey']);
+                        break;
+                    case 'decimal':
+                        $this->assertEquals("numeric", $column['type']);
+                        $this->assertEquals("5,3", $column['length']);
+                        $this->assertFalse($column['nullable']);
+                        $this->assertEquals(1.2, $column['default']);
+                        $this->assertFalse($column['primaryKey']);
+                        break;
+                    case 'date':
+                        $this->assertEquals("date", $column['type']);
+                        $this->assertNull($column['length']);
+                        $this->assertTrue($column['nullable']);
+                        $this->assertNull($column['default']);
+                        $this->assertFalse($column['primaryKey']);
+                        break;
+                    default:
+                        $this->fail("Unexpected column found: " . $column['name']);
+                        break;
+                }
+            }
+        }
+    }
+
+    public function testManifestMetadata()
+    {
+        $config = $this->getConfig();
+
+        $config['parameters']['tables'][0]['columns'] = ["character","integer","decimal","date"];
+        $config['parameters']['tables'][0]['table'] = 'types';
+        $config['parameters']['tables'][0]['query'] = "SELECT \"character\",\"integer\",\"decimal\",\"date\" FROM types";
+        // use just 1 table
+        unset($config['parameters']['tables'][1]);
+
+        $app = new Application($config);
+
+        $result = $app->run();
+
+        $outputManifest = Yaml::parse(
+            file_get_contents($this->dataDir . '/out/tables/' . $result['imported'][0] . '.csv.manifest')
+        );
+
+        $this->assertArrayHasKey('destination', $outputManifest);
+        $this->assertArrayHasKey('incremental', $outputManifest);
+        $this->assertArrayHasKey('metadata', $outputManifest);
+        foreach ($outputManifest['metadata'] as $i => $metadata) {
+            $this->assertArrayHasKey('key', $metadata);
+            $this->assertArrayHasKey('value', $metadata);
+            switch ($metadata['key']) {
+                case 'KBC.name':
+                    $this->assertEquals('types', $metadata['value']);
+                    break;
+                case 'KBC.schema':
+                    $this->assertEquals('public', $metadata['value']);
+                    break;
+                case 'KBC.type':
+                    $this->assertEquals('BASE TABLE', $metadata['value']);
+                    break;
+                default:
+                    $this->fail('Unknown table metadata key: ' . $metadata['key']);
+            }
+        }
+        $this->assertArrayHasKey('column_metadata', $outputManifest);
+        $this->assertCount(4, $outputManifest['column_metadata']);
+        $colNum = 0;
+        foreach ($outputManifest['column_metadata'] as $column => $metadataList) {
+            $colNum++;
+            foreach ($metadataList as $metadata) {
+                $this->assertArrayHasKey('key', $metadata);
+                $this->assertArrayHasKey('value', $metadata);
+                switch ($metadata['key']) {
+                    case 'KBC.datatype.type':
+                        $this->assertContains($metadata['value'], ['character varying', 'integer', 'numeric', 'date']);
+                        break;
+                    case 'KBC.datatype.basetype':
+                        $this->assertContains($metadata['value'], ['STRING', 'INTEGER', 'NUMERIC', 'DATE']);
+                        break;
+                    case 'KBC.datatype.nullable':
+                        if ($column === 'date') {
+                            $this->assertTrue($metadata['value']);
+                        } else {
+                            $this->assertFalse($metadata['value']);
+                        }
+                        break;
+                    case 'KBC.datatype.default':
+                        if ($column === 'date') {
+                            $this->assertNull($metadata['value']);
+                        } else {
+                            $this->assertNotNull($metadata['value']);
+                        }
+                        break;
+                    case 'KBC.datatype.length':
+                        if ($column === 'date') {
+                            $this->assertNull($metadata['value']);
+                        } else {
+                            $this->assertNotNull($metadata['value']);
+                        }
+                        break;
+                    case 'KBC.primaryKey':
+                        $this->assertFalse($metadata['value']);
+                        break;
+                    case 'KBC.ordinalPosition':
+                        $this->assertEquals($colNum, $metadata['value']);
+                        break;
+                    default:
+                        $this->fail("Unnexpected metadata key " . $metadata['key']);
+                }
+            }
+        }
     }
 }
