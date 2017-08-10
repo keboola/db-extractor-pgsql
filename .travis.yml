@@ -10,6 +10,20 @@ install:
 
 script:
   - docker-compose run --rm app
+  - docker pull quay.io/keboola/developer-portal-cli-v2:latest
+  - export REPOSITORY=`docker run --rm -e KBC_DEVELOPERPORTAL_USERNAME -e KBC_DEVELOPERPORTAL_PASSWORD
+    -e KBC_DEVELOPERPORTAL_URL quay.io/keboola/developer-portal-cli-v2:latest ecr:get-repository
+    keboola keboola.ex-db-pgsql`
+  - docker tag keboola/ex-db-pgsql:latest $REPOSITORY:master
+  - eval $(docker run --rm -e KBC_DEVELOPERPORTAL_USERNAME -e KBC_DEVELOPERPORTAL_PASSWORD
+    -e KBC_DEVELOPERPORTAL_URL quay.io/keboola/developer-portal-cli-v2:latest ecr:get-login
+    keboola keboola.ex-db-pgsql)
+  - docker push $REPOSITORY:master
+  - docker pull quay.io/keboola/syrup-cli:latest
+  - docker run --rm -e KBC_STORAGE_TOKEN quay.io/keboola/syrup-cli:latest run-job keboola.ex-db-pgsql
+    285843250 master
+  - docker run --rm -e KBC_STORAGE_TOKEN quay.io/keboola/syrup-cli:latest run-job keboola.ex-db-pgsql
+    287599200 master
 
 after_success:
   - docker images
@@ -23,6 +37,10 @@ after_failure:
 deploy:
   provider: script
   skip_cleanup: true
-  script: ./deploy.sh
+  script: "./deploy.sh"
   on:
     tags: true
+
+notifications:
+  slack:
+    secure: mOs6LtPI+zdD3/qvYG//ojooku1Klp7nPIR8FPNNNWEicmB6ar8i72p+Vog42U0PtDxe5gVgohLyz3Tr8c18Ej1zddcjidFFlBJwoqOcz/pVWWOKpolfSbLT39af1hFC22jPuNkvk+oxw3XKuBCOHro+4rxrKMdGn90rUm/nKd6gcgjm2x+n/jrXOq0rYLgM6/EZUtLATF8un70bgLYrUE4rUThxdrJX9Fp88GbxC5BDYkXEjrs6guWQqXH1d+YhBRhaKRIdVYxzguZM7TxIrv286zzT6nA+HqqjuxTFA+biTAlYfw2D1AgsBuIq2WF4RCSw6b6g3q7KyNZ/y6I3CHiBKnWUlPRtTYrcl338SAUiCwZCgV69I23OLxTu5lKgE3nECBk+T0n4jpI6z4LbZ0h7qp7gzaOZnsj9X7vV/Ed5c+m/1qIs/rv7oEW9lV9kg5lfFxMfQlcebeWc+Y6rKpXesLq1TNRYG7gybuQHKkNIcf8Wn/Rz3V4sRVALfNayZeXym+R0bHT+gGPJcrIUKs+4PTV0A/NVyylNJBKIsHSmjxZlcyWR+C7xzzwEdJSR2RfPtRkPgMtKTbVoTWfzWtP/yUMX7V+RTEZqYFhjhEu+cUwKiLHvNm1XrvB4TB0XbhRFKDg9nkEGvzXNC0iz0okIXcW+64PUuk1LeFIban8=

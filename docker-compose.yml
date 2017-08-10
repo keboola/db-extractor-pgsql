@@ -2,7 +2,7 @@ version: "2"
 services:
   app:
     build: .
-    image: keboola/db-extractor-pgsql
+    image: keboola/ex-db-pgsql
     working_dir: /code
     tty: true
     stdin_open: true
