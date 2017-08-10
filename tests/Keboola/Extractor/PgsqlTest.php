@@ -217,79 +217,89 @@ class PgsqlTest extends ExtractorTest
         $this->assertArrayHasKey('status', $result);
         $this->assertArrayHasKey('tables', $result);
         $this->assertCount(2, $result['tables']);
-        foreach ($result['tables'] as $table) {
-            $this->assertArrayHasKey('name', $table);
-            $this->assertArrayHasKey('columns', $table);
-            switch ($table['name']) {
-                case 'escaping':
-                    $this->assertCount(2, $table['columns']);
-                    break;
-                case 'types':
-                    $this->assertCount(4, $table['columns']);
-                    break;
-                default:
-                    $this->fail("Unexpected table found: " . $table['name']);
-            }
-            foreach ($table['columns'] as $i => $column) {
-                // keys
-                $this->assertArrayHasKey('name', $column);
-                $this->assertArrayHasKey('type', $column);
-                $this->assertArrayHasKey('length', $column);
-                $this->assertArrayHasKey('default', $column);
-                $this->assertArrayHasKey('nullable', $column);
-                $this->assertArrayHasKey('primaryKey', $column);
-                $this->assertArrayHasKey('ordinalPosition', $column);
 
-                $this->assertEquals($i + 1, $column['ordinalPosition']);
-                switch ($column['name']) {
-                    case 'col1':
-                        $this->assertEquals("character varying", $column['type']);
-                        $this->assertEquals(123, $column['length']);
-                        $this->assertFalse($column['nullable']);
-                        $this->assertEquals('column 1', $column['default']);
-                        $this->asserttrue($column['primaryKey']);
-                        break;
-                    case 'col2':
-                        $this->assertEquals("character varying", $column['type']);
-                        $this->assertEquals(221, $column['length']);
-                        $this->assertFalse($column['nullable']);
-                        $this->assertEquals('column 2', $column['default']);
-                        $this->asserttrue($column['primaryKey']);
-                        break;
-                    case 'character':
-                        $this->assertEquals("character varying", $column['type']);
-                        $this->assertEquals(123, $column['length']);
-                        $this->assertFalse($column['nullable']);
-                        $this->assertEquals('default string', $column['default']);
-                        $this->assertFalse($column['primaryKey']);
-                        break;
-                    case 'integer':
-                        $this->assertEquals("integer", $column['type']);
-                        $this->assertEquals(32, $column['length']);
-                        $this->assertFalse($column['nullable']);
-                        $this->assertEquals(42, $column['default']);
-                        $this->assertFalse($column['primaryKey']);
-                        break;
-                    case 'decimal':
-                        $this->assertEquals("numeric", $column['type']);
-                        $this->assertEquals("5,3", $column['length']);
-                        $this->assertFalse($column['nullable']);
-                        $this->assertEquals(1.2, $column['default']);
-                        $this->assertFalse($column['primaryKey']);
-                        break;
-                    case 'date':
-                        $this->assertEquals("date", $column['type']);
-                        $this->assertNull($column['length']);
-                        $this->assertTrue($column['nullable']);
-                        $this->assertNull($column['default']);
-                        $this->assertFalse($column['primaryKey']);
-                        break;
-                    default:
-                        $this->fail("Unexpected column found: " . $column['name']);
-                        break;
-                }
-            }
-        }
+        $expectedData = array (
+            0 =>
+                array (
+                    'name' => 'escaping',
+                    'schema' => 'public',
+                    'type' => 'BASE TABLE',
+                    'columns' =>
+                        array (
+                            0 =>
+                                array (
+                                    'name' => 'col1',
+                                    'type' => 'character varying',
+                                    'primaryKey' => true,
+                                    'length' => 123,
+                                    'nullable' => false,
+                                    'default' => 'column 1',
+                                    'ordinalPosition' => 1,
+                                ),
+                            1 =>
+                                array (
+                                    'name' => 'col2',
+                                    'type' => 'character varying',
+                                    'primaryKey' => true,
+                                    'length' => 221,
+                                    'nullable' => false,
+                                    'default' => 'column 2',
+                                    'ordinalPosition' => 2,
+                                ),
+                        ),
+                ),
+            1 =>
+                array (
+                    'name' => 'types',
+                    'schema' => 'public',
+                    'type' => 'BASE TABLE',
+                    'columns' =>
+                        array (
+                            0 =>
+                                array (
+                                    'name' => 'character',
+                                    'type' => 'character varying',
+                                    'primaryKey' => false,
+                                    'length' => 123,
+                                    'nullable' => false,
+                                    'default' => 'default string',
+                                    'ordinalPosition' => 1,
+                                ),
+                            1 =>
+                                array (
+                                    'name' => 'integer',
+                                    'type' => 'integer',
+                                    'primaryKey' => false,
+                                    'length' => 32,
+                                    'nullable' => false,
+                                    'default' => '42',
+                                    'ordinalPosition' => 2,
+                                ),
+                            2 =>
+                                array (
+                                    'name' => 'decimal',
+                                    'type' => 'numeric',
+                                    'primaryKey' => false,
+                                    'length' => '5,3',
+                                    'nullable' => false,
+                                    'default' => '1.2',
+                                    'ordinalPosition' => 3,
+                                ),
+                            3 =>
+                                array (
+                                    'name' => 'date',
+                                    'type' => 'date',
+                                    'primaryKey' => false,
+                                    'length' => NULL,
+                                    'nullable' => true,
+                                    'default' => NULL,
+                                    'ordinalPosition' => 4,
+                                ),
+                        ),
+                ),
+        );
+
+        $this->assertEquals($expectedData, $result['tables']);
     }
 
     public function testManifestMetadata()
@@ -313,69 +323,173 @@ class PgsqlTest extends ExtractorTest
         $this->assertArrayHasKey('destination', $outputManifest);
         $this->assertArrayHasKey('incremental', $outputManifest);
         $this->assertArrayHasKey('metadata', $outputManifest);
-        foreach ($outputManifest['metadata'] as $i => $metadata) {
-            $this->assertArrayHasKey('key', $metadata);
-            $this->assertArrayHasKey('value', $metadata);
-            switch ($metadata['key']) {
-                case 'KBC.name':
-                    $this->assertEquals('types', $metadata['value']);
-                    break;
-                case 'KBC.schema':
-                    $this->assertEquals('public', $metadata['value']);
-                    break;
-                case 'KBC.type':
-                    $this->assertEquals('BASE TABLE', $metadata['value']);
-                    break;
-                default:
-                    $this->fail('Unknown table metadata key: ' . $metadata['key']);
-            }
-        }
+
+        $expectedTableMetadata = array (
+            0 =>
+                array (
+                    'key' => 'KBC.name',
+                    'value' => 'types',
+                ),
+            1 =>
+                array (
+                    'key' => 'KBC.schema',
+                    'value' => 'public',
+                ),
+            2 =>
+                array (
+                    'key' => 'KBC.type',
+                    'value' => 'BASE TABLE',
+                ),
+        );
+        $this->assertEquals($expectedTableMetadata, $outputManifest['metadata']);
+
         $this->assertArrayHasKey('column_metadata', $outputManifest);
         $this->assertCount(4, $outputManifest['column_metadata']);
-        $colNum = 0;
-        foreach ($outputManifest['column_metadata'] as $column => $metadataList) {
-            $colNum++;
-            foreach ($metadataList as $metadata) {
-                $this->assertArrayHasKey('key', $metadata);
-                $this->assertArrayHasKey('value', $metadata);
-                switch ($metadata['key']) {
-                    case 'KBC.datatype.type':
-                        $this->assertContains($metadata['value'], ['character varying', 'integer', 'numeric', 'date']);
-                        break;
-                    case 'KBC.datatype.basetype':
-                        $this->assertContains($metadata['value'], ['STRING', 'INTEGER', 'NUMERIC', 'DATE']);
-                        break;
-                    case 'KBC.datatype.nullable':
-                        if ($column === 'date') {
-                            $this->assertTrue($metadata['value']);
-                        } else {
-                            $this->assertFalse($metadata['value']);
-                        }
-                        break;
-                    case 'KBC.datatype.default':
-                        if ($column === 'date') {
-                            $this->assertNull($metadata['value']);
-                        } else {
-                            $this->assertNotNull($metadata['value']);
-                        }
-                        break;
-                    case 'KBC.datatype.length':
-                        if ($column === 'date') {
-                            $this->assertNull($metadata['value']);
-                        } else {
-                            $this->assertNotNull($metadata['value']);
-                        }
-                        break;
-                    case 'KBC.primaryKey':
-                        $this->assertFalse($metadata['value']);
-                        break;
-                    case 'KBC.ordinalPosition':
-                        $this->assertEquals($colNum, $metadata['value']);
-                        break;
-                    default:
-                        $this->fail("Unnexpected metadata key " . $metadata['key']);
-                }
-            }
-        }
+
+        $expectedColumnMetadata = array (
+            'character' =>
+                array (
+                    0 =>
+                        array (
+                            'key' => 'KBC.datatype.type',
+                            'value' => 'character varying',
+                        ),
+                    1 =>
+                        array (
+                            'key' => 'KBC.datatype.nullable',
+                            'value' => false,
+                        ),
+                    2 =>
+                        array (
+                            'key' => 'KBC.datatype.basetype',
+                            'value' => 'STRING',
+                        ),
+                    3 =>
+                        array (
+                            'key' => 'KBC.datatype.length',
+                            'value' => 123,
+                        ),
+                    4 =>
+                        array (
+                            'key' => 'KBC.datatype.default',
+                            'value' => 'default string',
+                        ),
+                    5 =>
+                        array (
+                            'key' => 'KBC.primaryKey',
+                            'value' => false,
+                        ),
+                    6 =>
+                        array (
+                            'key' => 'KBC.ordinalPosition',
+                            'value' => 1,
+                        ),
+                ),
+            'integer' =>
+                array (
+                    0 =>
+                        array (
+                            'key' => 'KBC.datatype.type',
+                            'value' => 'integer',
+                        ),
+                    1 =>
+                        array (
+                            'key' => 'KBC.datatype.nullable',
+                            'value' => false,
+                        ),
+                    2 =>
+                        array (
+                            'key' => 'KBC.datatype.basetype',
+                            'value' => 'INTEGER',
+                        ),
+                    3 =>
+                        array (
+                            'key' => 'KBC.datatype.length',
+                            'value' => 32,
+                        ),
+                    4 =>
+                        array (
+                            'key' => 'KBC.datatype.default',
+                            'value' => '42',
+                        ),
+                    5 =>
+                        array (
+                            'key' => 'KBC.primaryKey',
+                            'value' => false,
+                        ),
+                    6 =>
+                        array (
+                            'key' => 'KBC.ordinalPosition',
+                            'value' => 2,
+                        ),
+                ),
+            'decimal' =>
+                array (
+                    0 =>
+                        array (
+                            'key' => 'KBC.datatype.type',
+                            'value' => 'numeric',
+                        ),
+                    1 =>
+                        array (
+                            'key' => 'KBC.datatype.nullable',
+                            'value' => false,
+                        ),
+                    2 =>
+                        array (
+                            'key' => 'KBC.datatype.basetype',
+                            'value' => 'NUMERIC',
+                        ),
+                    3 =>
+                        array (
+                            'key' => 'KBC.datatype.length',
+                            'value' => '5,3',
+                        ),
+                    4 =>
+                        array (
+                            'key' => 'KBC.datatype.default',
+                            'value' => '1.2',
+                        ),
+                    5 =>
+                        array (
+                            'key' => 'KBC.primaryKey',
+                            'value' => false,
+                        ),
+                    6 =>
+                        array (
+                            'key' => 'KBC.ordinalPosition',
+                            'value' => 3,
+                        ),
+                ),
+            'date' =>
+                array (
+                    0 =>
+                        array (
+                            'key' => 'KBC.datatype.type',
+                            'value' => 'date',
+                        ),
+                    1 =>
+                        array (
+                            'key' => 'KBC.datatype.nullable',
+                            'value' => true,
+                        ),
+                    2 =>
+                        array (
+                            'key' => 'KBC.datatype.basetype',
+                            'value' => 'DATE',
+                        ),
+                    3 =>
+                        array (
+                            'key' => 'KBC.primaryKey',
+                            'value' => false,
+                        ),
+                    4 =>
+                        array (
+                            'key' => 'KBC.ordinalPosition',
+                            'value' => 4,
+                        ),
+                ),
+        );
+        $this->assertEquals($expectedColumnMetadata, $outputManifest['column_metadata']);
     }
 }
