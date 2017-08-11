@@ -39,16 +39,16 @@
         },
         {
             "name": "keboola/db-extractor-common",
-            "version": "5.0.1",
+            "version": "5.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/db-extractor-common.git",
-                "reference": "3750769e82b3d653bac714ffcb1d5736b483eb61"
+                "reference": "d31a4f970f1bb423d1d10216bdb7d6969a5704c6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/db-extractor-common/zipball/3750769e82b3d653bac714ffcb1d5736b483eb61",
-                "reference": "3750769e82b3d653bac714ffcb1d5736b483eb61",
+                "url": "https://api.github.com/repos/keboola/db-extractor-common/zipball/d31a4f970f1bb423d1d10216bdb7d6969a5704c6",
+                "reference": "d31a4f970f1bb423d1d10216bdb7d6969a5704c6",
                 "shasum": ""
             },
             "require": {
@@ -78,7 +78,7 @@
                     "email": "miro@keboola.com"
                 }
             ],
-            "time": "2017-08-08T14:50:26+00:00"
+            "time": "2017-08-11T09:28:49+00:00"
         },
         {
             "name": "keboola/php-datatypes",
