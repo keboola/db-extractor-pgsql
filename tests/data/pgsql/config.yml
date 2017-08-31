@@ -24,3 +24,20 @@ parameters:
             incremental: false
             primaryKey: ~
             enabled: true
+        -
+            id: 2
+            name: types
+            outputTable: in.c-main.types
+            incremental: false
+            primaryKey: ~
+            enabled: true
+            table: types
+            columns:
+              -
+                character
+              -
+                integer
+              -
+                decimal
+              -
+                date

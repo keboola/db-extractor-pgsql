@@ -306,10 +306,8 @@ class PgsqlTest extends ExtractorTest
     {
         $config = $this->getConfig();
 
-        $config['parameters']['tables'][0]['columns'] = ["character","integer","decimal","date"];
-        $config['parameters']['tables'][0]['table'] = 'types';
-        $config['parameters']['tables'][0]['query'] = "SELECT \"character\",\"integer\",\"decimal\",\"date\" FROM types";
         // use just 1 table
+        unset($config['parameters']['tables'][0]);
         unset($config['parameters']['tables'][1]);
 
         $app = new Application($config);
@@ -491,5 +489,31 @@ class PgsqlTest extends ExtractorTest
                 ),
         );
         $this->assertEquals($expectedColumnMetadata, $outputManifest['column_metadata']);
+    }
+
+    public function testTableColumnsQuery() {
+        $config = $this->getConfig();
+
+        // use just 1 table
+        unset($config['parameters']['tables'][0]);
+        unset($config['parameters']['tables'][1]);
+
+        $app = new Application($config);
+
+        $result = $app->run();
+
+        $expectedCsvFile = new CsvFile($this->dataDir . '/pgsql/types.csv');
+        $outputCsvFile = new CsvFile($this->dataDir . '/out/tables/' . $result['imported'][0] . '.csv');
+        $outputManifestFile = $this->dataDir . '/out/tables/' . $result['imported'][0] . '.csv.manifest';
+
+        $this->assertEquals('success', $result['status']);
+        $this->assertTrue($outputCsvFile->isFile());
+        $this->assertFileExists($outputManifestFile);
+        $this->assertEquals($expectedCsvFile->getHeader(), $outputCsvFile->getHeader());
+        $outputArr = iterator_to_array($outputCsvFile);
+        $expectedArr = iterator_to_array($expectedCsvFile);
+        for ($i = 1; $i < count($expectedArr); $i++) {
+            $this->assertEquals($expectedArr[$i], $outputArr[$i]);
+        }
     }
 }
