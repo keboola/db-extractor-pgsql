@@ -31,7 +31,9 @@ parameters:
             incremental: false
             primaryKey: ~
             enabled: true
-            table: types
+            table:
+              schema: public
+              tableName: types
             columns:
               -
                 character
