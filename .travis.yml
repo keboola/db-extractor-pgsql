@@ -12,11 +12,11 @@ script:
   - docker-compose run --rm app
   - docker pull quay.io/keboola/developer-portal-cli-v2:latest
   - export REPOSITORY=`docker run --rm -e KBC_DEVELOPERPORTAL_USERNAME -e KBC_DEVELOPERPORTAL_PASSWORD
-    -e KBC_DEVELOPERPORTAL_URL quay.io/keboola/developer-portal-cli-v2:latest ecr:get-repository
+    quay.io/keboola/developer-portal-cli-v2:latest ecr:get-repository
     keboola keboola.ex-db-pgsql`
   - docker tag keboola/ex-db-pgsql:latest $REPOSITORY:master
   - eval $(docker run --rm -e KBC_DEVELOPERPORTAL_USERNAME -e KBC_DEVELOPERPORTAL_PASSWORD
-    -e KBC_DEVELOPERPORTAL_URL quay.io/keboola/developer-portal-cli-v2:latest ecr:get-login
+    quay.io/keboola/developer-portal-cli-v2:latest ecr:get-login
     keboola keboola.ex-db-pgsql)
   - docker push $REPOSITORY:master
   - docker pull quay.io/keboola/syrup-cli:latest
