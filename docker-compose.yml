@@ -6,8 +6,6 @@ services:
     working_dir: /code
     tty: true
     stdin_open: true
-    volumes:
-      - ./:/code
     command: "./phpunit.sh"
     environment:
       - EXTERNAL_PG_HOST
