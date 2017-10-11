@@ -220,8 +220,7 @@ class PgSQL extends Extractor
     public function getTables(array $tables = null)
     {
         $sql = "SELECT * FROM information_schema.tables 
-                WHERE table_schema != 'pg_catalog' AND table_schema != 'information_schema'
-                ORDER BY table_schema, table_name";
+                WHERE table_schema != 'pg_catalog' AND table_schema != 'information_schema'";
 
         if (!is_null($tables) && count($tables) > 0) {
             $sql .= sprintf(
@@ -235,6 +234,8 @@ class PgSQL extends Extractor
             );
         }
 
+        $sql .= " ORDER BY table_schema, table_name";
+        
         $res = $this->db->query($sql);
         $arr = $res->fetchAll(\PDO::FETCH_ASSOC);
         $tableNameArray = [];
