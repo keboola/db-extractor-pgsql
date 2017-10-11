@@ -234,44 +234,36 @@ class PgSQL extends Extractor
             );
         }
 
+        $sql .= " ORDER BY table_schema, table_name";
+        
         $res = $this->db->query($sql);
         $arr = $res->fetchAll(\PDO::FETCH_ASSOC);
-        $output = [];
+        $tableNameArray = [];
+        $tableDefs = [];
         foreach ($arr as $table) {
-            $command = sprintf(
-                "PGPASSWORD='%s' psql -h %s -p %s -U %s -d %s -w -c \"\d+ escaping;\"",
-                $this->dbConfig['password'],
-                $this->dbConfig['host'],
-                $this->dbConfig['port'],
-                $this->dbConfig['user'],
-                $this->dbConfig['database']
-            );
-            $process = new Process($command);
-            $process->run();
-            $output[] = $this->describeTable($table);
+            $tableNameArray[] = $table['table_name'];
+            $tableDefs[$table['table_name']] = [
+                'name' => $table['table_name'],
+                'schema' => (isset($table['table_schema'])) ? $table['table_schema'] : null,
+                'type' => (isset($table['table_type'])) ? $table['table_type'] : null
+            ];
         }
-        return $output;
-    }
 
-    protected function describeTable(array $table)
-    {
-        $tabledef = [
-            'name' => $table['table_name'],
-            'schema' => (isset($table['table_schema'])) ? $table['table_schema'] : null,
-            'type' => (isset($table['table_type'])) ? $table['table_type'] : null
-        ];
-
-        $res = $this->db->query(
-            sprintf(
-                "SELECT c.*, c.column_name as column_name, column_default, is_nullable, data_type, ordinal_position
+        $sql = sprintf(
+            "SELECT c.*, c.column_name as column_name, column_default, is_nullable, data_type, ordinal_position
                         character_maximum_length, numeric_precision, numeric_scale, is_identity, constraint_type, pga.atttypmod - 4 as varlength         
                     FROM information_schema.columns as c 
                     LEFT JOIN pg_catalog.pg_attribute as pga ON c.table_name::regclass = pga.attrelid AND c.column_name = pga.attname 
                     LEFT JOIN information_schema.table_constraints as tc JOIN information_schema.constraint_column_usage as ccu USING (constraint_schema, constraint_name)
                     ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name 
-                    WHERE c.table_name   = %s ORDER BY ordinal_position", $this->db->quote($table['table_name'])));
+                    WHERE c.table_name IN (%s) ORDER BY c.table_schema, c.table_name, ordinal_position",
+            implode(',', array_map(function ($table) {
+                return $this->db->quote($table);
+            }, $tableNameArray))
+        );
 
-        $columns = [];
+        $res = $this->db->query($sql);
+
         while ($column = $res->fetch(\PDO::FETCH_ASSOC)) {
             $length = ($column['data_type'] === 'character varying') ? $column['varlength'] : null;
             if (is_null($length) && !is_null($column['numeric_precision'])) {
@@ -285,7 +277,7 @@ class PgSQL extends Extractor
             if ($column['data_type'] === 'character varying') {
                 $default = str_replace("'", "", explode("::", $column['column_default'])[0]);
             }
-            $columns[] = [
+            $tableDefs[$column['table_name']]['columns'][] = [
                 "name" => $column['column_name'],
                 "type" => $column['data_type'],
                 "primaryKey" => ($column['constraint_type'] === "PRIMARY KEY") ? true : false,
@@ -295,8 +287,14 @@ class PgSQL extends Extractor
                 "ordinalPosition" => $column['ordinal_position']
             ];
         }
-        $tabledef['columns'] = $columns;
-        return $tabledef;
+
+        return array_values($tableDefs);
+    }
+
+    protected function describeTable(array $table)
+    {
+        // Deprecated
+        return null;
     }
 
     public function simpleQuery(array $table, array $columns = array())
