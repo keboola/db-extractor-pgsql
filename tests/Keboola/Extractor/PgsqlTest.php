@@ -44,91 +44,57 @@ class PgsqlTest extends ExtractorTest
 
         // drop test tables
         $processes = [];
-        $processes[] = new Process(sprintf(
-            "PGPASSWORD='%s' psql -h %s -p %s -U %s -d %s -w -c \"DROP TABLE IF EXISTS escaping;\"",
-            $dbConfig['password'],
-            $dbConfig['host'],
-            $dbConfig['port'],
-            $dbConfig['user'],
-            $dbConfig['database']
-        ));
-        $processes[] = new Process(sprintf(
-            "PGPASSWORD='%s' psql -h %s -p %s -U %s -d %s -w -c \"DROP TABLE IF EXISTS types_fk;\"",
-            $dbConfig['password'],
-            $dbConfig['host'],
-            $dbConfig['port'],
-            $dbConfig['user'],
-            $dbConfig['database']
-        ));
-        $processes[] = new Process(sprintf(
-            "PGPASSWORD='%s' psql -h %s -p %s -U %s -d %s -w -c \"DROP TABLE IF EXISTS types;\"",
-            $dbConfig['password'],
-            $dbConfig['host'],
-            $dbConfig['port'],
-            $dbConfig['user'],
-            $dbConfig['database']
-        ));
+        $processes[] = $this->createDbProcess(
+            $dbConfig,
+            "DROP TABLE IF EXISTS escaping;"
+        );
+        $processes[] = $this->createDbProcess(
+            $dbConfig,
+            "DROP TABLE IF EXISTS types_fk;"
+        );
+        $processes[] = $this->createDbProcess(
+            $dbConfig,
+            "DROP TABLE IF EXISTS types;"
+        );
 
         // create test tables
-        $processes[] = $this->createDbProcess($dbConfig, "CREATE TABLE escaping (col1 varchar(123) NOT NULL DEFAULT 'column 1', col2 varchar(221) NOT NULL DEFAULT 'column 2', PRIMARY KEY (col1, col2));");
-        /*
-        $processes[] = new Process(sprintf(
-            "PGPASSWORD='%s' psql -h %s -p %s -U %s -d %s -w -c \"CREATE TABLE escaping (col1 varchar(123) NOT NULL DEFAULT 'column 1', col2 varchar(221) NOT NULL DEFAULT 'column 2', PRIMARY KEY (col1, col2));\"",
-            $dbConfig['password'],
-            $dbConfig['host'],
-            $dbConfig['port'],
-            $dbConfig['user'],
-            $dbConfig['database']
-        ));
-        */
-        $processes[] = new Process(sprintf(
-            "PGPASSWORD='%s' psql -h %s -p %s -U %s -d %s -w -c \"\COPY escaping FROM 'vendor/keboola/db-extractor-common/tests/data/escaping.csv' WITH DELIMITER ',' CSV HEADER;\"",
-            $dbConfig['password'],
-            $dbConfig['host'],
-            $dbConfig['port'],
-            $dbConfig['user'],
-            $dbConfig['database']
-        ));
-        $processes[] = new Process(sprintf(
-            "PGPASSWORD='%s' psql -h %s -p %s -U %s -d %s -w -c \"CREATE TABLE types " .
+        $processes[] = $this->createDbProcess(
+            $dbConfig,
+            "CREATE TABLE escaping (col1 varchar(123) NOT NULL DEFAULT 'column 1', col2 varchar(221) NOT NULL DEFAULT 'column 2', PRIMARY KEY (col1, col2));"
+        );
+
+
+        $processes[] = $this->createDbProcess(
+            $dbConfig,
+            "\COPY escaping FROM 'vendor/keboola/db-extractor-common/tests/data/escaping.csv' WITH DELIMITER ',' CSV HEADER;"
+        );
+
+        $processes[] = $this->createDbProcess(
+            $dbConfig,
+            "CREATE TABLE types " .
                     "(character varchar(123) PRIMARY KEY, " .
                     "integer integer NOT NULL DEFAULT 42, " .
                     "decimal decimal(5,3) NOT NULL DEFAULT 1.2, " .
-                    "date date DEFAULT NULL);\"",
-            $dbConfig['password'],
-            $dbConfig['host'],
-            $dbConfig['port'],
-            $dbConfig['user'],
-            $dbConfig['database']
-        ));
-        $processes[] = new Process(sprintf(
-            "PGPASSWORD='%s' psql -h %s -p %s -U %s -d %s -w -c \"\COPY types FROM 'tests/data/pgsql/types.csv' WITH DELIMITER ',' CSV HEADER;\"",
-            $dbConfig['password'],
-            $dbConfig['host'],
-            $dbConfig['port'],
-            $dbConfig['user'],
-            $dbConfig['database']
-        ));
-        $processes[] = new Process(sprintf(
-            "PGPASSWORD='%s' psql -h %s -p %s -U %s -d %s -w -c \"CREATE TABLE types_fk " .
+                    "date date DEFAULT NULL);"
+        );
+
+        $processes[] = $this->createDbProcess(
+            $dbConfig,
+            "\COPY types FROM 'tests/data/pgsql/types.csv' WITH DELIMITER ',' CSV HEADER;"
+        );
+
+        $processes[] = $this->createDbProcess(
+            $dbConfig,
+            "CREATE TABLE types_fk " .
             "(character varchar(123) REFERENCES types (character), " .
             "integer integer NOT NULL DEFAULT 42, " .
             "decimal decimal(5,3) NOT NULL DEFAULT 1.2, " .
-            "date date DEFAULT NULL);\"",
-            $dbConfig['password'],
-            $dbConfig['host'],
-            $dbConfig['port'],
-            $dbConfig['user'],
-            $dbConfig['database']
-        ));
-        $processes[] = new Process(sprintf(
-            "PGPASSWORD='%s' psql -h %s -p %s -U %s -d %s -w -c \"\COPY types_fk FROM 'tests/data/pgsql/types.csv' WITH DELIMITER ',' CSV HEADER;\"",
-            $dbConfig['password'],
-            $dbConfig['host'],
-            $dbConfig['port'],
-            $dbConfig['user'],
-            $dbConfig['database']
-        ));
+            "date date DEFAULT NULL);");
+
+        $processes[] = $this->createDbProcess(
+            $dbConfig,
+            "\COPY types_fk FROM 'tests/data/pgsql/types.csv' WITH DELIMITER ',' CSV HEADER;"
+        );
         foreach ($processes as $process) {
             $process->run();
             if (!$process->isSuccessful()) {
