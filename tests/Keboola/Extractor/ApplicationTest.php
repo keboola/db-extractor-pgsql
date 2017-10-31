@@ -154,7 +154,7 @@ class ApplicationTest extends ExtractorTest
         $this->assertFileExists($manifestFile);
     }
 
-    public function testGetTablesAction()
+    public function testGetaeTablesAction()
     {
         $config = Yaml::parse(file_get_contents($this->dataDir . '/pgsql/external_config.yml'));
         @unlink($this->dataDir . '/config.yml');

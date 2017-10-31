@@ -20,6 +20,18 @@ class PgsqlTest extends ExtractorTest
     /** @var Application */
     protected $app;
 
+    private function createDbProcess($dbConfig, $query)
+    {
+        return new Process(sprintf(
+            "PGPASSWORD='%s' psql -h %s -p %s -U %s -d %s -w -c \"$query\"",
+            $dbConfig['password'],
+            $dbConfig['host'],
+            $dbConfig['port'],
+            $dbConfig['user'],
+            $dbConfig['database']
+        ));
+    }
+
     public function setUp()
     {
         if (!defined('APP_NAME')) {
@@ -30,8 +42,9 @@ class PgsqlTest extends ExtractorTest
 
         $dbConfig = $config['parameters']['db'];
 
-        // create test tables
-        $process = new Process(sprintf(
+        // drop test tables
+        $processes = [];
+        $processes[] = new Process(sprintf(
             "PGPASSWORD='%s' psql -h %s -p %s -U %s -d %s -w -c \"DROP TABLE IF EXISTS escaping;\"",
             $dbConfig['password'],
             $dbConfig['host'],
@@ -39,37 +52,15 @@ class PgsqlTest extends ExtractorTest
             $dbConfig['user'],
             $dbConfig['database']
         ));
-        $process->run();
-        if (!$process->isSuccessful()) {
-            $this->fail($process->getErrorOutput());
-        }
-        $process = new Process(sprintf(
-            "PGPASSWORD='%s' psql -h %s -p %s -U %s -d %s -w -c \"CREATE TABLE escaping (col1 varchar(123) NOT NULL DEFAULT 'column 1', col2 varchar(221) NOT NULL DEFAULT 'column 2', PRIMARY KEY (col1, col2));\"",
+        $processes[] = new Process(sprintf(
+            "PGPASSWORD='%s' psql -h %s -p %s -U %s -d %s -w -c \"DROP TABLE IF EXISTS types_fk;\"",
             $dbConfig['password'],
             $dbConfig['host'],
             $dbConfig['port'],
             $dbConfig['user'],
             $dbConfig['database']
         ));
-        $process->run();
-        if (!$process->isSuccessful()) {
-            $this->fail($process->getErrorOutput());
-        }
-        $process = new Process(sprintf(
-            "PGPASSWORD='%s' psql -h %s -p %s -U %s -d %s -w -c \"\COPY escaping FROM 'vendor/keboola/db-extractor-common/tests/data/escaping.csv' WITH DELIMITER ',' CSV HEADER;\"",
-            $dbConfig['password'],
-            $dbConfig['host'],
-            $dbConfig['port'],
-            $dbConfig['user'],
-            $dbConfig['database']
-        ));
-        $process->run();
-        if (!$process->isSuccessful()) {
-            $this->fail($process->getErrorOutput());
-        }
-
-        // create test tables
-        $process = new Process(sprintf(
+        $processes[] = new Process(sprintf(
             "PGPASSWORD='%s' psql -h %s -p %s -U %s -d %s -w -c \"DROP TABLE IF EXISTS types;\"",
             $dbConfig['password'],
             $dbConfig['host'],
@@ -77,13 +68,30 @@ class PgsqlTest extends ExtractorTest
             $dbConfig['user'],
             $dbConfig['database']
         ));
-        $process->run();
-        if (!$process->isSuccessful()) {
-            $this->fail($process->getErrorOutput());
-        }
-        $process = new Process(sprintf(
+
+        // create test tables
+        $processes[] = $this->createDbProcess($dbConfig, "CREATE TABLE escaping (col1 varchar(123) NOT NULL DEFAULT 'column 1', col2 varchar(221) NOT NULL DEFAULT 'column 2', PRIMARY KEY (col1, col2));");
+        /*
+        $processes[] = new Process(sprintf(
+            "PGPASSWORD='%s' psql -h %s -p %s -U %s -d %s -w -c \"CREATE TABLE escaping (col1 varchar(123) NOT NULL DEFAULT 'column 1', col2 varchar(221) NOT NULL DEFAULT 'column 2', PRIMARY KEY (col1, col2));\"",
+            $dbConfig['password'],
+            $dbConfig['host'],
+            $dbConfig['port'],
+            $dbConfig['user'],
+            $dbConfig['database']
+        ));
+        */
+        $processes[] = new Process(sprintf(
+            "PGPASSWORD='%s' psql -h %s -p %s -U %s -d %s -w -c \"\COPY escaping FROM 'vendor/keboola/db-extractor-common/tests/data/escaping.csv' WITH DELIMITER ',' CSV HEADER;\"",
+            $dbConfig['password'],
+            $dbConfig['host'],
+            $dbConfig['port'],
+            $dbConfig['user'],
+            $dbConfig['database']
+        ));
+        $processes[] = new Process(sprintf(
             "PGPASSWORD='%s' psql -h %s -p %s -U %s -d %s -w -c \"CREATE TABLE types " .
-                    "(character varchar(123) NOT NULL DEFAULT 'default string', " .
+                    "(character varchar(123) PRIMARY KEY, " .
                     "integer integer NOT NULL DEFAULT 42, " .
                     "decimal decimal(5,3) NOT NULL DEFAULT 1.2, " .
                     "date date DEFAULT NULL);\"",
@@ -93,11 +101,7 @@ class PgsqlTest extends ExtractorTest
             $dbConfig['user'],
             $dbConfig['database']
         ));
-        $process->run();
-        if (!$process->isSuccessful()) {
-            $this->fail($process->getErrorOutput());
-        }
-        $process = new Process(sprintf(
+        $processes[] = new Process(sprintf(
             "PGPASSWORD='%s' psql -h %s -p %s -U %s -d %s -w -c \"\COPY types FROM 'tests/data/pgsql/types.csv' WITH DELIMITER ',' CSV HEADER;\"",
             $dbConfig['password'],
             $dbConfig['host'],
@@ -105,9 +109,31 @@ class PgsqlTest extends ExtractorTest
             $dbConfig['user'],
             $dbConfig['database']
         ));
-        $process->run();
-        if (!$process->isSuccessful()) {
-            $this->fail($process->getErrorOutput());
+        $processes[] = new Process(sprintf(
+            "PGPASSWORD='%s' psql -h %s -p %s -U %s -d %s -w -c \"CREATE TABLE types_fk " .
+            "(character varchar(123) REFERENCES types (character), " .
+            "integer integer NOT NULL DEFAULT 42, " .
+            "decimal decimal(5,3) NOT NULL DEFAULT 1.2, " .
+            "date date DEFAULT NULL);\"",
+            $dbConfig['password'],
+            $dbConfig['host'],
+            $dbConfig['port'],
+            $dbConfig['user'],
+            $dbConfig['database']
+        ));
+        $processes[] = new Process(sprintf(
+            "PGPASSWORD='%s' psql -h %s -p %s -U %s -d %s -w -c \"\COPY types_fk FROM 'tests/data/pgsql/types.csv' WITH DELIMITER ',' CSV HEADER;\"",
+            $dbConfig['password'],
+            $dbConfig['host'],
+            $dbConfig['port'],
+            $dbConfig['user'],
+            $dbConfig['database']
+        ));
+        foreach ($processes as $process) {
+            $process->run();
+            if (!$process->isSuccessful()) {
+                $this->fail($process->getErrorOutput());
+            }
         }
     }
 
@@ -216,7 +242,7 @@ class PgsqlTest extends ExtractorTest
         $result = $app->run();
         $this->assertArrayHasKey('status', $result);
         $this->assertArrayHasKey('tables', $result);
-        $this->assertCount(2, $result['tables']);
+        $this->assertCount(3, $result['tables']);
 
         $expectedData = array (
             0 =>
@@ -259,11 +285,63 @@ class PgsqlTest extends ExtractorTest
                                 array (
                                     'name' => 'character',
                                     'type' => 'character varying',
-                                    'primaryKey' => false,
+                                    'primaryKey' => true,
                                     'length' => 123,
                                     'nullable' => false,
-                                    'default' => 'default string',
+                                    'default' => '',
                                     'ordinalPosition' => 1,
+                                ),
+                            1 =>
+                                array (
+                                    'name' => 'integer',
+                                    'type' => 'integer',
+                                    'primaryKey' => false,
+                                    'length' => 32,
+                                    'nullable' => false,
+                                    'default' => '42',
+                                    'ordinalPosition' => 2,
+                                ),
+                            2 =>
+                                array (
+                                    'name' => 'decimal',
+                                    'type' => 'numeric',
+                                    'primaryKey' => false,
+                                    'length' => '5,3',
+                                    'nullable' => false,
+                                    'default' => '1.2',
+                                    'ordinalPosition' => 3,
+                                ),
+                            3 =>
+                                array (
+                                    'name' => 'date',
+                                    'type' => 'date',
+                                    'primaryKey' => false,
+                                    'length' => NULL,
+                                    'nullable' => true,
+                                    'default' => NULL,
+                                    'ordinalPosition' => 4,
+                                ),
+                        ),
+                ),
+            2 =>
+                array (
+                    'name' => 'types_fk',
+                    'schema' => 'public',
+                    'type' => 'BASE TABLE',
+                    'columns' =>
+                        array (
+                            0 =>
+                                array (
+                                    'name' => 'character',
+                                    'type' => 'character varying',
+                                    'primaryKey' => false,
+                                    'length' => 123,
+                                    'nullable' => true,
+                                    'default' => '',
+                                    'ordinalPosition' => 1,
+                                    'foreignKeyRefTable' => 'types',
+                                    'foreignKeyRefColumn' => 'character',
+                                    'foreignKeyRef' => 'types_fk_character_fkey',
                                 ),
                             1 =>
                                 array (
@@ -306,6 +384,13 @@ class PgsqlTest extends ExtractorTest
     {
         $config = $this->getConfig();
 
+        $config['parameters']['tables'][3] = $config['parameters']['tables'][2];
+        $config['parameters']['tables'][3]['id'] = 4;
+        $config['parameters']['tables'][3]['name'] = 'types_fk';
+        $config['parameters']['tables'][3]['outputTable'] = 'in.c-main.types_fk';
+        $config['parameters']['tables'][3]['primaryKey'] = null;
+        $config['parameters']['tables'][3]['table']['tableName'] = 'types_fk';
+
         // use just 1 table
         unset($config['parameters']['tables'][0]);
         unset($config['parameters']['tables'][1]);
@@ -314,15 +399,7 @@ class PgsqlTest extends ExtractorTest
 
         $result = $app->run();
 
-        $outputManifest = Yaml::parse(
-            file_get_contents($this->dataDir . '/out/tables/' . $result['imported'][0] . '.csv.manifest')
-        );
-
-        $this->assertArrayHasKey('destination', $outputManifest);
-        $this->assertArrayHasKey('incremental', $outputManifest);
-        $this->assertArrayHasKey('metadata', $outputManifest);
-
-        $expectedTableMetadata = array (
+        $expectedTableMetadata[0] = array (
             0 =>
                 array (
                     'key' => 'KBC.name',
@@ -339,12 +416,7 @@ class PgsqlTest extends ExtractorTest
                     'value' => 'BASE TABLE',
                 ),
         );
-        $this->assertEquals($expectedTableMetadata, $outputManifest['metadata']);
-
-        $this->assertArrayHasKey('column_metadata', $outputManifest);
-        $this->assertCount(4, $outputManifest['column_metadata']);
-
-        $expectedColumnMetadata = array (
+        $expectedColumnMetadata[0] = array (
             'character' =>
                 array (
                     0 =>
@@ -369,15 +441,10 @@ class PgsqlTest extends ExtractorTest
                         ),
                     4 =>
                         array (
-                            'key' => 'KBC.datatype.default',
-                            'value' => 'default string',
+                            'key' => 'KBC.primaryKey',
+                            'value' => true,
                         ),
                     5 =>
-                        array (
-                            'key' => 'KBC.primaryKey',
-                            'value' => false,
-                        ),
-                    6 =>
                         array (
                             'key' => 'KBC.ordinalPosition',
                             'value' => 1,
@@ -488,6 +555,196 @@ class PgsqlTest extends ExtractorTest
                         ),
                 ),
         );
+
+        $expectedTableMetadata[1] = array (
+            0 =>
+                array (
+                    'key' => 'KBC.name',
+                    'value' => 'types_fk',
+                ),
+            1 =>
+                array (
+                    'key' => 'KBC.schema',
+                    'value' => 'public',
+                ),
+            2 =>
+                array (
+                    'key' => 'KBC.type',
+                    'value' => 'BASE TABLE',
+                ),
+        );
+        $expectedColumnMetadata[1] = array (
+            'character' =>
+                array (
+                    0 =>
+                        array (
+                            'key' => 'KBC.datatype.type',
+                            'value' => 'character varying',
+                        ),
+                    1 =>
+                        array (
+                            'key' => 'KBC.datatype.nullable',
+                            'value' => true,
+                        ),
+                    2 =>
+                        array (
+                            'key' => 'KBC.datatype.basetype',
+                            'value' => 'STRING',
+                        ),
+                    3 =>
+                        array (
+                            'key' => 'KBC.datatype.length',
+                            'value' => 123,
+                        ),
+                    4 =>
+                        array (
+                            'key' => 'KBC.primaryKey',
+                            'value' => false,
+                        ),
+                    5 =>
+                        array (
+                            'key' => 'KBC.ordinalPosition',
+                            'value' => 1,
+                        ),
+                    6 =>
+                        array (
+                            'key' => 'KBC.foreignKeyRefTable',
+                            'value' => 'types',
+                        ),
+                    7 =>
+                        array (
+                            'key' => 'KBC.foreignKeyRefColumn',
+                            'value' => 'character',
+                        ),
+                    8 =>
+                        array (
+                            'key' => 'KBC.foreignKeyRef',
+                            'value' => 'types_fk_character_fkey',
+                        ),
+                ),
+            'integer' =>
+                array (
+                    0 =>
+                        array (
+                            'key' => 'KBC.datatype.type',
+                            'value' => 'integer',
+                        ),
+                    1 =>
+                        array (
+                            'key' => 'KBC.datatype.nullable',
+                            'value' => false,
+                        ),
+                    2 =>
+                        array (
+                            'key' => 'KBC.datatype.basetype',
+                            'value' => 'INTEGER',
+                        ),
+                    3 =>
+                        array (
+                            'key' => 'KBC.datatype.length',
+                            'value' => 32,
+                        ),
+                    4 =>
+                        array (
+                            'key' => 'KBC.datatype.default',
+                            'value' => '42',
+                        ),
+                    5 =>
+                        array (
+                            'key' => 'KBC.primaryKey',
+                            'value' => false,
+                        ),
+                    6 =>
+                        array (
+                            'key' => 'KBC.ordinalPosition',
+                            'value' => 2,
+                        ),
+                ),
+            'decimal' =>
+                array (
+                    0 =>
+                        array (
+                            'key' => 'KBC.datatype.type',
+                            'value' => 'numeric',
+                        ),
+                    1 =>
+                        array (
+                            'key' => 'KBC.datatype.nullable',
+                            'value' => false,
+                        ),
+                    2 =>
+                        array (
+                            'key' => 'KBC.datatype.basetype',
+                            'value' => 'NUMERIC',
+                        ),
+                    3 =>
+                        array (
+                            'key' => 'KBC.datatype.length',
+                            'value' => '5,3',
+                        ),
+                    4 =>
+                        array (
+                            'key' => 'KBC.datatype.default',
+                            'value' => '1.2',
+                        ),
+                    5 =>
+                        array (
+                            'key' => 'KBC.primaryKey',
+                            'value' => false,
+                        ),
+                    6 =>
+                        array (
+                            'key' => 'KBC.ordinalPosition',
+                            'value' => 3,
+                        ),
+                ),
+            'date' =>
+                array (
+                    0 =>
+                        array (
+                            'key' => 'KBC.datatype.type',
+                            'value' => 'date',
+                        ),
+                    1 =>
+                        array (
+                            'key' => 'KBC.datatype.nullable',
+                            'value' => true,
+                        ),
+                    2 =>
+                        array (
+                            'key' => 'KBC.datatype.basetype',
+                            'value' => 'DATE',
+                        ),
+                    3 =>
+                        array (
+                            'key' => 'KBC.primaryKey',
+                            'value' => false,
+                        ),
+                    4 =>
+                        array (
+                            'key' => 'KBC.ordinalPosition',
+                            'value' => 4,
+                        ),
+                ),
+        );
+
+        $outputManifests = [];
+        foreach ($result['imported'] as $i => $filename) {
+            $outputManifest = Yaml::parse(
+                file_get_contents($this->dataDir . '/out/tables/' . $filename . '.csv.manifest')
+            );
+            $this->assertManifestMetadata($outputManifest, $expectedTableMetadata[$i], $expectedColumnMetadata[$i]);
+        }
+    }
+
+    protected function assertManifestMetadata($outputManifest, $expectedTableMetadata, $expectedColumnMetadata)
+    {
+        $this->assertArrayHasKey('destination', $outputManifest);
+        $this->assertArrayHasKey('incremental', $outputManifest);
+        $this->assertArrayHasKey('metadata', $outputManifest);
+        $this->assertArrayHasKey('column_metadata', $outputManifest);
+
+        $this->assertEquals($expectedTableMetadata, $outputManifest['metadata']);
         $this->assertEquals($expectedColumnMetadata, $outputManifest['column_metadata']);
     }
 
