@@ -29,7 +29,8 @@ parameters:
             name: types
             outputTable: in.c-main.types
             incremental: false
-            primaryKey: ~
+            primaryKey:
+              - character
             enabled: true
             table:
               schema: public

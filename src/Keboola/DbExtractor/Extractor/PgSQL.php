@@ -251,11 +251,25 @@ class PgSQL extends Extractor
 
         $sql = sprintf(
             "SELECT c.*, c.column_name as column_name, column_default, is_nullable, data_type, ordinal_position
-                        character_maximum_length, numeric_precision, numeric_scale, is_identity, constraint_type, pga.atttypmod - 4 as varlength         
+                        character_maximum_length, numeric_precision, numeric_scale, is_identity, 
+                        fks.constraint_type, fks.constraint_name, fks.foreign_table_name, fks.foreign_column_name, 
+                        pga.atttypmod - 4 as varlength         
                     FROM information_schema.columns as c 
-                    LEFT JOIN pg_catalog.pg_attribute as pga ON c.table_name::regclass = pga.attrelid AND c.column_name = pga.attname 
-                    LEFT JOIN information_schema.table_constraints as tc JOIN information_schema.constraint_column_usage as ccu USING (constraint_schema, constraint_name)
-                    ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name 
+                    LEFT JOIN pg_catalog.pg_attribute as pga 
+                      ON c.table_name::regclass = pga.attrelid AND c.column_name = pga.attname 
+                    LEFT JOIN (
+                      SELECT
+                            tc.constraint_type, tc.constraint_name, tc.table_name, tc.constraint_schema, kcu.column_name,
+                            ccu.table_name AS foreign_table_name, ccu.column_name AS foreign_column_name 
+                        FROM 
+                            information_schema.table_constraints AS tc 
+                            JOIN information_schema.key_column_usage AS kcu
+                              ON tc.constraint_name = kcu.constraint_name
+                            JOIN information_schema.constraint_column_usage AS ccu
+                              ON ccu.constraint_name = tc.constraint_name
+                        WHERE tc.constraint_type IN ('PRIMARY KEY', 'FOREIGN KEY')
+                    ) as fks                    
+                    ON c.table_schema = fks.constraint_schema AND fks.table_name = c.table_name AND fks.column_name = c.column_name 
                     WHERE c.table_name IN (%s) ORDER BY c.table_schema, c.table_name, ordinal_position",
             implode(',', array_map(function ($table) {
                 return $this->db->quote($table);
@@ -274,10 +288,10 @@ class PgSQL extends Extractor
                 }
             }
             $default = $column['column_default'];
-            if ($column['data_type'] === 'character varying') {
+            if ($column['data_type'] === 'character varying' && $default !== null) {
                 $default = str_replace("'", "", explode("::", $column['column_default'])[0]);
             }
-            $tableDefs[$column['table_name']]['columns'][] = [
+            $tableDefs[$column['table_name']]['columns'][$column['ordinal_position'] - 1] = [
                 "name" => $column['column_name'],
                 "type" => $column['data_type'],
                 "primaryKey" => ($column['constraint_type'] === "PRIMARY KEY") ? true : false,
@@ -286,6 +300,15 @@ class PgSQL extends Extractor
                 "default" => $default,
                 "ordinalPosition" => $column['ordinal_position']
             ];
+
+            if ($column['constraint_type'] === "FOREIGN KEY") {
+                $tableDefs[$column['table_name']]['columns'][$column['ordinal_position'] - 1]['foreignKeyRefTable'] =
+                    $column['foreign_table_name'];
+                $tableDefs[$column['table_name']]['columns'][$column['ordinal_position'] - 1]['foreignKeyRefColumn'] =
+                    $column['foreign_column_name'];
+                $tableDefs[$column['table_name']]['columns'][$column['ordinal_position'] - 1]['foreignKeyRef'] =
+                    $column['constraint_name'];
+            }
         }
 
         return array_values($tableDefs);
