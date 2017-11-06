@@ -98,7 +98,7 @@ class PgSQL extends Extractor
                 }
                 break;
             } catch (\PDOException $e) {
-                $exception = new UserException("DB query failed: " . $e->getMessage(), 0, $e);
+                $exception = new UserException("DB query [{$table['name']}] failed: " . $e->getMessage(), 0, $e);
             }
             sleep(pow($tries, 2));
             $tries++;
@@ -247,6 +247,10 @@ class PgSQL extends Extractor
                 'schema' => (isset($table['table_schema'])) ? $table['table_schema'] : null,
                 'type' => (isset($table['table_type'])) ? $table['table_type'] : null
             ];
+        }
+
+        if (count($tableNameArray) === 0) {
+            return [];
         }
 
         $sql = sprintf(

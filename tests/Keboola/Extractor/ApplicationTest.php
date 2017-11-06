@@ -120,6 +120,7 @@ class ApplicationTest extends ExtractorTest
         $process->run();
 
         $this->assertFalse(strstr($process->getErrorOutput(), "PGPASSWORD"));
+        $this->assertContains($config['parameters']['tables'][0]['name'], $process->getErrorOutput());
         $this->assertEquals(1, $process->getExitCode());
     }
 
@@ -154,7 +155,7 @@ class ApplicationTest extends ExtractorTest
         $this->assertFileExists($manifestFile);
     }
 
-    public function testGetaeTablesAction()
+    public function testGetTablesAction()
     {
         $config = Yaml::parse(file_get_contents($this->dataDir . '/pgsql/external_config.yml'));
         @unlink($this->dataDir . '/config.yml');
@@ -165,7 +166,6 @@ class ApplicationTest extends ExtractorTest
         $process = new Process('php ' . ROOT_PATH . '/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
         $process->run();
-
         $this->assertJson($process->getOutput());
 
         $this->assertEquals(0, $process->getExitCode());
