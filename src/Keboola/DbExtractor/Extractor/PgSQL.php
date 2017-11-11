@@ -274,10 +274,13 @@ class PgSQL extends Extractor
                         WHERE tc.constraint_type IN ('PRIMARY KEY', 'FOREIGN KEY')
                     ) as fks                    
                     ON c.table_schema = fks.constraint_schema AND fks.table_name = c.table_name AND fks.column_name = c.column_name 
-                    WHERE c.table_name IN (%s) ORDER BY c.table_schema, c.table_name, ordinal_position",
+                    WHERE c.table_name IN (%s) AND c.table_schema IN (%s) ORDER BY c.table_schema, c.table_name, c.ordinal_position",
             implode(',', array_map(function ($table) {
-                return $this->db->quote($table);
-            }, $tableNameArray))
+                return $this->db->quote($table['name']);
+            }, array_values($tableDefs))),
+            implode(',', array_map(function ($table) {
+                return $this->db->quote($table['schema']);
+            }, array_values($tableDefs)))
         );
 
         $res = $this->db->query($sql);
