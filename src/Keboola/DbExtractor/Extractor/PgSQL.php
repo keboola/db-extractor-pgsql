@@ -254,7 +254,7 @@ class PgSQL extends Extractor
         }
 
         $sql = sprintf(
-            "SELECT c.*, c.column_name as column_name, column_default, is_nullable, data_type, ordinal_position
+            "SELECT c.*, c.column_name as column_name, column_default, is_nullable, data_type, ordinal_position,
                         character_maximum_length, numeric_precision, numeric_scale, is_identity, 
                         fks.constraint_type, fks.constraint_name, fks.foreign_table_name, fks.foreign_column_name, 
                         pga.atttypmod - 4 as varlength         
