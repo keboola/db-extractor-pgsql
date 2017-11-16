@@ -255,10 +255,8 @@ class PgSQL extends Extractor
         }
 
         $sql = "SELECT c.*, 
-                    fks.constraint_type, fks.constraint_name, fks.foreign_table_name, fks.foreign_column_name
-                    FROM information_schema.columns as c
-                    LEFT JOIN pg_catalog.pg_attribute as pga
-                      ON c.full_table_name::regclass = pga.attrelid AND c.column_name = pga.attname 
+                    fks.constraint_type, fks.constraint_name, fks.foreign_table_name, fks.foreign_column_name 
+                    FROM information_schema.columns as c 
                     LEFT JOIN (
                       SELECT
                             tc.constraint_type, tc.constraint_name, tc.table_name, tc.constraint_schema, kcu.column_name,
