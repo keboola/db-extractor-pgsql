@@ -255,12 +255,8 @@ class PgSQL extends Extractor
         }
 
         $sql = "SELECT c.*, 
-                    fks.constraint_type, fks.constraint_name, fks.foreign_table_name, fks.foreign_column_name, 
-                    pga.atttypmod - 4 as varlength 
-                    FROM (
-	                    SELECT *, CONCAT(table_schema, '.', table_name) as full_table_name
-	                    FROM information_schema.columns
-                    ) as c
+                    fks.constraint_type, fks.constraint_name, fks.foreign_table_name, fks.foreign_column_name
+                    FROM information_schema.columns as c
                     LEFT JOIN pg_catalog.pg_attribute as pga
                       ON c.full_table_name::regclass = pga.attrelid AND c.column_name = pga.attname 
                     LEFT JOIN (
@@ -283,7 +279,7 @@ class PgSQL extends Extractor
         $res = $this->db->query($sql);
 
         while ($column = $res->fetch(\PDO::FETCH_ASSOC)) {
-            $length = ($column['data_type'] === 'character varying') ? $column['varlength'] : null;
+            $length = ($column['data_type'] === 'character varying') ? $column['character_maximum_length'] : null;
             if (is_null($length) && !is_null($column['numeric_precision'])) {
                 if ($column['numeric_scale'] > 0) {
                     $length = $column['numeric_precision'] . "," . $column['numeric_scale'];
