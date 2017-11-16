@@ -219,12 +219,13 @@ class PgSQL extends Extractor
 
     public function getTables(array $tables = null)
     {
-        $sql = "SELECT * FROM information_schema.tables 
-                WHERE table_schema != 'pg_catalog' AND table_schema != 'information_schema'";
+        $sql = "SELECT * FROM information_schema.tables as c
+                WHERE c.table_schema != 'pg_catalog' AND c.table_schema != 'information_schema'";
 
+        $additionalWhereClause = '';
         if (!is_null($tables) && count($tables) > 0) {
-            $sql .= sprintf(
-                " AND TABLE_NAME IN (%s) AND TABLE_SCHEMA IN (%s)",
+            $additionalWhereClause = sprintf(
+                " AND c.table_name IN (%s) AND c.table_schema IN (%s)",
                 implode(',', array_map(function ($table) {
                     return $this->db->quote($table['tableName']);
                 }, $tables)),
@@ -234,7 +235,7 @@ class PgSQL extends Extractor
             );
         }
 
-        $sql .= " ORDER BY table_schema, table_name";
+        $sql .= $additionalWhereClause . " ORDER BY c.table_schema, c.table_name";
         
         $res = $this->db->query($sql);
         $arr = $res->fetchAll(\PDO::FETCH_ASSOC);
@@ -253,14 +254,15 @@ class PgSQL extends Extractor
             return [];
         }
 
-        $sql = sprintf(
-            "SELECT c.*, c.column_name as column_name, column_default, is_nullable, data_type, ordinal_position,
-                        character_maximum_length, numeric_precision, numeric_scale, is_identity, 
-                        fks.constraint_type, fks.constraint_name, fks.foreign_table_name, fks.foreign_column_name, 
-                        pga.atttypmod - 4 as varlength         
-                    FROM information_schema.columns as c 
-                    LEFT JOIN pg_catalog.pg_attribute as pga 
-                      ON c.table_name::regclass = pga.attrelid AND c.column_name = pga.attname 
+        $sql = "SELECT c.*, 
+                    fks.constraint_type, fks.constraint_name, fks.foreign_table_name, fks.foreign_column_name, 
+                    pga.atttypmod - 4 as varlength 
+                    FROM (
+	                    SELECT *, CONCAT(table_schema, '.', table_name) as full_table_name
+	                    FROM information_schema.columns
+                    ) as c
+                    LEFT JOIN pg_catalog.pg_attribute as pga
+                      ON c.full_table_name::regclass = pga.attrelid AND c.column_name = pga.attname 
                     LEFT JOIN (
                       SELECT
                             tc.constraint_type, tc.constraint_name, tc.table_name, tc.constraint_schema, kcu.column_name,
@@ -274,14 +276,9 @@ class PgSQL extends Extractor
                         WHERE tc.constraint_type IN ('PRIMARY KEY', 'FOREIGN KEY')
                     ) as fks                    
                     ON c.table_schema = fks.constraint_schema AND fks.table_name = c.table_name AND fks.column_name = c.column_name 
-                    WHERE c.table_name IN (%s) AND c.table_schema IN (%s) ORDER BY c.table_schema, c.table_name, c.ordinal_position",
-            implode(',', array_map(function ($table) {
-                return $this->db->quote($table['name']);
-            }, array_values($tableDefs))),
-            implode(',', array_map(function ($table) {
-                return $this->db->quote($table['schema']);
-            }, array_values($tableDefs)))
-        );
+                    WHERE c.table_schema != 'pg_catalog' AND c.table_schema != 'information_schema'";
+
+        $sql .= $additionalWhereClause . " ORDER BY c.table_schema, c.table_name, c.ordinal_position";
 
         $res = $this->db->query($sql);
 
