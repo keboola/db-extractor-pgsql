@@ -84,7 +84,7 @@ class PgSQL extends Extractor
                 }
                 if (!$copyFailed) {
                     try {
-                        $csvCreated = $this->executeQuery($query, $this->createOutputCsv($outputTable));
+                        $csvCreated = $this->executeQuery($query, $this->createOutputCsv($outputTable), $table['name']);
                     } catch (ApplicationException $applicationException) {
                         // There was an error, so let's try the old method
                         if ($applicationException->getCode() === 42) {
@@ -165,9 +165,9 @@ class PgSQL extends Extractor
         }
     }
 
-    protected function executeQuery($query, CsvFile $csvFile)
+    protected function executeQuery($query, CsvFile $csvFile, $tableName)
     {
-        $this->logger->info("Executing query via \copy ...");
+        $this->logger->info(sprintf("Executing query '%s' via \copy ...", $tableName));
 
         $command = sprintf(
             "PGPASSWORD='%s' psql -h %s -p %s -U %s -d %s -w -c %s",
