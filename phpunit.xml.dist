@@ -11,7 +11,7 @@
          bootstrap="vendor/keboola/db-extractor-common/bootstrap.php">
 
     <php>
-        <const name="ROOT_PATH" value="/code"/>
+        <const name="ROOT_PATH" value="/code/"/>
     </php>
 
     <testsuite name="DB Extractor PgSQL Test Suite">
