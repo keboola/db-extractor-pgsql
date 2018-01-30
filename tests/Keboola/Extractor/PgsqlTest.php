@@ -37,6 +37,9 @@ class PgsqlTest extends ExtractorTest
         if (!defined('APP_NAME')) {
             define('APP_NAME', 'ex-db-pgsql');
         }
+        if (!defined('ROOT_PATH')) {
+            define('ROOT_PATH', '/code/');
+        }
         $config = $this->getConfig();
         $this->app = new Application($config);
 
@@ -134,7 +137,7 @@ class PgsqlTest extends ExtractorTest
         $config['parameters']['db']['ssh'] = [
             'enabled' => true,
             'keys' => [
-                '#private' => $this->getEnv('pgsql', 'DB_SSH_KEY_PRIVATE', true),
+                '#private' => $this->getPrivateKey('pgsql'),
                 'public' => $this->getEnv('pgsql', 'DB_SSH_KEY_PUBLIC', true)
             ],
             'user' => 'root',

@@ -5,7 +5,9 @@ services:
     image: keboola/ex-db-pgsql
     tty: true
     stdin_open: true
-    command: "./phpunit.sh"
+    command: ["./wait-for-it.sh", "pgsql:5432", "-t", "30", "--", "./vendor/bin/phpunit"]
+    env_file:
+      - ssh-keys.env
     environment:
       - EXTERNAL_PG_HOST
       - EXTERNAL_PG_PORT
@@ -27,7 +29,9 @@ services:
       - .:/code
     tty: true
     stdin_open: true
-    command: "./phpunit.sh"
+    command: ["./wait-for-it.sh", "pgsql:5432", "-t", "30", "--", "./vendor/bin/phpunit"]
+    env_file:
+      - ssh-keys.env
     environment:
       - EXTERNAL_PG_HOST
       - EXTERNAL_PG_PORT
