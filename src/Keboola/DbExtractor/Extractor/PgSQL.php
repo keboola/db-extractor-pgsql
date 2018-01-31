@@ -50,7 +50,6 @@ class PgSQL extends Extractor
 
     private function restartConnection()
     {
-        $this->db = null;
         try {
             $this->db = $this->createConnection($this->dbConfig);
         } catch (\Exception $e) {
@@ -137,9 +136,6 @@ class PgSQL extends Extractor
                 return false;
             }
             $csv->writeRow(array_keys($resultRow));
-            if (isset($this->dbConfig['replaceNull'])) {
-                $resultRow = $this->replaceNull($resultRow, $this->dbConfig['replaceNull']);
-            }
             $csv->writeRow($resultRow);
             // write the rest
             $this->logger->info("Fetching data...");

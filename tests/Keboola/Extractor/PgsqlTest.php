@@ -7,9 +7,10 @@
  * Time: 14:25
  */
 
-namespace Keboola\DbExtractor;
+namespace Keboola\DbExtractor\Tests;
 
 use Keboola\Csv\CsvFile;
+use Keboola\DbExtractor\Application;
 use Keboola\DbExtractor\Exception\UserException;
 use Keboola\DbExtractor\Test\ExtractorTest;
 use Symfony\Component\Process\Process;
@@ -19,6 +20,8 @@ class PgsqlTest extends ExtractorTest
 {
     /** @var Application */
     protected $app;
+
+    protected $rootPath;
 
     private function createDbProcess($dbConfig, $query)
     {
@@ -40,6 +43,7 @@ class PgsqlTest extends ExtractorTest
         if (!defined('ROOT_PATH')) {
             define('ROOT_PATH', '/code/');
         }
+        $this->rootPath = getenv('ROOT_PATH') ? getenv('ROOT_PATH') : '/code/';
         $config = $this->getConfig();
         $this->app = new Application($config);
 
@@ -117,7 +121,7 @@ class PgsqlTest extends ExtractorTest
     public function testRun()
     {
         $result = $this->app->run();
-        $expectedCsvFile = new CsvFile(ROOT_PATH . 'vendor/keboola/db-extractor-common/tests/data/escaping.csv');
+        $expectedCsvFile = new CsvFile($this->rootPath . 'vendor/keboola/db-extractor-common/tests/data/escaping.csv');
         $outputCsvFile = new CsvFile($this->dataDir . '/out/tables/' . $result['imported'][0] . '.csv');
         $outputManifestFile = $this->dataDir . '/out/tables/' . $result['imported'][0] . '.csv.manifest';
 
@@ -148,7 +152,7 @@ class PgsqlTest extends ExtractorTest
         $app = new Application($config);
         $result = $app->run();
 
-        $expectedCsvFile = new CsvFile(ROOT_PATH . 'vendor/keboola/db-extractor-common/tests/data/escaping.csv');
+        $expectedCsvFile = new CsvFile($this->rootPath . 'vendor/keboola/db-extractor-common/tests/data/escaping.csv');
         $outputCsvFile = new CsvFile($this->dataDir . '/out/tables/' . $result['imported'][0] . '.csv');
         $outputManifestFile = $this->dataDir . '/out/tables/' . $result['imported'][0] . '.csv.manifest';
 
