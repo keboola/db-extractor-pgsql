@@ -315,7 +315,8 @@ class PgSQL extends Extractor
     public function simpleQuery(array $table, array $columns = array())
     {
         if (count($columns) > 0) {
-            return sprintf("SELECT %s FROM %s.%s",
+            return sprintf(
+                "SELECT %s FROM %s.%s",
                 implode(', ', array_map(function ($column) {
                     return $this->quote($column);
                 }, $columns)),
@@ -330,7 +331,8 @@ class PgSQL extends Extractor
             );
         }
     }
-    private function quote($obj) {
+    private function quote($obj)
+    {
         return "\"{$obj}\"";
     }
 }

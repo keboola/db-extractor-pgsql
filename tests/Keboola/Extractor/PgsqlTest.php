@@ -92,7 +92,8 @@ class PgsqlTest extends ExtractorTest
             "(character varchar(123) REFERENCES types (character), " .
             "integer integer NOT NULL DEFAULT 42, " .
             "decimal decimal(5,3) NOT NULL DEFAULT 1.2, " .
-            "date date DEFAULT NULL);");
+            "date date DEFAULT NULL);"
+        );
 
         $processes[] = $this->createDbProcess(
             $dbConfig,
@@ -285,9 +286,9 @@ class PgsqlTest extends ExtractorTest
                                     'name' => 'date',
                                     'type' => 'date',
                                     'primaryKey' => false,
-                                    'length' => NULL,
+                                    'length' => null,
                                     'nullable' => true,
-                                    'default' => NULL,
+                                    'default' => null,
                                     'ordinalPosition' => 4,
                                 ),
                         ),
@@ -337,9 +338,9 @@ class PgsqlTest extends ExtractorTest
                                     'name' => 'date',
                                     'type' => 'date',
                                     'primaryKey' => false,
-                                    'length' => NULL,
+                                    'length' => null,
                                     'nullable' => true,
-                                    'default' => NULL,
+                                    'default' => null,
                                     'ordinalPosition' => 4,
                                 ),
                         ),
@@ -717,7 +718,8 @@ class PgsqlTest extends ExtractorTest
         $this->assertEquals($expectedColumnMetadata, $outputManifest['column_metadata']);
     }
 
-    public function testTableColumnsQuery() {
+    public function testTableColumnsQuery()
+    {
         $config = $this->getConfig();
 
         // use just 1 table

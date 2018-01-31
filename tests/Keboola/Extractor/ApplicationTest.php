@@ -75,7 +75,6 @@ class ApplicationTest extends ExtractorTest
         $this->assertJson($process->getOutput());
         $this->assertEquals(0, $process->getExitCode());
         $this->assertEquals("", $process->getErrorOutput());
-
     }
 
     public function testTrailingSemicolonQuery()
@@ -108,7 +107,8 @@ class ApplicationTest extends ExtractorTest
         $this->assertEquals("", $process->getErrorOutput());
     }
 
-    public function testUserError() {
+    public function testUserError()
+    {
         $config = Yaml::parse(file_get_contents($this->dataDir . '/pgsql/external_config.yml'));
         $config['parameters']['db'] = $this->dbConfig;
         $config['parameters']['tables'][0]['query'] = "SELECT something, fake";
@@ -124,7 +124,8 @@ class ApplicationTest extends ExtractorTest
         $this->assertEquals(1, $process->getExitCode());
     }
 
-    public function testPDOFallback() {
+    public function testPDOFallback()
+    {
         $outputCsvFile = new CsvFile($this->dataDir . '/out/tables/in.c-main.info_schema.csv');
         $manifestFile = $this->dataDir . '/out/tables/in.c-main.info_schema.csv.manifest';
         @unlink($outputCsvFile);
@@ -170,6 +171,5 @@ class ApplicationTest extends ExtractorTest
 
         $this->assertEquals(0, $process->getExitCode());
         $this->assertEquals("", $process->getErrorOutput());
-
     }
 }
