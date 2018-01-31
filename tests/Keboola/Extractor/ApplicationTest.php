@@ -1,6 +1,6 @@
 <?php
 
-namespace Keboola\DbExtractor;
+namespace Keboola\DbExtractor\Tests;
 
 use Keboola\DbExtractor\Test\ExtractorTest;
 use Keboola\Csv\CsvFile;
@@ -14,8 +14,15 @@ class ApplicationTest extends ExtractorTest
      */
     private $dbConfig;
 
+    protected $rootPath;
+
     public function setUp()
     {
+
+        if (!defined('ROOT_PATH')) {
+            define('ROOT_PATH', '/code/');
+        }
+        $this->rootPath = getenv('ROOT_PATH') ? getenv('ROOT_PATH') : '/code/';
         parent::setUp();
         if (getenv('EXTERNAL_PG_HOST') === false) {
             $this->fail("Missing environment var 'EXTERNAL_PG_HOST'");
@@ -48,7 +55,7 @@ class ApplicationTest extends ExtractorTest
         @unlink($this->dataDir . '/config.yml');
         file_put_contents($this->dataDir . '/config.yml', Yaml::dump($config));
 
-        $process = new Process('php ' . ROOT_PATH . '/run.php --data=' . $this->dataDir);
+        $process = new Process('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
         $process->run();
 
@@ -69,13 +76,12 @@ class ApplicationTest extends ExtractorTest
         $config['parameters']['db'] = $this->dbConfig;
         file_put_contents($this->dataDir . '/config.yml', Yaml::dump($config));
 
-        $process = new Process('php ' . ROOT_PATH . '/run.php --data=' . $this->dataDir);
+        $process = new Process('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
         $process->run();
         $this->assertJson($process->getOutput());
         $this->assertEquals(0, $process->getExitCode());
         $this->assertEquals("", $process->getErrorOutput());
-
     }
 
     public function testTrailingSemicolonQuery()
@@ -86,7 +92,7 @@ class ApplicationTest extends ExtractorTest
         @unlink($this->dataDir . '/config.yml');
         file_put_contents($this->dataDir . '/config.yml', Yaml::dump($config));
 
-        $process = new Process('php ' . ROOT_PATH . '/run.php --data=' . $this->dataDir);
+        $process = new Process('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
         $process->run();
         $this->assertEquals(0, $process->getExitCode());
@@ -101,21 +107,22 @@ class ApplicationTest extends ExtractorTest
         @unlink($this->dataDir . '/config.yml');
         file_put_contents($this->dataDir . '/config.yml', Yaml::dump($config));
 
-        $process = new Process('php ' . ROOT_PATH . '/run.php --data=' . $this->dataDir);
+        $process = new Process('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
         $process->run();
         $this->assertEquals(0, $process->getExitCode());
         $this->assertEquals("", $process->getErrorOutput());
     }
 
-    public function testUserError() {
+    public function testUserError()
+    {
         $config = Yaml::parse(file_get_contents($this->dataDir . '/pgsql/external_config.yml'));
         $config['parameters']['db'] = $this->dbConfig;
         $config['parameters']['tables'][0]['query'] = "SELECT something, fake";
         @unlink($this->dataDir . '/config.yml');
         file_put_contents($this->dataDir . '/config.yml', Yaml::dump($config));
 
-        $process = new Process('php ' . ROOT_PATH . '/run.php --data=' . $this->dataDir);
+        $process = new Process('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
         $process->run();
 
@@ -124,7 +131,8 @@ class ApplicationTest extends ExtractorTest
         $this->assertEquals(1, $process->getExitCode());
     }
 
-    public function testPDOFallback() {
+    public function testPDOFallback()
+    {
         $outputCsvFile = new CsvFile($this->dataDir . '/out/tables/in.c-main.info_schema.csv');
         $manifestFile = $this->dataDir . '/out/tables/in.c-main.info_schema.csv.manifest';
         @unlink($outputCsvFile);
@@ -143,7 +151,7 @@ class ApplicationTest extends ExtractorTest
         @unlink($this->dataDir . '/config.yml');
         file_put_contents($this->dataDir . '/config.yml', Yaml::dump($config));
 
-        $process = new Process('php ' . ROOT_PATH . '/run.php --data=' . $this->dataDir);
+        $process = new Process('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
         $process->run();
 
@@ -163,13 +171,12 @@ class ApplicationTest extends ExtractorTest
         $config['parameters']['db'] = $this->dbConfig;
         file_put_contents($this->dataDir . '/config.yml', Yaml::dump($config));
 
-        $process = new Process('php ' . ROOT_PATH . '/run.php --data=' . $this->dataDir);
+        $process = new Process('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
         $process->run();
         $this->assertJson($process->getOutput());
 
         $this->assertEquals(0, $process->getExitCode());
         $this->assertEquals("", $process->getErrorOutput());
-
     }
 }

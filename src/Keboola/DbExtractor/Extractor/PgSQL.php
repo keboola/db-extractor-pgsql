@@ -50,7 +50,6 @@ class PgSQL extends Extractor
 
     private function restartConnection()
     {
-        $this->db = null;
         try {
             $this->db = $this->createConnection($this->dbConfig);
         } catch (\Exception $e) {
@@ -137,9 +136,6 @@ class PgSQL extends Extractor
                 return false;
             }
             $csv->writeRow(array_keys($resultRow));
-            if (isset($this->dbConfig['replaceNull'])) {
-                $resultRow = $this->replaceNull($resultRow, $this->dbConfig['replaceNull']);
-            }
             $csv->writeRow($resultRow);
             // write the rest
             $this->logger->info("Fetching data...");
@@ -315,7 +311,8 @@ class PgSQL extends Extractor
     public function simpleQuery(array $table, array $columns = array())
     {
         if (count($columns) > 0) {
-            return sprintf("SELECT %s FROM %s.%s",
+            return sprintf(
+                "SELECT %s FROM %s.%s",
                 implode(', ', array_map(function ($column) {
                     return $this->quote($column);
                 }, $columns)),
@@ -330,7 +327,8 @@ class PgSQL extends Extractor
             );
         }
     }
-    private function quote($obj) {
+    private function quote($obj)
+    {
         return "\"{$obj}\"";
     }
 }

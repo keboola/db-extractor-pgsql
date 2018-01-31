@@ -31,13 +31,13 @@ try {
     }
 
     echo json_encode($app->run());
-} catch(UserException $e) {
-    $logger->log('error', $e->getMessage(), (array) $e->getData());
+} catch (UserException $e) {
+    $logger->log('error', $e->getMessage(), $e->getData());
     exit(1);
-} catch(ApplicationException $e) {
-    $logger->log('error', $e->getMessage(), (array) $e->getData());
+} catch (ApplicationException $e) {
+    $logger->log('error', $e->getMessage(), $e->getData());
     exit($e->getCode() > 1 ? $e->getCode(): 2);
-} catch(\Exception $e) {
+} catch (\Exception $e) {
     $logger->log('error', $e->getMessage(), [
         'errFile' => $e->getFile(),
         'errLine' => $e->getLine(),

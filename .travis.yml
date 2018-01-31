@@ -7,6 +7,8 @@ services:
 
 install:
   - docker-compose build app
+  - docker-compose run --rm app /code/vendor/bin/phpcs --standard=psr2 -n --ignore=vendor --extensions=php .
+  - docker-compose run --rm app /code/vendor/bin/phpstan analyse --level=7 ./src ./tests
   - docker-compose run --rm app
 
 script:

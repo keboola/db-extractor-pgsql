@@ -3,10 +3,35 @@ services:
   app:
     build: .
     image: keboola/ex-db-pgsql
-    working_dir: /code
     tty: true
     stdin_open: true
-    command: "./phpunit.sh"
+    command: ["./wait-for-it.sh", "pgsql:5432", "-t", "30", "--", "./vendor/bin/phpunit"]
+    env_file:
+      - ssh-keys.env
+    environment:
+      - EXTERNAL_PG_HOST
+      - EXTERNAL_PG_PORT
+      - EXTERNAL_PG_DATABASE
+      - EXTERNAL_PG_USER
+      - EXTERNAL_PG_PASSWORD
+      - PGSQL_DB_HOST=pgsql
+      - PGSQL_DB_PORT=5432
+      - PGSQL_DB_DATABASE=postgres
+      - PGSQL_DB_USER=postgres
+      - PGSQL_DB_PASSWORD=some password
+    links:
+      - pgsql
+      - sshproxy
+
+  dev:
+    image: keboola/ex-db-pgsql
+    volumes:
+      - .:/code
+    tty: true
+    stdin_open: true
+    command: ["./wait-for-it.sh", "pgsql:5432", "-t", "30", "--", "./vendor/bin/phpunit"]
+    env_file:
+      - ssh-keys.env
     environment:
       - EXTERNAL_PG_HOST
       - EXTERNAL_PG_PORT
