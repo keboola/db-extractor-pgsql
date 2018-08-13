@@ -239,7 +239,7 @@ class PgSQL extends Extractor
         $tableDefs = [];
         foreach ($arr as $table) {
             $tableNameArray[] = $table['table_name'];
-            $tableDefs[$table['table_name']] = [
+            $tableDefs[$table['table_schema'] . '.' . $table['table_name']] = [
                 'name' => $table['table_name'],
                 'schema' => (isset($table['table_schema'])) ? $table['table_schema'] : null,
                 'type' => (isset($table['table_type'])) ? $table['table_type'] : null
@@ -273,6 +273,7 @@ class PgSQL extends Extractor
         $res = $this->db->query($sql);
 
         while ($column = $res->fetch(\PDO::FETCH_ASSOC)) {
+            $curTable = $column['table_schema'] . '.' . $column['table_name'];
             $length = ($column['data_type'] === 'character varying') ? $column['character_maximum_length'] : null;
             if (is_null($length) && !is_null($column['numeric_precision'])) {
                 if ($column['numeric_scale'] > 0) {
@@ -285,7 +286,7 @@ class PgSQL extends Extractor
             if ($column['data_type'] === 'character varying' && $default !== null) {
                 $default = str_replace("'", "", explode("::", $column['column_default'])[0]);
             }
-            $tableDefs[$column['table_name']]['columns'][$column['ordinal_position'] - 1] = [
+            $tableDefs[$curTable]['columns'][$column['ordinal_position'] - 1] = [
                 "name" => $column['column_name'],
                 "type" => $column['data_type'],
                 "primaryKey" => ($column['constraint_type'] === "PRIMARY KEY") ? true : false,
@@ -296,15 +297,14 @@ class PgSQL extends Extractor
             ];
 
             if ($column['constraint_type'] === "FOREIGN KEY") {
-                $tableDefs[$column['table_name']]['columns'][$column['ordinal_position'] - 1]['foreignKeyRefTable'] =
+                $tableDefs[$curTable]['columns'][$column['ordinal_position'] - 1]['foreignKeyRefTable'] =
                     $column['foreign_table_name'];
-                $tableDefs[$column['table_name']]['columns'][$column['ordinal_position'] - 1]['foreignKeyRefColumn'] =
+                $tableDefs[$curTable]['columns'][$column['ordinal_position'] - 1]['foreignKeyRefColumn'] =
                     $column['foreign_column_name'];
-                $tableDefs[$column['table_name']]['columns'][$column['ordinal_position'] - 1]['foreignKeyRef'] =
+                $tableDefs[$curTable]['columns'][$column['ordinal_position'] - 1]['foreignKeyRef'] =
                     $column['constraint_name'];
             }
         }
-
         return array_values($tableDefs);
     }
 
