@@ -242,8 +242,8 @@ class PgsqlTest extends ExtractorTest
         $result = $app->run();
         $this->assertArrayHasKey('status', $result);
         $this->assertArrayHasKey('tables', $result);
-        $this->assertCount(3, $result['tables']);
-
+        $this->assertCount(4, $result['tables']);
+        
         $expectedData = array (
             0 =>
                 array (
@@ -372,6 +372,35 @@ class PgsqlTest extends ExtractorTest
                                     'nullable' => true,
                                     'default' => null,
                                     'ordinalPosition' => 4,
+                                ),
+                        ),
+                ),
+            3 =>
+                array (
+                    'name' => 'escaping',
+                    'schema' => 'testing',
+                    'type' => 'BASE TABLE',
+                    'columns' =>
+                        array (
+                            0 =>
+                                array (
+                                    'name' => 'col1',
+                                    'type' => 'character varying',
+                                    'primaryKey' => true,
+                                    'length' => 123,
+                                    'nullable' => false,
+                                    'default' => 'column 1',
+                                    'ordinalPosition' => 1,
+                                ),
+                            1 =>
+                                array (
+                                    'name' => 'col2',
+                                    'type' => 'character varying',
+                                    'primaryKey' => true,
+                                    'length' => 221,
+                                    'nullable' => false,
+                                    'default' => 'column 2',
+                                    'ordinalPosition' => 2,
                                 ),
                         ),
                 ),
