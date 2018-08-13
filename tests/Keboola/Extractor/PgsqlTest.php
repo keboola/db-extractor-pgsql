@@ -51,9 +51,18 @@ class PgsqlTest extends ExtractorTest
 
         // drop test tables
         $processes = [];
+        // create a duplicate table in a different schema
+        $processes[] = $this->createDbProcess(
+            $dbConfig,
+            "CREATE SCHEMA IF NOT EXISTS testing;"
+        );
         $processes[] = $this->createDbProcess(
             $dbConfig,
             "DROP TABLE IF EXISTS escaping;"
+        );
+        $processes[] = $this->createDbProcess(
+            $dbConfig,
+            "DROP TABLE IF EXISTS testing.escaping;"
         );
         $processes[] = $this->createDbProcess(
             $dbConfig,
@@ -67,7 +76,10 @@ class PgsqlTest extends ExtractorTest
         // create test tables
         $processes[] = $this->createDbProcess(
             $dbConfig,
-            "CREATE TABLE escaping (col1 varchar(123) NOT NULL DEFAULT 'column 1', col2 varchar(221) NOT NULL DEFAULT 'column 2', PRIMARY KEY (col1, col2));"
+            "CREATE TABLE escaping (" .
+                    "col1 varchar(123) NOT NULL DEFAULT 'column 1', " .
+                    "col2 varchar(221) NOT NULL DEFAULT 'column 2', " .
+                    "PRIMARY KEY (col1, col2));"
         );
 
 
@@ -103,12 +115,26 @@ class PgsqlTest extends ExtractorTest
             $dbConfig,
             "\COPY types_fk FROM 'tests/data/pgsql/types.csv' WITH DELIMITER ',' CSV HEADER;"
         );
+
+        $processes[] = $this->createDbProcess(
+            $dbConfig,
+            "CREATE TABLE testing.escaping (" .
+                    "col1 varchar(123) NOT NULL DEFAULT 'column 1'," .
+                    " col2 varchar(221) NOT NULL DEFAULT 'column 2'," .
+                    " PRIMARY KEY (col1, col2));"
+        );
+        $processes[] = $this->createDbProcess(
+            $dbConfig,
+            "\COPY testing.escaping FROM 'vendor/keboola/db-extractor-common/tests/data/escaping.csv' WITH DELIMITER ',' CSV HEADER;"
+        );
+
         foreach ($processes as $process) {
             $process->run();
             if (!$process->isSuccessful()) {
                 $this->fail($process->getErrorOutput());
             }
         }
+
     }
 
     public function getConfig($driver = 'pgsql')
