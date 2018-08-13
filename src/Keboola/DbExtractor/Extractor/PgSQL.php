@@ -109,9 +109,11 @@ class PgSQL extends Extractor
 
         if ($csvCreated) {
             if ($this->createManifest($table) === false) {
-                throw new ApplicationException("Unable to create manifest", 0, null, [
+                throw new ApplicationException(
+                    "Unable to create manifest", 0, null, [
                     'table' => $table
-                ]);
+                    ]
+                );
             }
         }
 
@@ -222,12 +224,20 @@ class PgSQL extends Extractor
         if (!is_null($tables) && count($tables) > 0) {
             $additionalWhereClause = sprintf(
                 " AND c.table_name IN (%s) AND c.table_schema IN (%s)",
-                implode(',', array_map(function ($table) {
-                    return $this->db->quote($table['tableName']);
-                }, $tables)),
-                implode(',', array_map(function ($table) {
-                    return $this->db->quote($table['schema']);
-                }, $tables))
+                implode(
+                    ',', array_map(
+                        function ($table) {
+                            return $this->db->quote($table['tableName']);
+                        }, $tables
+                    )
+                ),
+                implode(
+                    ',', array_map(
+                        function ($table) {
+                            return $this->db->quote($table['schema']);
+                        }, $tables
+                    )
+                )
             );
         }
 
@@ -313,9 +323,13 @@ class PgSQL extends Extractor
         if (count($columns) > 0) {
             return sprintf(
                 "SELECT %s FROM %s.%s",
-                implode(', ', array_map(function ($column) {
-                    return $this->quote($column);
-                }, $columns)),
+                implode(
+                    ', ', array_map(
+                        function ($column) {
+                            return $this->quote($column);
+                        }, $columns
+                    )
+                ),
                 $this->quote($table['schema']),
                 $this->quote($table['tableName'])
             );

@@ -10,7 +10,7 @@ use Symfony\Component\Yaml\Yaml;
 define('APP_NAME', 'ex-db-pgsql');
 define('ROOT_PATH', __DIR__);
 
-require_once(dirname(__FILE__) . "/vendor/keboola/db-extractor-common/bootstrap.php");
+require_once dirname(__FILE__) . "/vendor/keboola/db-extractor-common/bootstrap.php";
 
 $logger = new Logger(APP_NAME);
 
@@ -38,11 +38,13 @@ try {
     $logger->log('error', $e->getMessage(), $e->getData());
     exit($e->getCode() > 1 ? $e->getCode(): 2);
 } catch (\Exception $e) {
-    $logger->log('error', $e->getMessage(), [
+    $logger->log(
+        'error', $e->getMessage(), [
         'errFile' => $e->getFile(),
         'errLine' => $e->getLine(),
         'trace' => $e->getTrace()
-    ]);
+        ]
+    );
     exit(2);
 }
 exit(0);
