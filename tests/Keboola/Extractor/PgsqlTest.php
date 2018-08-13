@@ -19,7 +19,7 @@ use Symfony\Component\Yaml\Yaml;
 class PgsqlTest extends ExtractorTest
 {
     /**
- * @var Application 
+ * @var Application
 */
     protected $app;
 

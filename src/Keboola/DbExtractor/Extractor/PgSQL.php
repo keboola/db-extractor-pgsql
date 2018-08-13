@@ -110,7 +110,10 @@ class PgSQL extends Extractor
         if ($csvCreated) {
             if ($this->createManifest($table) === false) {
                 throw new ApplicationException(
-                    "Unable to create manifest", 0, null, [
+                    "Unable to create manifest",
+                    0,
+                    null,
+                    [
                     'table' => $table
                     ]
                 );
@@ -225,17 +228,21 @@ class PgSQL extends Extractor
             $additionalWhereClause = sprintf(
                 " AND c.table_name IN (%s) AND c.table_schema IN (%s)",
                 implode(
-                    ',', array_map(
+                    ',',
+                    array_map(
                         function ($table) {
                             return $this->db->quote($table['tableName']);
-                        }, $tables
+                        },
+                        $tables
                     )
                 ),
                 implode(
-                    ',', array_map(
+                    ',',
+                    array_map(
                         function ($table) {
                             return $this->db->quote($table['schema']);
-                        }, $tables
+                        },
+                        $tables
                     )
                 )
             );
@@ -324,10 +331,12 @@ class PgSQL extends Extractor
             return sprintf(
                 "SELECT %s FROM %s.%s",
                 implode(
-                    ', ', array_map(
+                    ', ',
+                    array_map(
                         function ($column) {
                             return $this->quote($column);
-                        }, $columns
+                        },
+                        $columns
                     )
                 ),
                 $this->quote($table['schema']),
