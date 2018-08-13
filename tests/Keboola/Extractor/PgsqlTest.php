@@ -134,7 +134,6 @@ class PgsqlTest extends ExtractorTest
                 $this->fail($process->getErrorOutput());
             }
         }
-
     }
 
     public function getConfig($driver = 'pgsql')
