@@ -18,21 +18,25 @@ use Symfony\Component\Yaml\Yaml;
 
 class PgsqlTest extends ExtractorTest
 {
-    /** @var Application */
+    /**
+ * @var Application
+*/
     protected $app;
 
     protected $rootPath;
 
     private function createDbProcess($dbConfig, $query)
     {
-        return new Process(sprintf(
-            "PGPASSWORD='%s' psql -h %s -p %s -U %s -d %s -w -c \"$query\"",
-            $dbConfig['password'],
-            $dbConfig['host'],
-            $dbConfig['port'],
-            $dbConfig['user'],
-            $dbConfig['database']
-        ));
+        return new Process(
+            sprintf(
+                "PGPASSWORD='%s' psql -h %s -p %s -U %s -d %s -w -c \"$query\"",
+                $dbConfig['password'],
+                $dbConfig['host'],
+                $dbConfig['port'],
+                $dbConfig['user'],
+                $dbConfig['database']
+            )
+        );
     }
 
     public function setUp()
@@ -51,9 +55,18 @@ class PgsqlTest extends ExtractorTest
 
         // drop test tables
         $processes = [];
+        // create a duplicate table in a different schema
+        $processes[] = $this->createDbProcess(
+            $dbConfig,
+            "CREATE SCHEMA IF NOT EXISTS testing;"
+        );
         $processes[] = $this->createDbProcess(
             $dbConfig,
             "DROP TABLE IF EXISTS escaping;"
+        );
+        $processes[] = $this->createDbProcess(
+            $dbConfig,
+            "DROP TABLE IF EXISTS testing.escaping;"
         );
         $processes[] = $this->createDbProcess(
             $dbConfig,
@@ -67,7 +80,10 @@ class PgsqlTest extends ExtractorTest
         // create test tables
         $processes[] = $this->createDbProcess(
             $dbConfig,
-            "CREATE TABLE escaping (col1 varchar(123) NOT NULL DEFAULT 'column 1', col2 varchar(221) NOT NULL DEFAULT 'column 2', PRIMARY KEY (col1, col2));"
+            "CREATE TABLE escaping (" .
+                    "col1 varchar(123) NOT NULL DEFAULT 'column 1', " .
+                    "col2 varchar(221) NOT NULL DEFAULT 'column 2', " .
+                    "PRIMARY KEY (col1, col2));"
         );
 
 
@@ -103,6 +119,19 @@ class PgsqlTest extends ExtractorTest
             $dbConfig,
             "\COPY types_fk FROM 'tests/data/pgsql/types.csv' WITH DELIMITER ',' CSV HEADER;"
         );
+
+        $processes[] = $this->createDbProcess(
+            $dbConfig,
+            "CREATE TABLE testing.escaping (" .
+                    "col1 varchar(123) NOT NULL DEFAULT 'column 1'," .
+                    " col2 varchar(221) NOT NULL DEFAULT 'column 2'," .
+                    " PRIMARY KEY (col1, col2));"
+        );
+        $processes[] = $this->createDbProcess(
+            $dbConfig,
+            "\COPY testing.escaping FROM 'vendor/keboola/db-extractor-common/tests/data/escaping.csv' WITH DELIMITER ',' CSV HEADER;"
+        );
+
         foreach ($processes as $process) {
             $process->run();
             if (!$process->isSuccessful()) {
@@ -216,18 +245,18 @@ class PgsqlTest extends ExtractorTest
         $result = $app->run();
         $this->assertArrayHasKey('status', $result);
         $this->assertArrayHasKey('tables', $result);
-        $this->assertCount(3, $result['tables']);
-
-        $expectedData = array (
+        $this->assertCount(4, $result['tables']);
+        
+        $expectedData = [
             0 =>
-                array (
+                [
                     'name' => 'escaping',
                     'schema' => 'public',
                     'type' => 'BASE TABLE',
                     'columns' =>
-                        array (
+                        [
                             0 =>
-                                array (
+                                [
                                     'name' => 'col1',
                                     'type' => 'character varying',
                                     'primaryKey' => true,
@@ -235,9 +264,9 @@ class PgsqlTest extends ExtractorTest
                                     'nullable' => false,
                                     'default' => 'column 1',
                                     'ordinalPosition' => 1,
-                                ),
-                            1 =>
-                                array (
+                                ],
+                                1 =>
+                                [
                                     'name' => 'col2',
                                     'type' => 'character varying',
                                     'primaryKey' => true,
@@ -245,18 +274,18 @@ class PgsqlTest extends ExtractorTest
                                     'nullable' => false,
                                     'default' => 'column 2',
                                     'ordinalPosition' => 2,
-                                ),
-                        ),
-                ),
-            1 =>
-                array (
+                                ],
+                        ],
+                ],
+                1 =>
+                [
                     'name' => 'types',
                     'schema' => 'public',
                     'type' => 'BASE TABLE',
                     'columns' =>
-                        array (
+                        [
                             0 =>
-                                array (
+                                [
                                     'name' => 'character',
                                     'type' => 'character varying',
                                     'primaryKey' => true,
@@ -264,9 +293,9 @@ class PgsqlTest extends ExtractorTest
                                     'nullable' => false,
                                     'default' => '',
                                     'ordinalPosition' => 1,
-                                ),
-                            1 =>
-                                array (
+                                ],
+                                1 =>
+                                [
                                     'name' => 'integer',
                                     'type' => 'integer',
                                     'primaryKey' => false,
@@ -274,9 +303,9 @@ class PgsqlTest extends ExtractorTest
                                     'nullable' => false,
                                     'default' => '42',
                                     'ordinalPosition' => 2,
-                                ),
-                            2 =>
-                                array (
+                                ],
+                                2 =>
+                                [
                                     'name' => 'decimal',
                                     'type' => 'numeric',
                                     'primaryKey' => false,
@@ -284,9 +313,9 @@ class PgsqlTest extends ExtractorTest
                                     'nullable' => false,
                                     'default' => '1.2',
                                     'ordinalPosition' => 3,
-                                ),
-                            3 =>
-                                array (
+                                ],
+                                3 =>
+                                [
                                     'name' => 'date',
                                     'type' => 'date',
                                     'primaryKey' => false,
@@ -294,18 +323,18 @@ class PgsqlTest extends ExtractorTest
                                     'nullable' => true,
                                     'default' => null,
                                     'ordinalPosition' => 4,
-                                ),
-                        ),
-                ),
-            2 =>
-                array (
+                                ],
+                        ],
+                ],
+                2 =>
+                [
                     'name' => 'types_fk',
                     'schema' => 'public',
                     'type' => 'BASE TABLE',
                     'columns' =>
-                        array (
+                        [
                             0 =>
-                                array (
+                                [
                                     'name' => 'character',
                                     'type' => 'character varying',
                                     'primaryKey' => false,
@@ -316,9 +345,9 @@ class PgsqlTest extends ExtractorTest
                                     'foreignKeyRefTable' => 'types',
                                     'foreignKeyRefColumn' => 'character',
                                     'foreignKeyRef' => 'types_fk_character_fkey',
-                                ),
-                            1 =>
-                                array (
+                                ],
+                                1 =>
+                                [
                                     'name' => 'integer',
                                     'type' => 'integer',
                                     'primaryKey' => false,
@@ -326,9 +355,9 @@ class PgsqlTest extends ExtractorTest
                                     'nullable' => false,
                                     'default' => '42',
                                     'ordinalPosition' => 2,
-                                ),
-                            2 =>
-                                array (
+                                ],
+                                2 =>
+                                [
                                     'name' => 'decimal',
                                     'type' => 'numeric',
                                     'primaryKey' => false,
@@ -336,9 +365,9 @@ class PgsqlTest extends ExtractorTest
                                     'nullable' => false,
                                     'default' => '1.2',
                                     'ordinalPosition' => 3,
-                                ),
-                            3 =>
-                                array (
+                                ],
+                                3 =>
+                                [
                                     'name' => 'date',
                                     'type' => 'date',
                                     'primaryKey' => false,
@@ -346,10 +375,39 @@ class PgsqlTest extends ExtractorTest
                                     'nullable' => true,
                                     'default' => null,
                                     'ordinalPosition' => 4,
-                                ),
-                        ),
-                ),
-        );
+                                ],
+                        ],
+                ],
+                3 =>
+                [
+                    'name' => 'escaping',
+                    'schema' => 'testing',
+                    'type' => 'BASE TABLE',
+                    'columns' =>
+                        [
+                            0 =>
+                                [
+                                    'name' => 'col1',
+                                    'type' => 'character varying',
+                                    'primaryKey' => true,
+                                    'length' => 123,
+                                    'nullable' => false,
+                                    'default' => 'column 1',
+                                    'ordinalPosition' => 1,
+                                ],
+                                1 =>
+                                [
+                                    'name' => 'col2',
+                                    'type' => 'character varying',
+                                    'primaryKey' => true,
+                                    'length' => 221,
+                                    'nullable' => false,
+                                    'default' => 'column 2',
+                                    'ordinalPosition' => 2,
+                                ],
+                        ],
+                ],
+        ];
 
         $this->assertEquals($expectedData, $result['tables']);
     }
@@ -373,334 +431,334 @@ class PgsqlTest extends ExtractorTest
 
         $result = $app->run();
 
-        $expectedTableMetadata[0] = array (
+        $expectedTableMetadata[0] = [
             0 =>
-                array (
+                [
                     'key' => 'KBC.name',
                     'value' => 'types',
-                ),
-            1 =>
-                array (
+                ],
+                1 =>
+                [
                     'key' => 'KBC.schema',
                     'value' => 'public',
-                ),
-            2 =>
-                array (
+                ],
+                2 =>
+                [
                     'key' => 'KBC.type',
                     'value' => 'BASE TABLE',
-                ),
-        );
-        $expectedColumnMetadata[0] = array (
+                ],
+        ];
+        $expectedColumnMetadata[0] = [
             'character' =>
-                array (
+                [
                     0 =>
-                        array (
+                        [
                             'key' => 'KBC.datatype.type',
                             'value' => 'character varying',
-                        ),
-                    1 =>
-                        array (
+                        ],
+                        1 =>
+                        [
                             'key' => 'KBC.datatype.nullable',
                             'value' => false,
-                        ),
-                    2 =>
-                        array (
+                        ],
+                        2 =>
+                        [
                             'key' => 'KBC.datatype.basetype',
                             'value' => 'STRING',
-                        ),
-                    3 =>
-                        array (
+                        ],
+                        3 =>
+                        [
                             'key' => 'KBC.datatype.length',
                             'value' => 123,
-                        ),
-                    4 =>
-                        array (
+                        ],
+                        4 =>
+                        [
                             'key' => 'KBC.primaryKey',
                             'value' => true,
-                        ),
-                    5 =>
-                        array (
+                        ],
+                        5 =>
+                        [
                             'key' => 'KBC.ordinalPosition',
                             'value' => 1,
-                        ),
-                ),
-            'integer' =>
-                array (
+                        ],
+                ],
+                'integer' =>
+                [
                     0 =>
-                        array (
+                        [
                             'key' => 'KBC.datatype.type',
                             'value' => 'integer',
-                        ),
-                    1 =>
-                        array (
+                        ],
+                        1 =>
+                        [
                             'key' => 'KBC.datatype.nullable',
                             'value' => false,
-                        ),
-                    2 =>
-                        array (
+                        ],
+                        2 =>
+                        [
                             'key' => 'KBC.datatype.basetype',
                             'value' => 'INTEGER',
-                        ),
-                    3 =>
-                        array (
+                        ],
+                        3 =>
+                        [
                             'key' => 'KBC.datatype.length',
                             'value' => 32,
-                        ),
-                    4 =>
-                        array (
+                        ],
+                        4 =>
+                        [
                             'key' => 'KBC.datatype.default',
                             'value' => '42',
-                        ),
-                    5 =>
-                        array (
+                        ],
+                        5 =>
+                        [
                             'key' => 'KBC.primaryKey',
                             'value' => false,
-                        ),
-                    6 =>
-                        array (
+                        ],
+                        6 =>
+                        [
                             'key' => 'KBC.ordinalPosition',
                             'value' => 2,
-                        ),
-                ),
-            'decimal' =>
-                array (
+                        ],
+                ],
+                'decimal' =>
+                [
                     0 =>
-                        array (
+                        [
                             'key' => 'KBC.datatype.type',
                             'value' => 'numeric',
-                        ),
-                    1 =>
-                        array (
+                        ],
+                        1 =>
+                        [
                             'key' => 'KBC.datatype.nullable',
                             'value' => false,
-                        ),
-                    2 =>
-                        array (
+                        ],
+                        2 =>
+                        [
                             'key' => 'KBC.datatype.basetype',
                             'value' => 'NUMERIC',
-                        ),
-                    3 =>
-                        array (
+                        ],
+                        3 =>
+                        [
                             'key' => 'KBC.datatype.length',
                             'value' => '5,3',
-                        ),
-                    4 =>
-                        array (
+                        ],
+                        4 =>
+                        [
                             'key' => 'KBC.datatype.default',
                             'value' => '1.2',
-                        ),
-                    5 =>
-                        array (
+                        ],
+                        5 =>
+                        [
                             'key' => 'KBC.primaryKey',
                             'value' => false,
-                        ),
-                    6 =>
-                        array (
+                        ],
+                        6 =>
+                        [
                             'key' => 'KBC.ordinalPosition',
                             'value' => 3,
-                        ),
-                ),
-            'date' =>
-                array (
+                        ],
+                ],
+                'date' =>
+                [
                     0 =>
-                        array (
+                        [
                             'key' => 'KBC.datatype.type',
                             'value' => 'date',
-                        ),
-                    1 =>
-                        array (
+                        ],
+                        1 =>
+                        [
                             'key' => 'KBC.datatype.nullable',
                             'value' => true,
-                        ),
-                    2 =>
-                        array (
+                        ],
+                        2 =>
+                        [
                             'key' => 'KBC.datatype.basetype',
                             'value' => 'DATE',
-                        ),
-                    3 =>
-                        array (
+                        ],
+                        3 =>
+                        [
                             'key' => 'KBC.primaryKey',
                             'value' => false,
-                        ),
-                    4 =>
-                        array (
+                        ],
+                        4 =>
+                        [
                             'key' => 'KBC.ordinalPosition',
                             'value' => 4,
-                        ),
-                ),
-        );
+                        ],
+                ],
+        ];
 
-        $expectedTableMetadata[1] = array (
+        $expectedTableMetadata[1] = [
             0 =>
-                array (
+                [
                     'key' => 'KBC.name',
                     'value' => 'types_fk',
-                ),
-            1 =>
-                array (
+                ],
+                1 =>
+                [
                     'key' => 'KBC.schema',
                     'value' => 'public',
-                ),
-            2 =>
-                array (
+                ],
+                2 =>
+                [
                     'key' => 'KBC.type',
                     'value' => 'BASE TABLE',
-                ),
-        );
-        $expectedColumnMetadata[1] = array (
+                ],
+        ];
+        $expectedColumnMetadata[1] = [
             'character' =>
-                array (
+                [
                     0 =>
-                        array (
+                        [
                             'key' => 'KBC.datatype.type',
                             'value' => 'character varying',
-                        ),
-                    1 =>
-                        array (
+                        ],
+                        1 =>
+                        [
                             'key' => 'KBC.datatype.nullable',
                             'value' => true,
-                        ),
-                    2 =>
-                        array (
+                        ],
+                        2 =>
+                        [
                             'key' => 'KBC.datatype.basetype',
                             'value' => 'STRING',
-                        ),
-                    3 =>
-                        array (
+                        ],
+                        3 =>
+                        [
                             'key' => 'KBC.datatype.length',
                             'value' => 123,
-                        ),
-                    4 =>
-                        array (
+                        ],
+                        4 =>
+                        [
                             'key' => 'KBC.primaryKey',
                             'value' => false,
-                        ),
-                    5 =>
-                        array (
+                        ],
+                        5 =>
+                        [
                             'key' => 'KBC.ordinalPosition',
                             'value' => 1,
-                        ),
-                    6 =>
-                        array (
+                        ],
+                        6 =>
+                        [
                             'key' => 'KBC.foreignKeyRefTable',
                             'value' => 'types',
-                        ),
-                    7 =>
-                        array (
+                        ],
+                        7 =>
+                        [
                             'key' => 'KBC.foreignKeyRefColumn',
                             'value' => 'character',
-                        ),
-                    8 =>
-                        array (
+                        ],
+                        8 =>
+                        [
                             'key' => 'KBC.foreignKeyRef',
                             'value' => 'types_fk_character_fkey',
-                        ),
-                ),
-            'integer' =>
-                array (
+                        ],
+                ],
+                'integer' =>
+                [
                     0 =>
-                        array (
+                        [
                             'key' => 'KBC.datatype.type',
                             'value' => 'integer',
-                        ),
-                    1 =>
-                        array (
+                        ],
+                        1 =>
+                        [
                             'key' => 'KBC.datatype.nullable',
                             'value' => false,
-                        ),
-                    2 =>
-                        array (
+                        ],
+                        2 =>
+                        [
                             'key' => 'KBC.datatype.basetype',
                             'value' => 'INTEGER',
-                        ),
-                    3 =>
-                        array (
+                        ],
+                        3 =>
+                        [
                             'key' => 'KBC.datatype.length',
                             'value' => 32,
-                        ),
-                    4 =>
-                        array (
+                        ],
+                        4 =>
+                        [
                             'key' => 'KBC.datatype.default',
                             'value' => '42',
-                        ),
-                    5 =>
-                        array (
+                        ],
+                        5 =>
+                        [
                             'key' => 'KBC.primaryKey',
                             'value' => false,
-                        ),
-                    6 =>
-                        array (
+                        ],
+                        6 =>
+                        [
                             'key' => 'KBC.ordinalPosition',
                             'value' => 2,
-                        ),
-                ),
-            'decimal' =>
-                array (
+                        ],
+                ],
+                'decimal' =>
+                [
                     0 =>
-                        array (
+                        [
                             'key' => 'KBC.datatype.type',
                             'value' => 'numeric',
-                        ),
-                    1 =>
-                        array (
+                        ],
+                        1 =>
+                        [
                             'key' => 'KBC.datatype.nullable',
                             'value' => false,
-                        ),
-                    2 =>
-                        array (
+                        ],
+                        2 =>
+                        [
                             'key' => 'KBC.datatype.basetype',
                             'value' => 'NUMERIC',
-                        ),
-                    3 =>
-                        array (
+                        ],
+                        3 =>
+                        [
                             'key' => 'KBC.datatype.length',
                             'value' => '5,3',
-                        ),
-                    4 =>
-                        array (
+                        ],
+                        4 =>
+                        [
                             'key' => 'KBC.datatype.default',
                             'value' => '1.2',
-                        ),
-                    5 =>
-                        array (
+                        ],
+                        5 =>
+                        [
                             'key' => 'KBC.primaryKey',
                             'value' => false,
-                        ),
-                    6 =>
-                        array (
+                        ],
+                        6 =>
+                        [
                             'key' => 'KBC.ordinalPosition',
                             'value' => 3,
-                        ),
-                ),
-            'date' =>
-                array (
+                        ],
+                ],
+                'date' =>
+                [
                     0 =>
-                        array (
+                        [
                             'key' => 'KBC.datatype.type',
                             'value' => 'date',
-                        ),
-                    1 =>
-                        array (
+                        ],
+                        1 =>
+                        [
                             'key' => 'KBC.datatype.nullable',
                             'value' => true,
-                        ),
-                    2 =>
-                        array (
+                        ],
+                        2 =>
+                        [
                             'key' => 'KBC.datatype.basetype',
                             'value' => 'DATE',
-                        ),
-                    3 =>
-                        array (
+                        ],
+                        3 =>
+                        [
                             'key' => 'KBC.primaryKey',
                             'value' => false,
-                        ),
-                    4 =>
-                        array (
+                        ],
+                        4 =>
+                        [
                             'key' => 'KBC.ordinalPosition',
                             'value' => 4,
-                        ),
-                ),
-        );
+                        ],
+                ],
+        ];
 
         $outputManifests = [];
         foreach ($result['imported'] as $i => $filename) {
