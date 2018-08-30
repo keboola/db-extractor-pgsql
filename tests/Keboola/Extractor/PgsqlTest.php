@@ -19,7 +19,7 @@ class PgsqlTest extends ExtractorTest
     /** @var  string */
     protected $rootPath;
 
-    private function createDbProcess($dbConfig, $query)
+    private function createDbProcess(array $dbConfig, string $query): Process
     {
         return new Process(
             sprintf(
@@ -33,7 +33,7 @@ class PgsqlTest extends ExtractorTest
         );
     }
 
-    public function setUp()
+    public function setUp(): void
     {
         if (!defined('APP_NAME')) {
             define('APP_NAME', 'ex-db-pgsql');
@@ -134,14 +134,14 @@ class PgsqlTest extends ExtractorTest
         }
     }
 
-    public function getConfig($driver = 'pgsql')
+    public function getConfig(string $driver = 'pgsql', string $format = parent::CONFIG_FORMAT_YAML): array
     {
         $config = parent::getConfig($driver);
         $config['parameters']['extractor_class'] = 'PgSQL';
         return $config;
     }
 
-    public function testRun()
+    public function testRun(): void
     {
         $result = $this->app->run();
         $expectedCsvFile = new CsvFile($this->rootPath . 'vendor/keboola/db-extractor-common/tests/data/escaping.csv');
@@ -159,7 +159,7 @@ class PgsqlTest extends ExtractorTest
         }
     }
 
-    public function testRunWithSSH()
+    public function testRunWithSSH(): void
     {
         $config = $this->getConfig();
         $config['parameters']['db']['ssh'] = [
@@ -190,7 +190,7 @@ class PgsqlTest extends ExtractorTest
         }
     }
 
-    public function testTestConnection()
+    public function testTestConnection(): void
     {
         $config = $this->getConfig();
         $config['action'] = 'testConnection';
@@ -200,7 +200,7 @@ class PgsqlTest extends ExtractorTest
         $this->assertEquals('success', $result['status']);
     }
 
-    public function testInvalidCredentialsTestConnection()
+    public function testInvalidCredentialsTestConnection(): void
     {
         $config = $this->getConfig();
         $config['action'] = 'testConnection';
@@ -216,7 +216,7 @@ class PgsqlTest extends ExtractorTest
         }
     }
 
-    public function testInvalidCredentialsAppRun()
+    public function testInvalidCredentialsAppRun(): void
     {
         $config = $this->getConfig();
         $config['parameters']['db']['#password'] = "fakepass";
@@ -230,7 +230,7 @@ class PgsqlTest extends ExtractorTest
         }
     }
     
-    public function testGetTables()
+    public function testGetTables(): void
     {
         $config = $this->getConfig();
         $config['action'] = 'getTables';
@@ -406,7 +406,7 @@ class PgsqlTest extends ExtractorTest
         $this->assertEquals($expectedData, $result['tables']);
     }
 
-    public function testManifestMetadata()
+    public function testManifestMetadata(): void
     {
         $config = $this->getConfig();
 
@@ -754,7 +754,6 @@ class PgsqlTest extends ExtractorTest
                 ],
         ];
 
-        $outputManifests = [];
         foreach ($result['imported'] as $i => $filename) {
             $outputManifest = Yaml::parse(
                 file_get_contents($this->dataDir . '/out/tables/' . $filename . '.csv.manifest')
@@ -763,7 +762,11 @@ class PgsqlTest extends ExtractorTest
         }
     }
 
-    protected function assertManifestMetadata($outputManifest, $expectedTableMetadata, $expectedColumnMetadata)
+    protected function assertManifestMetadata(
+        array $outputManifest,
+        array $expectedTableMetadata,
+        array $expectedColumnMetadata
+    ): void
     {
         $this->assertArrayHasKey('destination', $outputManifest);
         $this->assertArrayHasKey('incremental', $outputManifest);
@@ -774,7 +777,7 @@ class PgsqlTest extends ExtractorTest
         $this->assertEquals($expectedColumnMetadata, $outputManifest['column_metadata']);
     }
 
-    public function testTableColumnsQuery()
+    public function testTableColumnsQuery(): void
     {
         $config = $this->getConfig();
 

@@ -8,18 +8,20 @@ use Keboola\Csv\CsvFile;
 use Keboola\DbExtractor\Exception\ApplicationException;
 use Keboola\DbExtractor\Exception\UserException;
 use Symfony\Component\Process\Process;
+use PDO;
 
 class PgSQL extends Extractor
 {
+    /** @var  array */
     private $dbConfig;
 
-    public function createConnection($dbParams)
+    public function createConnection(array $dbParams): PDO
     {
         $this->dbConfig = $dbParams;
 
         // convert errors to PDOExceptions
         $options = [
-            \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
         ];
 
         // check params
@@ -38,13 +40,13 @@ class PgSQL extends Extractor
             $dbParams['database']
         );
 
-        $pdo = new \PDO($dsn, $dbParams['user'], $dbParams['password'], $options);
+        $pdo = new PDO($dsn, $dbParams['user'], $dbParams['password'], $options);
         $pdo->exec("SET NAMES 'UTF8';");
 
         return $pdo;
     }
 
-    private function restartConnection()
+    private function restartConnection(): void
     {
         try {
             $this->db = $this->createConnection($this->dbConfig);
@@ -53,7 +55,7 @@ class PgSQL extends Extractor
         }
     }
 
-    public function export(array $table)
+    public function export(array $table): array
     {
         $outputTable = $table['outputTable'];
 
@@ -79,7 +81,7 @@ class PgSQL extends Extractor
                 }
                 if (!$copyFailed) {
                     try {
-                        $csvCreated = $this->executeQuery($query, $this->createOutputCsv($outputTable), $table['name']);
+                        $csvCreated = $this->executeCopyQuery($query, $this->createOutputCsv($outputTable), $table['name']);
                     } catch (ApplicationException $applicationException) {
                         // There was an error, so let's try the old method
                         if ($applicationException->getCode() === 42) {
@@ -119,7 +121,7 @@ class PgSQL extends Extractor
         return $outputTable;
     }
 
-    protected function executeQueryPDO($query, CsvFile $csv)
+    protected function executeQueryPDO(string $query, CsvFile $csv): bool
     {
         $cursorName = 'exdbcursor' . intval(microtime(true));
         $curSql = "DECLARE $cursorName CURSOR FOR $query";
@@ -162,7 +164,7 @@ class PgSQL extends Extractor
         }
     }
 
-    protected function executeQuery($query, CsvFile $csvFile, $tableName)
+    protected function executeCopyQuery(string $query, CsvFile $csvFile, string $tableName): bool
     {
         $this->logger->info(sprintf("Executing query '%s' via \copy ...", $tableName));
 
@@ -193,7 +195,7 @@ class PgSQL extends Extractor
         return true;
     }
 
-    public function testConnection()
+    public function testConnection(): void
     {
         // check PDO connection
         $this->db->query("SELECT 1");
@@ -214,7 +216,7 @@ class PgSQL extends Extractor
         }
     }
 
-    public function getTables(array $tables = null)
+    public function getTables(?array $tables = null): array
     {
         $sql = "SELECT * FROM information_schema.tables as c
                 WHERE c.table_schema != 'pg_catalog' AND c.table_schema != 'information_schema'";
@@ -321,7 +323,7 @@ class PgSQL extends Extractor
         return array_values($tableDefs);
     }
 
-    public function simpleQuery(array $table, array $columns = array())
+    public function simpleQuery(array $table, array $columns = array()): string
     {
         if (count($columns) > 0) {
             return sprintf(
@@ -346,7 +348,7 @@ class PgSQL extends Extractor
             );
         }
     }
-    private function quote($obj)
+    private function quote(string $obj): string
     {
         return "\"{$obj}\"";
     }
