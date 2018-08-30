@@ -9,6 +9,8 @@ use Keboola\DbExtractor\Exception\ApplicationException;
 use Keboola\DbExtractor\Exception\UserException;
 use Symfony\Component\Process\Process;
 use PDO;
+use PDOException;
+use Throwable;
 
 class PgSQL extends Extractor
 {
@@ -50,7 +52,7 @@ class PgSQL extends Extractor
     {
         try {
             $this->db = $this->createConnection($this->dbConfig);
-        } catch (\Exception $e) {
+        } catch (Throwable $e) {
             throw new UserException(sprintf("Error connecting to DB: %s", $e->getMessage()), 0, $e);
         }
     }
@@ -94,7 +96,7 @@ class PgSQL extends Extractor
                     $csvCreated = $this->executeQueryPDO($query, $this->createOutputCsv($outputTable));
                 }
                 break;
-            } catch (\PDOException $e) {
+            } catch (PDOException $e) {
                 $exception = new UserException("DB query [{$table['name']}] failed: " . $e->getMessage(), 0, $e);
             }
             sleep(pow($tries, 2));
@@ -133,7 +135,7 @@ class PgSQL extends Extractor
             $innerStatement = $this->db->prepare("FETCH 1 FROM $cursorName");
             $innerStatement->execute();
             // write header and first line
-            $resultRow = $innerStatement->fetch(\PDO::FETCH_ASSOC);
+            $resultRow = $innerStatement->fetch(PDO::FETCH_ASSOC);
             if (!is_array($resultRow) || empty($resultRow)) {
                 $this->logger->warning("Query returned empty result. Nothing was imported");
                 return false;
@@ -143,7 +145,7 @@ class PgSQL extends Extractor
             // write the rest
             $this->logger->info("Fetching data...");
             $innerStatement = $this->db->prepare("FETCH 10000 FROM $cursorName");
-            while ($innerStatement->execute() && count($resultRows = $innerStatement->fetchAll(\PDO::FETCH_ASSOC)) > 0) {
+            while ($innerStatement->execute() && count($resultRows = $innerStatement->fetchAll(PDO::FETCH_ASSOC)) > 0) {
                 foreach ($resultRows as $resultRow) {
                     $csv->writeRow($resultRow);
                 }
@@ -153,10 +155,10 @@ class PgSQL extends Extractor
             $this->db->commit();
             $this->logger->info("Extraction completed");
             return true;
-        } catch (\PDOException $e) {
+        } catch (PDOException $e) {
             try {
                 $this->db->rollBack();
-            } catch (\Exception $e2) {
+            } catch (Throwable $e2) {
             }
             $innerStatement = null;
             $stmt = null;
@@ -249,7 +251,7 @@ class PgSQL extends Extractor
         $sql .= $additionalWhereClause . " ORDER BY c.table_schema, c.table_name";
         
         $res = $this->db->query($sql);
-        $arr = $res->fetchAll(\PDO::FETCH_ASSOC);
+        $arr = $res->fetchAll(PDO::FETCH_ASSOC);
         $tableNameArray = [];
         $tableDefs = [];
         foreach ($arr as $table) {
@@ -287,7 +289,7 @@ class PgSQL extends Extractor
 
         $res = $this->db->query($sql);
 
-        while ($column = $res->fetch(\PDO::FETCH_ASSOC)) {
+        while ($column = $res->fetch(PDO::FETCH_ASSOC)) {
             $curTable = $column['table_schema'] . '.' . $column['table_name'];
             $length = ($column['data_type'] === 'character varying') ? $column['character_maximum_length'] : null;
             if (is_null($length) && !is_null($column['numeric_precision'])) {

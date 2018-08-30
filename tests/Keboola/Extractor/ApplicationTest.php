@@ -19,11 +19,8 @@ class ApplicationTest extends ExtractorTest
 
     public function setUp(): void
     {
+        $this->rootPath = '/code/';
 
-        if (!defined('ROOT_PATH')) {
-            define('ROOT_PATH', '/code/');
-        }
-        $this->rootPath = getenv('ROOT_PATH') ? getenv('ROOT_PATH') : '/code/';
         parent::setUp();
         if (getenv('EXTERNAL_PG_HOST') === false) {
             $this->fail("Missing environment var 'EXTERNAL_PG_HOST'");

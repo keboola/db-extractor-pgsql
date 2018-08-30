@@ -11,10 +11,7 @@ use Symfony\Component\Yaml\Yaml;
 
 require_once(dirname(__FILE__) . "/vendor/autoload.php");
 
-define('APP_NAME', 'ex-db-pgsql');
-define('ROOT_PATH', __DIR__);
-
-$logger = new Logger(APP_NAME);
+$logger = new Logger('ex-db-pgsql');
 
 try {
     $arguments = getopt("d::", ["data::"]);
@@ -25,7 +22,7 @@ try {
     $config['parameters']['data_dir'] = $arguments['data'];
     $config['parameters']['extractor_class'] = 'PgSQL';
 
-    $app = new Application($config);
+    $app = new Application($config, $logger);
 
     if ($app['action'] !== 'run') {
         $app['logger']->setHandlers(array(new NullHandler(Logger::INFO)));

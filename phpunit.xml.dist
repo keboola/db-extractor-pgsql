@@ -10,10 +10,6 @@
          syntaxCheck="false"
          bootstrap="vendor/autoload.php">
 
-    <php>
-        <const name="ROOT_PATH" value="/code/"/>
-    </php>
-
     <testsuite name="DB Extractor PgSQL Test Suite">
         <directory>tests/Keboola/Extractor</directory>
     </testsuite>

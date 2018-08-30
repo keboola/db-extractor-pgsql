@@ -35,13 +35,7 @@ class PgsqlTest extends ExtractorTest
 
     public function setUp(): void
     {
-        if (!defined('APP_NAME')) {
-            define('APP_NAME', 'ex-db-pgsql');
-        }
-        if (!defined('ROOT_PATH')) {
-            define('ROOT_PATH', '/code/');
-        }
-        $this->rootPath = getenv('ROOT_PATH') ? getenv('ROOT_PATH') : '/code/';
+        $this->rootPath = '/code/';
         $config = $this->getConfig();
         $this->app = new Application($config);
 
