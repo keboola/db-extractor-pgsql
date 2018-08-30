@@ -9,10 +9,10 @@ use Keboola\DbExtractor\Logger;
 use Monolog\Handler\NullHandler;
 use Symfony\Component\Yaml\Yaml;
 
+require_once(dirname(__FILE__) . "/vendor/autoload.php");
+
 define('APP_NAME', 'ex-db-pgsql');
 define('ROOT_PATH', __DIR__);
-
-require_once dirname(__FILE__) . "/vendor/keboola/db-extractor-common/bootstrap.php";
 
 $logger = new Logger(APP_NAME);
 
