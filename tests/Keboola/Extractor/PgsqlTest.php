@@ -7,6 +7,7 @@ namespace Keboola\DbExtractor\Tests;
 use Keboola\Csv\CsvFile;
 use Keboola\DbExtractor\Application;
 use Keboola\DbExtractor\Exception\UserException;
+use Keboola\DbExtractor\Logger;
 use Keboola\DbExtractor\Test\ExtractorTest;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Yaml\Yaml;
@@ -18,6 +19,9 @@ class PgsqlTest extends ExtractorTest
 
     /** @var  string */
     protected $rootPath;
+
+    /** @var string  */
+    protected $dataDir = __DIR__ . '/../../data';
 
     private function createDbProcess(array $dbConfig, string $query): Process
     {
@@ -37,7 +41,8 @@ class PgsqlTest extends ExtractorTest
     {
         $this->rootPath = '/code/';
         $config = $this->getConfig();
-        $this->app = new Application($config);
+        $logger = new Logger('ex-db-pgsql-tests');
+        $this->app = new Application($config, $logger);
 
         $dbConfig = $config['parameters']['db'];
 
@@ -166,7 +171,7 @@ class PgsqlTest extends ExtractorTest
             'sshHost' => 'sshproxy'
         ];
 
-        $app = new Application($config);
+        $app = new Application($config, new Logger('ex-db-pgsql-tests'));
         $result = $app->run();
 
         $expectedCsvFile = new CsvFile($this->rootPath . 'vendor/keboola/db-extractor-common/tests/data/escaping.csv');
@@ -188,7 +193,7 @@ class PgsqlTest extends ExtractorTest
     {
         $config = $this->getConfig();
         $config['action'] = 'testConnection';
-        $app = new Application($config);
+        $app = new Application($config, new Logger('ex-db-pgsql-tests'));
 
         $result = $app->run();
         $this->assertEquals('success', $result['status']);
@@ -200,7 +205,7 @@ class PgsqlTest extends ExtractorTest
         $config['action'] = 'testConnection';
 
         $config['parameters']['db']['user'] = "fakeguy";
-        $app = new Application($config);
+        $app = new Application($config, new Logger('ex-db-pgsql-tests'));
 
         try {
             $result = $app->run();
@@ -215,7 +220,7 @@ class PgsqlTest extends ExtractorTest
         $config = $this->getConfig();
         $config['parameters']['db']['#password'] = "fakepass";
 
-        $app = new Application($config);
+        $app = new Application($config, new Logger('ex-db-pgsql-tests'));
         try {
             $result = $app->run();
             $this->fail("Invalid credentials should throw exception");
@@ -228,7 +233,7 @@ class PgsqlTest extends ExtractorTest
     {
         $config = $this->getConfig();
         $config['action'] = 'getTables';
-        $app = new Application($config);
+        $app = new Application($config, new Logger('ex-db-pgsql-tests'));
 
         $result = $app->run();
         $this->assertArrayHasKey('status', $result);
@@ -415,7 +420,7 @@ class PgsqlTest extends ExtractorTest
         unset($config['parameters']['tables'][0]);
         unset($config['parameters']['tables'][1]);
 
-        $app = new Application($config);
+        $app = new Application($config, new Logger('ex-db-pgsql-tests'));
 
         $result = $app->run();
 
@@ -779,7 +784,7 @@ class PgsqlTest extends ExtractorTest
         unset($config['parameters']['tables'][0]);
         unset($config['parameters']['tables'][1]);
 
-        $app = new Application($config);
+        $app = new Application($config, new Logger('ex-db-pgsql-tests'));
 
         $result = $app->run();
 

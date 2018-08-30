@@ -17,6 +17,9 @@ class ApplicationTest extends ExtractorTest
     /** @var  string */
     protected $rootPath;
 
+    /** @var string  */
+    protected $dataDir = __DIR__ . '/../../data';
+
     public function setUp(): void
     {
         $this->rootPath = '/code/';
@@ -45,7 +48,7 @@ class ApplicationTest extends ExtractorTest
     {
         $outputCsvFile = new CsvFile($this->dataDir . '/out/tables/in.c-main.info_schema.csv');
         $manifestFile = $this->dataDir . '/out/tables/in.c-main.info_schema.csv.manifest';
-        @unlink($outputCsvFile);
+        @unlink($outputCsvFile->getPathname());
         @unlink($manifestFile);
 
         $config = Yaml::parse(file_get_contents($this->dataDir . '/pgsql/external_config.yml'));
@@ -131,7 +134,7 @@ class ApplicationTest extends ExtractorTest
     {
         $outputCsvFile = new CsvFile($this->dataDir . '/out/tables/in.c-main.info_schema.csv');
         $manifestFile = $this->dataDir . '/out/tables/in.c-main.info_schema.csv.manifest';
-        @unlink($outputCsvFile);
+        @unlink($outputCsvFile->getPathname());
         @unlink($manifestFile);
 
         $config = Yaml::parse(file_get_contents($this->dataDir . '/pgsql/external_config.yml'));
