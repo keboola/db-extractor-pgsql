@@ -1,11 +1,6 @@
 <?php
 
-/**
- * Created by PhpStorm.
- * User: miroslavcillik
- * Date: 10/12/15
- * Time: 14:25
- */
+declare(strict_types=1);
 
 namespace Keboola\DbExtractor\Tests;
 
@@ -18,11 +13,10 @@ use Symfony\Component\Yaml\Yaml;
 
 class PgsqlTest extends ExtractorTest
 {
-    /**
- * @var Application
-*/
+    /** @var Application */
     protected $app;
 
+    /** @var  string */
     protected $rootPath;
 
     private function createDbProcess($dbConfig, $query)
