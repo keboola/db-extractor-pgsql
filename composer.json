@@ -1,7 +1,7 @@
 {
     "name": "keboola/db-extractor-pgsql",
     "require": {
-        "keboola/db-extractor-common": "~5.2"
+        "keboola/db-extractor-common": "~9"
     },
     "require-dev": {
         "phpunit/phpunit": "4.6.*",
@@ -10,8 +10,8 @@
     },
     "authors": [
         {
-            "name": "Miroslav Cillik",
-            "email": "miro@keboola.com"
+            "name": "Keboola",
+            "email": "devel@keboola.com"
         }
     ],
     "autoload": {
