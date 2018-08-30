@@ -140,12 +140,12 @@ class PgsqlTest extends ExtractorTest
         return $config;
     }
 
-    public function testRun(): void
+    public function testRunConfig(): void
     {
         $result = $this->app->run();
-        $expectedCsvFile = new CsvFile($this->rootPath . 'vendor/keboola/db-extractor-common/tests/data/escaping.csv');
-        $outputCsvFile = new CsvFile($this->dataDir . '/out/tables/' . $result['imported'][0] . '.csv');
-        $outputManifestFile = $this->dataDir . '/out/tables/' . $result['imported'][0] . '.csv.manifest';
+        $expectedCsvFile = new CsvFile($this->dataDir . '/pgsql/escaping.csv');
+        $outputCsvFile = new CsvFile($this->dataDir . '/out/tables/' . $result['imported'][0]['outputTable'] . '.csv');
+        $outputManifestFile = $this->dataDir . '/out/tables/' . $result['imported'][0]['outputTable'] . '.csv.manifest';
 
         $this->assertEquals('success', $result['status']);
         $this->assertTrue($outputCsvFile->isFile());
@@ -154,7 +154,7 @@ class PgsqlTest extends ExtractorTest
         $outputArr = iterator_to_array($outputCsvFile);
         $expectedArr = iterator_to_array($expectedCsvFile);
         for ($i = 1; $i < count($expectedArr); $i++) {
-            $this->assertEquals($expectedArr[$i], $outputArr[$i]);
+            $this->assertContains($expectedArr[$i], $outputArr);
         }
     }
 
@@ -175,8 +175,8 @@ class PgsqlTest extends ExtractorTest
         $result = $app->run();
 
         $expectedCsvFile = new CsvFile($this->rootPath . 'vendor/keboola/db-extractor-common/tests/data/escaping.csv');
-        $outputCsvFile = new CsvFile($this->dataDir . '/out/tables/' . $result['imported'][0] . '.csv');
-        $outputManifestFile = $this->dataDir . '/out/tables/' . $result['imported'][0] . '.csv.manifest';
+        $outputCsvFile = new CsvFile($this->dataDir . '/out/tables/' . $result['imported'][0]['outputTable'] . '.csv');
+        $outputManifestFile = $this->dataDir . '/out/tables/' . $result['imported'][0]['outputTable'] . '.csv.manifest';
 
         $this->assertEquals('success', $result['status']);
         $this->assertTrue($outputCsvFile->isFile());
@@ -789,8 +789,8 @@ class PgsqlTest extends ExtractorTest
         $result = $app->run();
 
         $expectedCsvFile = new CsvFile($this->dataDir . '/pgsql/types.csv');
-        $outputCsvFile = new CsvFile($this->dataDir . '/out/tables/' . $result['imported'][0] . '.csv');
-        $outputManifestFile = $this->dataDir . '/out/tables/' . $result['imported'][0] . '.csv.manifest';
+        $outputCsvFile = new CsvFile($this->dataDir . '/out/tables/' . $result['imported'][0]['outputTable'] . '.csv');
+        $outputManifestFile = $this->dataDir . '/out/tables/' . $result['imported'][0]['outputTable'] . '.csv.manifest';
 
         $this->assertEquals('success', $result['status']);
         $this->assertTrue($outputCsvFile->isFile());

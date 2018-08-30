@@ -120,7 +120,9 @@ class PgSQL extends Extractor
             }
         }
 
-        return $outputTable;
+        return [
+            "outputTable"=> $outputTable
+        ];
     }
 
     protected function executeQueryPDO(string $query, CsvFile $csv): bool
