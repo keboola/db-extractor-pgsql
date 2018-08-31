@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Keboola\DbExtractor\Application;
-use Keboola\DbExtractor\Exception\ApplicationException;
 use Keboola\DbExtractor\Exception\UserException;
 use Keboola\DbExtractor\Logger;
 use Monolog\Handler\NullHandler;
@@ -12,6 +11,8 @@ use Symfony\Component\Yaml\Yaml;
 require_once(dirname(__FILE__) . "/vendor/autoload.php");
 
 $logger = new Logger('ex-db-pgsql');
+
+$runAction = true;
 
 try {
     $arguments = getopt("d::", ["data::"]);
@@ -29,23 +30,28 @@ try {
         $runAction = false;
     }
 
-    echo json_encode($app->run());
+    $result = $app->run();
+    if (!$runAction) {
+        echo json_encode($app->run());
+    }
+    $app['logger']->log('info', "Extractor finished successfully.");
+    exit(0);
 } catch (UserException $e) {
-    $logger->log('error', $e->getMessage(), $e->getData());
+    $logger->log('error', $e->getMessage());
+    if (!$runAction) {
+        echo $e->getMessage();
+    }
     exit(1);
-} catch (ApplicationException $e) {
-    $logger->log('error', $e->getMessage(), $e->getData());
-    exit($e->getCode() > 1 ? $e->getCode(): 2);
-} catch (\Throwable $e) {
-    $logger->log(
-        'error',
-        $e->getMessage(),
+} catch (Throwable $e) {
+    $logger->critical(
+        get_class($e) . ':' . $e->getMessage(),
         [
-        'errFile' => $e->getFile(),
-        'errLine' => $e->getLine(),
-        'trace' => $e->getTrace(),
+            'errFile' => $e->getFile(),
+            'errLine' => $e->getLine(),
+            'errCode' => $e->getCode(),
+            'errTrace' => $e->getTraceAsString(),
+            'errPrevious' => $e->getPrevious() ? get_class($e->getPrevious()) : '',
         ]
     );
     exit(2);
 }
-exit(0);
