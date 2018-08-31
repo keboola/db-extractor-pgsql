@@ -196,7 +196,7 @@ class PgSQL extends Extractor
             $this->dbConfig['database'],
             escapeshellarg(
                 sprintf(
-                    "\COPY (%s) TO '%s' WITH CSV HEADER DELIMITER ',' FORCE QUOTE *;",
+                    $copyCommand,
                     rtrim($query, '; '),
                     $csvFile
                 )
