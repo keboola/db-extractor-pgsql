@@ -140,9 +140,14 @@ class PgsqlTest extends ExtractorTest
         return $config;
     }
 
-    public function testRunConfig(): void
+    /**
+     * @param $configType
+     * @dataProvider configTypesProvider
+     */
+    public function testRunConfig(string $configFormat): void
     {
-        $result = $this->app->run();
+        $config = $this->getConfig('pgsql', $configFormat);
+        $result = (new Application($config, new Logger('ex-db-pgsql-tests')))->run();
         $expectedCsvFile = new CsvFile($this->dataDir . '/pgsql/escaping.csv');
         $outputCsvFile = new CsvFile($this->dataDir . '/out/tables/' . $result['imported'][0]['outputTable'] . '.csv');
         $outputManifestFile = $this->dataDir . '/out/tables/' . $result['imported'][0]['outputTable'] . '.csv.manifest';
@@ -840,5 +845,13 @@ class PgsqlTest extends ExtractorTest
         for ($i = 1; $i < count($expectedArr); $i++) {
             $this->assertEquals($expectedArr[$i], $outputArr[$i]);
         }
+    }
+
+    public function configTypesProvider(): array
+    {
+        return [
+            [self::CONFIG_FORMAT_YAML],
+            [self::CONFIG_FORMAT_JSON],
+        ];
     }
 }
