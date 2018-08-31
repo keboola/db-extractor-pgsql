@@ -252,168 +252,179 @@ class PgsqlTest extends ExtractorTest
         $this->assertArrayHasKey('tables', $result);
         $this->assertCount(4, $result['tables']);
 
-        var_export($result['tables']);
-        $expectedData = [
+        $expectedData = array (
             0 =>
-                [
+                array (
                     'name' => 'escaping',
                     'schema' => 'public',
                     'type' => 'BASE TABLE',
                     'columns' =>
-                        [
+                        array (
                             0 =>
-                                [
-                                    'name' => 'col1',
+                                array (
+                                    'name' => '_funnycol',
+                                    'sanitizedName' => 'funnycol',
                                     'type' => 'character varying',
                                     'primaryKey' => true,
                                     'length' => 123,
                                     'nullable' => false,
                                     'default' => 'column 1',
                                     'ordinalPosition' => 1,
-                                ],
-                                1 =>
-                                [
-                                    'name' => 'col2',
+                                ),
+                            1 =>
+                                array (
+                                    'name' => '_sadcol',
+                                    'sanitizedName' => 'sadcol',
                                     'type' => 'character varying',
                                     'primaryKey' => true,
                                     'length' => 221,
                                     'nullable' => false,
                                     'default' => 'column 2',
                                     'ordinalPosition' => 2,
-                                ],
-                        ],
-                ],
-                1 =>
-                [
+                                ),
+                        ),
+                ),
+            1 =>
+                array (
                     'name' => 'types',
                     'schema' => 'public',
                     'type' => 'BASE TABLE',
                     'columns' =>
-                        [
+                        array (
+                            1 =>
+                                array (
+                                    'name' => 'integer',
+                                    'sanitizedName' => 'integer',
+                                    'type' => 'integer',
+                                    'primaryKey' => false,
+                                    'length' => 32,
+                                    'nullable' => false,
+                                    'default' => '42',
+                                    'ordinalPosition' => 2,
+                                ),
+                            2 =>
+                                array (
+                                    'name' => 'decimal',
+                                    'sanitizedName' => 'decimal',
+                                    'type' => 'numeric',
+                                    'primaryKey' => false,
+                                    'length' => '5,3',
+                                    'nullable' => false,
+                                    'default' => '1.2',
+                                    'ordinalPosition' => 3,
+                                ),
                             0 =>
-                                [
+                                array (
                                     'name' => 'character',
+                                    'sanitizedName' => 'character',
                                     'type' => 'character varying',
                                     'primaryKey' => true,
                                     'length' => 123,
                                     'nullable' => false,
-                                    'default' => '',
+                                    'default' => null,
                                     'ordinalPosition' => 1,
-                                ],
-                                1 =>
-                                [
-                                    'name' => 'integer',
-                                    'type' => 'integer',
-                                    'primaryKey' => false,
-                                    'length' => 32,
-                                    'nullable' => false,
-                                    'default' => '42',
-                                    'ordinalPosition' => 2,
-                                ],
-                                2 =>
-                                [
-                                    'name' => 'decimal',
-                                    'type' => 'numeric',
-                                    'primaryKey' => false,
-                                    'length' => '5,3',
-                                    'nullable' => false,
-                                    'default' => '1.2',
-                                    'ordinalPosition' => 3,
-                                ],
-                                3 =>
-                                [
+                                ),
+                            3 =>
+                                array (
                                     'name' => 'date',
+                                    'sanitizedName' => 'date',
                                     'type' => 'date',
                                     'primaryKey' => false,
                                     'length' => null,
                                     'nullable' => true,
                                     'default' => null,
                                     'ordinalPosition' => 4,
-                                ],
-                        ],
-                ],
-                2 =>
-                [
+                                ),
+                        ),
+                ),
+            2 =>
+                array (
                     'name' => 'types_fk',
                     'schema' => 'public',
                     'type' => 'BASE TABLE',
                     'columns' =>
-                        [
+                        array (
                             0 =>
-                                [
+                                array (
                                     'name' => 'character',
+                                    'sanitizedName' => 'character',
                                     'type' => 'character varying',
                                     'primaryKey' => false,
                                     'length' => 123,
                                     'nullable' => true,
-                                    'default' => '',
+                                    'default' => null,
                                     'ordinalPosition' => 1,
                                     'foreignKeyRefTable' => 'types',
                                     'foreignKeyRefColumn' => 'character',
                                     'foreignKeyRef' => 'types_fk_character_fkey',
-                                ],
-                                1 =>
-                                [
-                                    'name' => 'integer',
-                                    'type' => 'integer',
-                                    'primaryKey' => false,
-                                    'length' => 32,
-                                    'nullable' => false,
-                                    'default' => '42',
-                                    'ordinalPosition' => 2,
-                                ],
-                                2 =>
-                                [
-                                    'name' => 'decimal',
-                                    'type' => 'numeric',
-                                    'primaryKey' => false,
-                                    'length' => '5,3',
-                                    'nullable' => false,
-                                    'default' => '1.2',
-                                    'ordinalPosition' => 3,
-                                ],
-                                3 =>
-                                [
+                                ),
+                            3 =>
+                                array (
                                     'name' => 'date',
+                                    'sanitizedName' => 'date',
                                     'type' => 'date',
                                     'primaryKey' => false,
                                     'length' => null,
                                     'nullable' => true,
                                     'default' => null,
                                     'ordinalPosition' => 4,
-                                ],
-                        ],
-                ],
-                3 =>
-                [
+                                ),
+                            1 =>
+                                array (
+                                    'name' => 'integer',
+                                    'sanitizedName' => 'integer',
+                                    'type' => 'integer',
+                                    'primaryKey' => false,
+                                    'length' => 32,
+                                    'nullable' => false,
+                                    'default' => '42',
+                                    'ordinalPosition' => 2,
+                                ),
+                            2 =>
+                                array (
+                                    'name' => 'decimal',
+                                    'sanitizedName' => 'decimal',
+                                    'type' => 'numeric',
+                                    'primaryKey' => false,
+                                    'length' => '5,3',
+                                    'nullable' => false,
+                                    'default' => '1.2',
+                                    'ordinalPosition' => 3,
+                                ),
+                        ),
+                ),
+            3 =>
+                array (
                     'name' => 'escaping',
                     'schema' => 'testing',
                     'type' => 'BASE TABLE',
                     'columns' =>
-                        [
+                        array (
                             0 =>
-                                [
-                                    'name' => 'col1',
+                                array (
+                                    'name' => '_funnycol',
+                                    'sanitizedName' => 'funnycol',
                                     'type' => 'character varying',
                                     'primaryKey' => true,
                                     'length' => 123,
                                     'nullable' => false,
                                     'default' => 'column 1',
                                     'ordinalPosition' => 1,
-                                ],
-                                1 =>
-                                [
-                                    'name' => 'col2',
+                                ),
+                            1 =>
+                                array (
+                                    'name' => '_sadcol',
+                                    'sanitizedName' => 'sadcol',
                                     'type' => 'character varying',
                                     'primaryKey' => true,
                                     'length' => 221,
                                     'nullable' => false,
                                     'default' => 'column 2',
                                     'ordinalPosition' => 2,
-                                ],
-                        ],
-                ],
-        ];
+                                ),
+                        ),
+                ),
+        );
 
         $this->assertEquals($expectedData, $result['tables']);
     }
@@ -484,10 +495,15 @@ class PgsqlTest extends ExtractorTest
                         ),
                     5 =>
                         array (
+                            'key' => 'KBC.sanitizedName',
+                            'value' => 'character',
+                        ),
+                    6 =>
+                        array (
                             'key' => 'KBC.primaryKey',
                             'value' => true,
                         ),
-                    6 =>
+                    7 =>
                         array (
                             'key' => 'KBC.ordinalPosition',
                             'value' => 1,
@@ -527,10 +543,15 @@ class PgsqlTest extends ExtractorTest
                         ),
                     6 =>
                         array (
+                            'key' => 'KBC.sanitizedName',
+                            'value' => 'integer',
+                        ),
+                    7 =>
+                        array (
                             'key' => 'KBC.primaryKey',
                             'value' => false,
                         ),
-                    7 =>
+                    8 =>
                         array (
                             'key' => 'KBC.ordinalPosition',
                             'value' => 2,
@@ -570,10 +591,15 @@ class PgsqlTest extends ExtractorTest
                         ),
                     6 =>
                         array (
+                            'key' => 'KBC.sanitizedName',
+                            'value' => 'decimal',
+                        ),
+                    7 =>
+                        array (
                             'key' => 'KBC.primaryKey',
                             'value' => false,
                         ),
-                    7 =>
+                    8 =>
                         array (
                             'key' => 'KBC.ordinalPosition',
                             'value' => 3,
@@ -603,10 +629,15 @@ class PgsqlTest extends ExtractorTest
                         ),
                     4 =>
                         array (
+                            'key' => 'KBC.sanitizedName',
+                            'value' => 'date',
+                        ),
+                    5 =>
+                        array (
                             'key' => 'KBC.primaryKey',
                             'value' => false,
                         ),
-                    5 =>
+                    6 =>
                         array (
                             'key' => 'KBC.ordinalPosition',
                             'value' => 4,
@@ -661,25 +692,30 @@ class PgsqlTest extends ExtractorTest
                         ),
                     5 =>
                         array (
+                            'key' => 'KBC.sanitizedName',
+                            'value' => 'character',
+                        ),
+                    6 =>
+                        array (
                             'key' => 'KBC.primaryKey',
                             'value' => false,
                         ),
-                    6 =>
+                    7 =>
                         array (
                             'key' => 'KBC.ordinalPosition',
                             'value' => 1,
                         ),
-                    7 =>
+                    8 =>
                         array (
                             'key' => 'KBC.foreignKeyRefTable',
                             'value' => 'types',
                         ),
-                    8 =>
+                    9 =>
                         array (
                             'key' => 'KBC.foreignKeyRefColumn',
                             'value' => 'character',
                         ),
-                    9 =>
+                    10 =>
                         array (
                             'key' => 'KBC.foreignKeyRef',
                             'value' => 'types_fk_character_fkey',
@@ -719,10 +755,15 @@ class PgsqlTest extends ExtractorTest
                         ),
                     6 =>
                         array (
+                            'key' => 'KBC.sanitizedName',
+                            'value' => 'integer',
+                        ),
+                    7 =>
+                        array (
                             'key' => 'KBC.primaryKey',
                             'value' => false,
                         ),
-                    7 =>
+                    8 =>
                         array (
                             'key' => 'KBC.ordinalPosition',
                             'value' => 2,
@@ -762,10 +803,15 @@ class PgsqlTest extends ExtractorTest
                         ),
                     6 =>
                         array (
+                            'key' => 'KBC.sanitizedName',
+                            'value' => 'decimal',
+                        ),
+                    7 =>
+                        array (
                             'key' => 'KBC.primaryKey',
                             'value' => false,
                         ),
-                    7 =>
+                    8 =>
                         array (
                             'key' => 'KBC.ordinalPosition',
                             'value' => 3,
@@ -795,10 +841,15 @@ class PgsqlTest extends ExtractorTest
                         ),
                     4 =>
                         array (
+                            'key' => 'KBC.sanitizedName',
+                            'value' => 'date',
+                        ),
+                    5 =>
+                        array (
                             'key' => 'KBC.primaryKey',
                             'value' => false,
                         ),
-                    5 =>
+                    6 =>
                         array (
                             'key' => 'KBC.ordinalPosition',
                             'value' => 4,
@@ -810,8 +861,7 @@ class PgsqlTest extends ExtractorTest
             $outputManifest = Yaml::parse(
                 file_get_contents($this->dataDir . '/out/tables/' . $outputArray['outputTable'] . '.csv.manifest')
             );
-            var_export($outputManifest);
-            // $this->assertManifestMetadata($outputManifest, $expectedTableMetadata[$i], $expectedColumnMetadata[$i]);
+            $this->assertManifestMetadata($outputManifest, $expectedTableMetadata[$i], $expectedColumnMetadata[$i]);
         }
     }
 
@@ -856,7 +906,7 @@ class PgsqlTest extends ExtractorTest
         $outputArr = iterator_to_array($outputCsvFile);
         $expectedArr = iterator_to_array($expectedCsvFile);
         for ($i = 1; $i < count($expectedArr); $i++) {
-            $this->assertEquals($expectedArr[$i], $outputArr[$i]);
+            $this->assertContains($expectedArr[$i], $outputArr);
         }
     }
 
