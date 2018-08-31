@@ -185,14 +185,19 @@ class PgsqlTest extends ExtractorTest
         $outputCsvFile = new CsvFile($this->dataDir . '/out/tables/' . $result['imported'][0]['outputTable'] . '.csv');
         $outputManifestFile = $this->dataDir . '/out/tables/' . $result['imported'][0]['outputTable'] . '.csv.manifest';
 
+        $outputManifest = json_decode(file_get_contents($outputManifestFile), true);
+
+        $this->assertEquals(['funnycol', 'sadcol'], $outputManifest['columns']);
+        $this->assertEquals(['funnycol', 'sadcol'], $outputManifest['primary_key']);
+
         $this->assertEquals('success', $result['status']);
         $this->assertTrue($outputCsvFile->isFile());
         $this->assertFileExists($outputManifestFile);
-        $this->assertEquals($expectedCsvFile->getHeader(), $outputCsvFile->getHeader());
+
         $outputArr = iterator_to_array($outputCsvFile);
         $expectedArr = iterator_to_array($expectedCsvFile);
         for ($i = 1; $i < count($expectedArr); $i++) {
-            $this->assertEquals($expectedArr[$i], $outputArr[$i]);
+            $this->assertContains($expectedArr[$i], $outputArr);
         }
     }
 
