@@ -7,6 +7,7 @@ namespace Keboola\DbExtractor\Extractor;
 use Keboola\Csv\CsvFile;
 use Keboola\DbExtractor\Exception\ApplicationException;
 use Keboola\DbExtractor\Exception\UserException;
+use Keboola\Utils;
 use Symfony\Component\Process\Process;
 use PDO;
 use PDOException;
@@ -62,9 +63,10 @@ class PgSQL extends Extractor
         $outputTable = $table['outputTable'];
 
         $this->logger->info("Exporting to " . $outputTable);
-
+        $advancedQuery = true;
         if (!isset($table['query']) || $table['query'] === '') {
             $query = $this->simpleQuery($table['table'], $table['columns']);
+            $advancedQuery = false;
         } else {
             $query = $table['query'];
         }
@@ -83,7 +85,12 @@ class PgSQL extends Extractor
                 }
                 if (!$copyFailed) {
                     try {
-                        $csvCreated = $this->executeCopyQuery($query, $this->createOutputCsv($outputTable), $table['name']);
+                        $csvCreated = $this->executeCopyQuery(
+                            $query,
+                            $this->createOutputCsv($outputTable),
+                            $table['name'],
+                            $advancedQuery
+                        );
                     } catch (ApplicationException $applicationException) {
                         // There was an error, so let's try the old method
                         if ($applicationException->getCode() === 42) {
@@ -93,7 +100,7 @@ class PgSQL extends Extractor
                         throw $applicationException;
                     }
                 } else {
-                    $csvCreated = $this->executeQueryPDO($query, $this->createOutputCsv($outputTable));
+                    $csvCreated = $this->executeQueryPDO($query, $this->createOutputCsv($outputTable), $advancedQuery);
                 }
                 break;
             } catch (PDOException $e) {
@@ -125,7 +132,7 @@ class PgSQL extends Extractor
         ];
     }
 
-    protected function executeQueryPDO(string $query, CsvFile $csv): bool
+    protected function executeQueryPDO(string $query, CsvFile $csv, bool $advancedQuery): bool
     {
         $cursorName = 'exdbcursor' . intval(microtime(true));
         $curSql = "DECLARE $cursorName CURSOR FOR $query";
@@ -142,7 +149,10 @@ class PgSQL extends Extractor
                 $this->logger->warning("Query returned empty result. Nothing was imported");
                 return false;
             }
-            $csv->writeRow(array_keys($resultRow));
+            // only write header for advanced query case
+            if ($advancedQuery) {
+                $csv->writeRow(array_keys($resultRow));
+            }
             $csv->writeRow($resultRow);
             // write the rest
             $this->logger->info("Fetching data...");
@@ -168,9 +178,14 @@ class PgSQL extends Extractor
         }
     }
 
-    protected function executeCopyQuery(string $query, CsvFile $csvFile, string $tableName): bool
+    protected function executeCopyQuery(string $query, CsvFile $csvFile, string $tableName, bool $advancedQuery): bool
     {
         $this->logger->info(sprintf("Executing query '%s' via \copy ...", $tableName));
+
+        $copyCommand = "\COPY (%s) TO '%s' WITH CSV DELIMITER ',' FORCE QUOTE *;";
+        if ($advancedQuery) {
+            $copyCommand = "\COPY (%s) TO '%s' WITH CSV HEADER DELIMITER ',' FORCE QUOTE *;";
+        }
 
         $command = sprintf(
             "PGPASSWORD='%s' psql -h %s -p %s -U %s -d %s -w -c %s",
@@ -309,6 +324,7 @@ class PgSQL extends Extractor
             }
             $tableDefs[$curTable]['columns'][$column['ordinal_position'] - 1] = [
                 "name" => $column['column_name'],
+                "sanitizedName" => Utils\sanitizeColumnName($column['column_name']),
                 "type" => $column['data_type'],
                 "primaryKey" => ($column['constraint_type'] === "PRIMARY KEY") ? true : false,
                 "length" => $length,

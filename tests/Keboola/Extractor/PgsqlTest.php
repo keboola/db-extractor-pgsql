@@ -74,24 +74,23 @@ class PgsqlTest extends ExtractorTest
         $processes[] = $this->createDbProcess(
             $dbConfig,
             "CREATE TABLE escaping (" .
-                    "col1 varchar(123) NOT NULL DEFAULT 'column 1', " .
-                    "col2 varchar(221) NOT NULL DEFAULT 'column 2', " .
-                    "PRIMARY KEY (col1, col2));"
+            "\"_funnycol\" varchar(123) NOT NULL DEFAULT 'column 1', " .
+            "\"_sadcol\" varchar(221) NOT NULL DEFAULT 'column 2', " .
+            "PRIMARY KEY (\"_funnycol\", \"_sadcol\"));"
         );
-
 
         $processes[] = $this->createDbProcess(
             $dbConfig,
-            "\COPY escaping FROM 'vendor/keboola/db-extractor-common/tests/data/escaping.csv' WITH DELIMITER ',' CSV HEADER;"
+            "\COPY escaping FROM 'vendor/keboola/db-extractor-common/tests/data/escaping.csv' WITH DELIMITER ',' CSV;"
         );
 
         $processes[] = $this->createDbProcess(
             $dbConfig,
             "CREATE TABLE types " .
-                    "(character varchar(123) PRIMARY KEY, " .
-                    "integer integer NOT NULL DEFAULT 42, " .
-                    "decimal decimal(5,3) NOT NULL DEFAULT 1.2, " .
-                    "date date DEFAULT NULL);"
+            "(character varchar(123) PRIMARY KEY, " .
+            "integer integer NOT NULL DEFAULT 42, " .
+            "decimal decimal(5,3) NOT NULL DEFAULT 1.2, " .
+            "date date DEFAULT NULL);"
         );
 
         $processes[] = $this->createDbProcess(
@@ -116,9 +115,9 @@ class PgsqlTest extends ExtractorTest
         $processes[] = $this->createDbProcess(
             $dbConfig,
             "CREATE TABLE testing.escaping (" .
-                    "col1 varchar(123) NOT NULL DEFAULT 'column 1'," .
-                    " col2 varchar(221) NOT NULL DEFAULT 'column 2'," .
-                    " PRIMARY KEY (col1, col2));"
+            "\"_funnycol\" varchar(123) NOT NULL DEFAULT 'column 1', " .
+            "\"_sadcol\" varchar(221) NOT NULL DEFAULT 'column 2', " .
+            "PRIMARY KEY (\"_funnY$-col\", \"_sadcol\"));"
         );
         $processes[] = $this->createDbProcess(
             $dbConfig,
@@ -155,7 +154,10 @@ class PgsqlTest extends ExtractorTest
         $this->assertEquals('success', $result['status']);
         $this->assertTrue($outputCsvFile->isFile());
         $this->assertFileExists($outputManifestFile);
-        $this->assertEquals($expectedCsvFile->getHeader(), $outputCsvFile->getHeader());
+        $outputManifest = json_decode(file_get_contents($outputManifestFile), true);
+
+        $this->assertEquals(['funnycol', 'sadcol'], $outputManifest['columns']);
+        $this->assertEquals(['funnycol', 'sadcol'], $outputManifest['primary_key']);
         $outputArr = iterator_to_array($outputCsvFile);
         $expectedArr = iterator_to_array($expectedCsvFile);
         for ($i = 1; $i < count($expectedArr); $i++) {
@@ -179,7 +181,7 @@ class PgsqlTest extends ExtractorTest
         $app = new Application($config, new Logger('ex-db-pgsql-tests'));
         $result = $app->run();
 
-        $expectedCsvFile = new CsvFile($this->rootPath . 'vendor/keboola/db-extractor-common/tests/data/escaping.csv');
+        $expectedCsvFile = new CsvFile($this->dataDir . '/pgsql/escaping.csv');
         $outputCsvFile = new CsvFile($this->dataDir . '/out/tables/' . $result['imported'][0]['outputTable'] . '.csv');
         $outputManifestFile = $this->dataDir . '/out/tables/' . $result['imported'][0]['outputTable'] . '.csv.manifest';
 
@@ -244,7 +246,8 @@ class PgsqlTest extends ExtractorTest
         $this->assertArrayHasKey('status', $result);
         $this->assertArrayHasKey('tables', $result);
         $this->assertCount(4, $result['tables']);
-        
+
+        var_export($result['tables']);
         $expectedData = [
             0 =>
                 [

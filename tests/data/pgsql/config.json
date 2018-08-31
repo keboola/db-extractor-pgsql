@@ -14,7 +14,7 @@
         "query": "SELECT * FROM escaping",
         "outputTable": "in.c-main-escaping",
         "incremental": false,
-        "primaryKey": null,
+        "primaryKey": ["_funnycol", "_sadcol"],
         "enabled": true
       },{
         "id": 1,
@@ -22,7 +22,7 @@
         "query": "SELECT * FROM escaping LIMIT 0",
         "outputTable": "in.c-main.escapingEmpty",
         "incremental": false,
-        "primaryKey": null,
+        "primaryKey": ["_funnycol", "_sadcol"],
         "enabled": true
       }, {
         "id": 2,
