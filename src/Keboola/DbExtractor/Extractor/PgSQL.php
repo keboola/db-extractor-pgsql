@@ -250,7 +250,7 @@ class PgSQL extends Extractor
             );
         }
 
-        $sql .= $additionalWhereClause . " ORDER BY c.table_schema, c.table_name";
+        $sql .= $additionalWhereClause;
         
         $res = $this->db->query($sql);
         $arr = $res->fetchAll(PDO::FETCH_ASSOC);
@@ -264,6 +264,8 @@ class PgSQL extends Extractor
                 'type' => (isset($table['table_type'])) ? $table['table_type'] : null,
             ];
         }
+
+        ksort($tableDefs);
 
         if (count($tableNameArray) === 0) {
             return [];
