@@ -304,7 +304,7 @@ class PgSQL extends Extractor
                     ON c.table_schema = fks.constraint_schema AND fks.table_name = c.table_name AND fks.column_name = c.column_name 
                     WHERE c.table_schema != 'pg_catalog' AND c.table_schema != 'information_schema'";
 
-        $sql .= $additionalWhereClause . " ORDER BY c.table_schema, c.table_name, c.ordinal_position";
+        $sql .= $additionalWhereClause;
 
         $res = $this->db->query($sql);
 
