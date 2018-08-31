@@ -165,10 +165,10 @@ class PgsqlTest extends ExtractorTest
             'enabled' => true,
             'keys' => [
                 '#private' => $this->getPrivateKey('pgsql'),
-                'public' => $this->getEnv('pgsql', 'DB_SSH_KEY_PUBLIC', true)
+                'public' => $this->getEnv('pgsql', 'DB_SSH_KEY_PUBLIC', true),
             ],
             'user' => 'root',
-            'sshHost' => 'sshproxy'
+            'sshHost' => 'sshproxy',
         ];
 
         $app = new Application($config, new Logger('ex-db-pgsql-tests'));
@@ -805,8 +805,7 @@ class PgsqlTest extends ExtractorTest
         array $outputManifest,
         array $expectedTableMetadata,
         array $expectedColumnMetadata
-    ): void
-    {
+    ): void {
         $this->assertArrayHasKey('destination', $outputManifest);
         $this->assertArrayHasKey('incremental', $outputManifest);
         $this->assertArrayHasKey('metadata', $outputManifest);

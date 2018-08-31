@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 use Keboola\DbExtractor\Application;
 use Keboola\DbExtractor\Exception\ApplicationException;
@@ -36,14 +36,14 @@ try {
 } catch (ApplicationException $e) {
     $logger->log('error', $e->getMessage(), $e->getData());
     exit($e->getCode() > 1 ? $e->getCode(): 2);
-} catch (\Exception $e) {
+} catch (\Throwable $e) {
     $logger->log(
         'error',
         $e->getMessage(),
         [
         'errFile' => $e->getFile(),
         'errLine' => $e->getLine(),
-        'trace' => $e->getTrace()
+        'trace' => $e->getTrace(),
         ]
     );
     exit(2);

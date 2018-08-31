@@ -23,7 +23,7 @@ class PgSQL extends Extractor
 
         // convert errors to PDOExceptions
         $options = [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         ];
 
         // check params
@@ -114,14 +114,14 @@ class PgSQL extends Extractor
                     0,
                     null,
                     [
-                    'table' => $table
+                    'table' => $table,
                     ]
                 );
             }
         }
 
         return [
-            "outputTable"=> $outputTable
+            "outputTable"=> $outputTable,
         ];
     }
 
@@ -261,7 +261,7 @@ class PgSQL extends Extractor
             $tableDefs[$table['table_schema'] . '.' . $table['table_name']] = [
                 'name' => $table['table_name'],
                 'schema' => (isset($table['table_schema'])) ? $table['table_schema'] : null,
-                'type' => (isset($table['table_type'])) ? $table['table_type'] : null
+                'type' => (isset($table['table_type'])) ? $table['table_type'] : null,
             ];
         }
 
@@ -312,7 +312,7 @@ class PgSQL extends Extractor
                 "length" => $length,
                 "nullable" => ($column['is_nullable'] === "NO") ? false : true,
                 "default" => $default,
-                "ordinalPosition" => $column['ordinal_position']
+                "ordinalPosition" => $column['ordinal_position'],
             ];
 
             if ($column['constraint_type'] === "FOREIGN KEY") {
