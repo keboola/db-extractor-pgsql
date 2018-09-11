@@ -132,7 +132,7 @@ class PgSQL extends Extractor
         ];
     }
 
-    protected function executeQueryPDO(string $query, CsvFile $csv, bool $advancedQuery): bool
+    protected function executeQueryPDO(string $query, CsvFile $csv, bool $advancedQuery): void
     {
         $cursorName = 'exdbcursor' . intval(microtime(true));
         $curSql = "DECLARE $cursorName CURSOR FOR $query";
@@ -147,7 +147,7 @@ class PgSQL extends Extractor
             $resultRow = $innerStatement->fetch(PDO::FETCH_ASSOC);
             if (!is_array($resultRow) || empty($resultRow)) {
                 $this->logger->warning("Query returned empty result. Nothing was imported");
-                return false;
+                return;
             }
             // only write header for advanced query case
             if ($advancedQuery) {
@@ -166,7 +166,6 @@ class PgSQL extends Extractor
             $this->db->exec("CLOSE $cursorName");
             $this->db->commit();
             $this->logger->info("Extraction completed");
-            return true;
         } catch (PDOException $e) {
             try {
                 $this->db->rollBack();
@@ -178,7 +177,7 @@ class PgSQL extends Extractor
         }
     }
 
-    protected function executeCopyQuery(string $query, CsvFile $csvFile, string $tableName, bool $advancedQuery): bool
+    protected function executeCopyQuery(string $query, CsvFile $csvFile, string $tableName, bool $advancedQuery): void
     {
         $this->logger->info(sprintf("Executing query '%s' via \copy ...", $tableName));
 
@@ -211,7 +210,6 @@ class PgSQL extends Extractor
             $this->logger->info("Failed \copy command (will attempt via PDO): " . $process->getErrorOutput());
             throw new ApplicationException("Error using copy command.", 42);
         }
-        return true;
     }
 
     public function testConnection(): void
