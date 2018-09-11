@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "419eec963d75688f9bd49ec9c9603738",
+    "content-hash": "4a8f8fbfb24ed634f4d6e781b46e719a",
     "packages": [
         {
             "name": "keboola/csv",
@@ -54,16 +54,16 @@
         },
         {
             "name": "keboola/db-extractor-common",
-            "version": "9.1.4",
+            "version": "9.1.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/db-extractor-common.git",
-                "reference": "2c0cf3720e8af963d1fcaf3f3b2270e60f86cf82"
+                "reference": "c7dbe3e6ecbe36b30ef7807d18d248d3ecc5be5e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/db-extractor-common/zipball/2c0cf3720e8af963d1fcaf3f3b2270e60f86cf82",
-                "reference": "2c0cf3720e8af963d1fcaf3f3b2270e60f86cf82",
+                "url": "https://api.github.com/repos/keboola/db-extractor-common/zipball/c7dbe3e6ecbe36b30ef7807d18d248d3ecc5be5e",
+                "reference": "c7dbe3e6ecbe36b30ef7807d18d248d3ecc5be5e",
                 "shasum": ""
             },
             "require": {
@@ -104,7 +104,7 @@
                 }
             ],
             "description": "Common library from Keboola Database Extractors",
-            "time": "2018-08-17T08:09:18+00:00"
+            "time": "2018-09-07T12:36:01+00:00"
         },
         {
             "name": "keboola/php-datatypes",
@@ -1165,16 +1165,16 @@
         },
         {
             "name": "keboola/coding-standard",
-            "version": "2.0.0",
+            "version": "6.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/phpcs-standard.git",
-                "reference": "3cbf99b16b6445758dfe965943a4ac6778e32c41"
+                "reference": "4c247e4ecf8f9c134efc6b7efe30593923415655"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/phpcs-standard/zipball/3cbf99b16b6445758dfe965943a4ac6778e32c41",
-                "reference": "3cbf99b16b6445758dfe965943a4ac6778e32c41",
+                "url": "https://api.github.com/repos/keboola/phpcs-standard/zipball/4c247e4ecf8f9c134efc6b7efe30593923415655",
+                "reference": "4c247e4ecf8f9c134efc6b7efe30593923415655",
                 "shasum": ""
             },
             "require": {
@@ -1187,7 +1187,7 @@
                 "MIT"
             ],
             "description": "Keboola coding standard",
-            "time": "2018-04-04T12:22:17+00:00"
+            "time": "2018-09-03T10:12:38+00:00"
         },
         {
             "name": "nette/bootstrap",
