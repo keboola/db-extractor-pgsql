@@ -28,7 +28,7 @@ class PgsqlTest extends ExtractorTest
         return new Process(
             sprintf(
                 "PGPASSWORD='%s' psql -h %s -p %s -U %s -d %s -w -c \"$query\"",
-                $dbConfig['password'],
+                $dbConfig['#password'],
                 $dbConfig['host'],
                 $dbConfig['port'],
                 $dbConfig['user'],
@@ -121,7 +121,8 @@ class PgsqlTest extends ExtractorTest
         );
         $processes[] = $this->createDbProcess(
             $dbConfig,
-            "\COPY testing.escaping FROM 'vendor/keboola/db-extractor-common/tests/data/escaping.csv' WITH DELIMITER ',' CSV HEADER;"
+            "\COPY testing.escaping FROM 'vendor/keboola/db-extractor-common/tests/data/escaping.csv' "
+                . "WITH DELIMITER ',' CSV HEADER;"
         );
 
         foreach ($processes as $process) {

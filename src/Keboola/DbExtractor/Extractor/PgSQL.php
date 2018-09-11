@@ -92,7 +92,7 @@ class PgSQL extends Extractor
             $csvCreated = true;
         } catch (Throwable $e) {
             // There was an error, so let's try the old method
-            if (get_class($e) !== "ApplicationException") {
+            if (get_class($e) !== "Keboola\DbExtractor\Exception\ApplicationException") {
                 $this->logger->warning("Unexpected exception executing \copy: " . $e->getMessage());
             }
             try {
@@ -102,18 +102,29 @@ class PgSQL extends Extractor
             };
             $proxy = new RetryProxy($this->logger, $maxTries);
 
-            $csvCreated = $proxy->call(function () use ($query, $outputTable, $advancedQuery) {
-                try {
-                    $this->executeQueryPDO($query, $this->createOutputCsv($outputTable), $advancedQuery);
-                    return true;
-                } catch (Throwable $e) {
+            try {
+                $csvCreated = $proxy->call(function () use ($query, $outputTable, $advancedQuery) {
                     try {
-                        $this->db = $this->createConnection($this->getDbParameters());
+                        $this->executeQueryPDO($query, $this->createOutputCsv($outputTable), $advancedQuery);
+                        return true;
                     } catch (Throwable $e) {
-                    };
-                    throw $e;
-                }
-            });
+                        try {
+                            $this->db = $this->createConnection($this->getDbParameters());
+                        } catch (Throwable $e) {
+                        };
+                        throw $e;
+                    }
+                });
+            } catch (PDOException $e) {
+                throw new UserException(
+                    sprintf(
+                        "Error executing [%s]: " . $e->getMessage(),
+                        $table['name']
+                    )
+                );
+            } catch (Throwable $e) {
+                throw($e);
+            }
         }
         if ($csvCreated) {
             if ($this->createManifest($table) === false) {
@@ -290,7 +301,8 @@ class PgSQL extends Extractor
                     FROM information_schema.columns as c 
                     LEFT JOIN (
                       SELECT
-                            tc.constraint_type, tc.constraint_name, tc.table_name, tc.constraint_schema, kcu.column_name,
+                            tc.constraint_type, tc.constraint_name, tc.table_name, 
+                            tc.constraint_schema, kcu.column_name, 
                             ccu.table_name AS foreign_table_name, ccu.column_name AS foreign_column_name 
                         FROM 
                             information_schema.table_constraints AS tc 
@@ -300,7 +312,9 @@ class PgSQL extends Extractor
                               ON ccu.constraint_name = tc.constraint_name
                         WHERE tc.constraint_type IN ('PRIMARY KEY', 'FOREIGN KEY')
                     ) as fks                    
-                    ON c.table_schema = fks.constraint_schema AND fks.table_name = c.table_name AND fks.column_name = c.column_name 
+                    ON c.table_schema = fks.constraint_schema 
+                    AND fks.table_name = c.table_name 
+                    AND fks.column_name = c.column_name 
                     WHERE c.table_schema != 'pg_catalog' AND c.table_schema != 'information_schema'";
 
         $sql .= $additionalWhereClause;
