@@ -7,6 +7,7 @@ namespace Keboola\DbExtractor\Extractor;
 use Keboola\Csv\CsvFile;
 use Keboola\DbExtractor\Exception\ApplicationException;
 use Keboola\DbExtractor\Exception\UserException;
+use Keboola\DbExtractor\RetryProxy;
 use Keboola\Utils;
 use Symfony\Component\Process\Process;
 use PDO;
@@ -15,6 +16,8 @@ use Throwable;
 
 class PgSQL extends Extractor
 {
+    public const DEFAULT_MAX_TRIES = 5;
+
     /** @var  array */
     private $dbConfig;
 
@@ -72,48 +75,46 @@ class PgSQL extends Extractor
         }
 
         $copyFailed = false;
-        $tries = 0;
+        $maxTries = isset($table['retries']) ? (int) $table['retries'] : self::DEFAULT_MAX_TRIES;
+        $counter = 0;
         $exception = null;
 
         $csvCreated = false;
-        while ($tries < 5) {
-            $exception = null;
-            try {
-                if ($tries > 0) {
-                    $this->logger->info("Retrying query");
-                    $this->restartConnection();
-                }
-                if (!$copyFailed) {
-                    try {
-                        $csvCreated = $this->executeCopyQuery(
-                            $query,
-                            $this->createOutputCsv($outputTable),
-                            $table['name'],
-                            $advancedQuery
-                        );
-                    } catch (ApplicationException $applicationException) {
-                        // There was an error, so let's try the old method
-                        if ($applicationException->getCode() === 42) {
-                            $copyFailed = true;
-                            continue;
-                        }
-                        throw $applicationException;
-                    }
-                } else {
-                    $csvCreated = $this->executeQueryPDO($query, $this->createOutputCsv($outputTable), $advancedQuery);
-                }
-                break;
-            } catch (PDOException $e) {
-                $exception = new UserException("DB query [{$table['name']}] failed: " . $e->getMessage(), 0, $e);
+
+
+        try {
+            $this->executeCopyQuery(
+                $query,
+                $this->createOutputCsv($outputTable),
+                $table['name'],
+                $advancedQuery
+            );
+            $csvCreated = true;
+        } catch (Throwable $e) {
+            // There was an error, so let's try the old method
+            if (get_class($e) !== "ApplicationException") {
+                $this->logger->warning("Unexpected exception executing \copy: " . $e->getMessage());
             }
-            sleep(pow($tries, 2));
-            $tries++;
-        }
+            try {
+                // recreate the db connection
+                $this->restartConnection();
+            } catch (Throwable $e) {
+            };
+            $proxy = new RetryProxy($this->logger, $maxTries);
 
-        if ($exception) {
-            throw $exception;
+            $csvCreated = $proxy->call(function () use ($query, $outputTable, $advancedQuery) {
+                try {
+                    $this->executeQueryPDO($query, $this->createOutputCsv($outputTable), $advancedQuery);
+                    return true;
+                } catch (Throwable $e) {
+                    try {
+                        $this->db = $this->createConnection($this->getDbParameters());
+                    } catch (Throwable $e) {
+                    };
+                    throw $e;
+                }
+            });
         }
-
         if ($csvCreated) {
             if ($this->createManifest($table) === false) {
                 throw new ApplicationException(
