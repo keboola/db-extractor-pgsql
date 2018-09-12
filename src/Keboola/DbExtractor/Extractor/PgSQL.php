@@ -358,7 +358,7 @@ class PgSQL extends Extractor
         return array_values($tableDefs);
     }
 
-    public function simpleQuery(array $table, array $columns = array()): string
+    public function simpleQuery(array $table, array $columns = []): string
     {
         if (count($columns) > 0) {
             return sprintf(

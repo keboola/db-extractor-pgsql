@@ -22,7 +22,7 @@ class ApplicationTest extends ExtractorTest
 
     public function setUp(): void
     {
-        $this->rootPath = '/code/';
+        $this->rootPath = __DIR__ . '/../../..';
 
         parent::setUp();
         if (getenv('EXTERNAL_PG_HOST') === false) {
