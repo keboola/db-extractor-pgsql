@@ -285,8 +285,8 @@ class PgSQL extends Extractor
             $tableNameArray[] = $table['table_name'];
             $tableDefs[$table['table_schema'] . '.' . $table['table_name']] = [
                 'name' => $table['table_name'],
-                'schema' => (isset($table['table_schema'])) ? $table['table_schema'] : null,
-                'type' => (isset($table['table_type'])) ? $table['table_type'] : null,
+                'schema' => $table['table_schema'] ?? null,
+                'type' => $table['table_type'] ?? null,
             ];
         }
 
