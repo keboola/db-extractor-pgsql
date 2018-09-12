@@ -49,7 +49,7 @@ try {
 
     $result = $app->run();
     if (!$runAction) {
-        echo json_encode($app->run());
+        echo json_encode($result);
     }
     $app['logger']->log('info', "Extractor finished successfully.");
     exit(0);
