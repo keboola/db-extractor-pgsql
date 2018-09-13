@@ -92,7 +92,7 @@ class PgSQL extends Extractor
             $csvCreated = true;
         } catch (Throwable $e) {
             // There was an error, so let's try the old method
-            if (get_class($e) !== "Keboola\DbExtractor\Exception\ApplicationException") {
+            if (!$e instanceof ApplicationException) {
                 $this->logger->warning("Unexpected exception executing \copy: " . $e->getMessage());
             }
             try {
