@@ -90,15 +90,15 @@ class PgSQL extends Extractor
                 $advancedQuery
             );
             $csvCreated = true;
-        } catch (Throwable $e) {
+        } catch (Throwable $copyError) {
             // There was an error, so let's try the old method
-            if (!$e instanceof ApplicationException) {
-                $this->logger->warning("Unexpected exception executing \copy: " . $e->getMessage());
+            if (!$copyError instanceof ApplicationException) {
+                $this->logger->warning("Unexpected exception executing \copy: " . $copyError->getMessage());
             }
             try {
                 // recreate the db connection
                 $this->restartConnection();
-            } catch (Throwable $e) {
+            } catch (Throwable $connectionError) {
             };
             $proxy = new RetryProxy($this->logger, $maxTries);
 
@@ -107,23 +107,23 @@ class PgSQL extends Extractor
                     try {
                         $this->executeQueryPDO($query, $this->createOutputCsv($outputTable), $advancedQuery);
                         return true;
-                    } catch (Throwable $e) {
+                    } catch (Throwable $queryError) {
                         try {
                             $this->db = $this->createConnection($this->getDbParameters());
-                        } catch (Throwable $e) {
+                        } catch (Throwable $connectionError) {
                         };
-                        throw $e;
+                        throw $queryError;
                     }
                 });
-            } catch (PDOException $e) {
+            } catch (PDOException $pdoError) {
                 throw new UserException(
                     sprintf(
-                        "Error executing [%s]: " . $e->getMessage(),
+                        "Error executing [%s]: " . $pdoError->getMessage(),
                         $table['name']
                     )
                 );
-            } catch (Throwable $e) {
-                throw($e);
+            } catch (Throwable $generalError) {
+                throw($generalError);
             }
         }
         if ($csvCreated) {
