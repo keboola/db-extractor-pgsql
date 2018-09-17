@@ -3,9 +3,7 @@ services:
   app:
     build: .
     image: keboola/ex-db-pgsql
-    tty: true
-    stdin_open: true
-    command: ["./wait-for-it.sh", "pgsql:5432", "-t", "30", "--", "./vendor/bin/phpunit"]
+    command: composer ci
     env_file:
       - ssh-keys.env
     environment:
@@ -27,9 +25,7 @@ services:
     image: keboola/ex-db-pgsql
     volumes:
       - .:/code
-    tty: true
-    stdin_open: true
-    command: ["./wait-for-it.sh", "pgsql:5432", "-t", "30", "--", "./vendor/bin/phpunit"]
+    command: composer ci
     env_file:
       - ssh-keys.env
     environment:

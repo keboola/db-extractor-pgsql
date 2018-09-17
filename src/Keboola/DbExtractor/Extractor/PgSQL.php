@@ -1,29 +1,33 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: miroslavcillik
- * Date: 10/02/16
- * Time: 17:49
- */
+
+declare(strict_types=1);
 
 namespace Keboola\DbExtractor\Extractor;
 
 use Keboola\Csv\CsvFile;
 use Keboola\DbExtractor\Exception\ApplicationException;
 use Keboola\DbExtractor\Exception\UserException;
+use Keboola\DbExtractor\RetryProxy;
+use Keboola\Utils;
 use Symfony\Component\Process\Process;
+use PDO;
+use PDOException;
+use Throwable;
 
 class PgSQL extends Extractor
 {
+    public const DEFAULT_MAX_TRIES = 5;
+
+    /** @var  array */
     private $dbConfig;
 
-    public function createConnection($dbParams)
+    public function createConnection(array $dbParams): PDO
     {
         $this->dbConfig = $dbParams;
 
         // convert errors to PDOExceptions
         $options = [
-            \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         ];
 
         // check params
@@ -42,71 +46,86 @@ class PgSQL extends Extractor
             $dbParams['database']
         );
 
-        $pdo = new \PDO($dsn, $dbParams['user'], $dbParams['password'], $options);
+        $pdo = new PDO($dsn, $dbParams['user'], $dbParams['password'], $options);
         $pdo->exec("SET NAMES 'UTF8';");
 
         return $pdo;
     }
 
-    private function restartConnection()
+    private function restartConnection(): void
     {
         try {
             $this->db = $this->createConnection($this->dbConfig);
-        } catch (\Exception $e) {
+        } catch (Throwable $e) {
             throw new UserException(sprintf("Error connecting to DB: %s", $e->getMessage()), 0, $e);
         }
     }
 
-    public function export(array $table)
+    public function export(array $table): array
     {
         $outputTable = $table['outputTable'];
 
         $this->logger->info("Exporting to " . $outputTable);
-
+        $advancedQuery = true;
         if (!isset($table['query']) || $table['query'] === '') {
             $query = $this->simpleQuery($table['table'], $table['columns']);
+            $advancedQuery = false;
         } else {
             $query = $table['query'];
         }
 
         $copyFailed = false;
-        $tries = 0;
+        $maxTries = isset($table['retries']) ? (int) $table['retries'] : self::DEFAULT_MAX_TRIES;
+        $counter = 0;
         $exception = null;
 
         $csvCreated = false;
-        while ($tries < 5) {
-            $exception = null;
-            try {
-                if ($tries > 0) {
-                    $this->logger->info("Retrying query");
-                    $this->restartConnection();
-                }
-                if (!$copyFailed) {
-                    try {
-                        $csvCreated = $this->executeQuery($query, $this->createOutputCsv($outputTable), $table['name']);
-                    } catch (ApplicationException $applicationException) {
-                        // There was an error, so let's try the old method
-                        if ($applicationException->getCode() === 42) {
-                            $copyFailed = true;
-                            continue;
-                        }
-                        throw $applicationException;
-                    }
-                } else {
-                    $csvCreated = $this->executeQueryPDO($query, $this->createOutputCsv($outputTable));
-                }
-                break;
-            } catch (\PDOException $e) {
-                $exception = new UserException("DB query [{$table['name']}] failed: " . $e->getMessage(), 0, $e);
+
+
+        try {
+            $this->executeCopyQuery(
+                $query,
+                $this->createOutputCsv($outputTable),
+                $table['name'],
+                $advancedQuery
+            );
+            $csvCreated = true;
+        } catch (Throwable $copyError) {
+            // There was an error, so let's try the old method
+            if (!$copyError instanceof ApplicationException) {
+                $this->logger->warning("Unexpected exception executing \copy: " . $copyError->getMessage());
             }
-            sleep(pow($tries, 2));
-            $tries++;
-        }
+            try {
+                // recreate the db connection
+                $this->restartConnection();
+            } catch (Throwable $connectionError) {
+            };
+            $proxy = new RetryProxy($this->logger, $maxTries);
 
-        if ($exception) {
-            throw $exception;
+            try {
+                $csvCreated = $proxy->call(function () use ($query, $outputTable, $advancedQuery) {
+                    try {
+                        $this->executeQueryPDO($query, $this->createOutputCsv($outputTable), $advancedQuery);
+                        return true;
+                    } catch (Throwable $queryError) {
+                        try {
+                            $this->db = $this->createConnection($this->getDbParameters());
+                        } catch (Throwable $connectionError) {
+                        };
+                        throw $queryError;
+                    }
+                });
+            } catch (PDOException $pdoError) {
+                throw new UserException(
+                    sprintf(
+                        "Error executing [%s]: " . $pdoError->getMessage(),
+                        $table['name']
+                    )
+                );
+            } catch (Throwable $generalError) {
+                throw($generalError);
+            }
         }
-
         if ($csvCreated) {
             if ($this->createManifest($table) === false) {
                 throw new ApplicationException(
@@ -114,16 +133,18 @@ class PgSQL extends Extractor
                     0,
                     null,
                     [
-                    'table' => $table
+                    'table' => $table,
                     ]
                 );
             }
         }
 
-        return $outputTable;
+        return [
+            "outputTable"=> $outputTable,
+        ];
     }
 
-    protected function executeQueryPDO($query, CsvFile $csv)
+    protected function executeQueryPDO(string $query, CsvFile $csv, bool $advancedQuery): void
     {
         $cursorName = 'exdbcursor' . intval(microtime(true));
         $curSql = "DECLARE $cursorName CURSOR FOR $query";
@@ -135,17 +156,20 @@ class PgSQL extends Extractor
             $innerStatement = $this->db->prepare("FETCH 1 FROM $cursorName");
             $innerStatement->execute();
             // write header and first line
-            $resultRow = $innerStatement->fetch(\PDO::FETCH_ASSOC);
+            $resultRow = $innerStatement->fetch(PDO::FETCH_ASSOC);
             if (!is_array($resultRow) || empty($resultRow)) {
                 $this->logger->warning("Query returned empty result. Nothing was imported");
-                return false;
+                return;
             }
-            $csv->writeRow(array_keys($resultRow));
+            // only write header for advanced query case
+            if ($advancedQuery) {
+                $csv->writeRow(array_keys($resultRow));
+            }
             $csv->writeRow($resultRow);
             // write the rest
             $this->logger->info("Fetching data...");
             $innerStatement = $this->db->prepare("FETCH 10000 FROM $cursorName");
-            while ($innerStatement->execute() && count($resultRows = $innerStatement->fetchAll(\PDO::FETCH_ASSOC)) > 0) {
+            while ($innerStatement->execute() && count($resultRows = $innerStatement->fetchAll(PDO::FETCH_ASSOC)) > 0) {
                 foreach ($resultRows as $resultRow) {
                     $csv->writeRow($resultRow);
                 }
@@ -154,11 +178,10 @@ class PgSQL extends Extractor
             $this->db->exec("CLOSE $cursorName");
             $this->db->commit();
             $this->logger->info("Extraction completed");
-            return true;
-        } catch (\PDOException $e) {
+        } catch (PDOException $e) {
             try {
                 $this->db->rollBack();
-            } catch (\Exception $e2) {
+            } catch (Throwable $e2) {
             }
             $innerStatement = null;
             $stmt = null;
@@ -166,9 +189,14 @@ class PgSQL extends Extractor
         }
     }
 
-    protected function executeQuery($query, CsvFile $csvFile, $tableName)
+    protected function executeCopyQuery(string $query, CsvFile $csvFile, string $tableName, bool $advancedQuery): void
     {
         $this->logger->info(sprintf("Executing query '%s' via \copy ...", $tableName));
+
+        $copyCommand = "\COPY (%s) TO '%s' WITH CSV DELIMITER ',' FORCE QUOTE *;";
+        if ($advancedQuery) {
+            $copyCommand = "\COPY (%s) TO '%s' WITH CSV HEADER DELIMITER ',' FORCE QUOTE *;";
+        }
 
         $command = sprintf(
             "PGPASSWORD='%s' psql -h %s -p %s -U %s -d %s -w -c %s",
@@ -179,7 +207,7 @@ class PgSQL extends Extractor
             $this->dbConfig['database'],
             escapeshellarg(
                 sprintf(
-                    "\COPY (%s) TO '%s' WITH CSV HEADER DELIMITER ',' FORCE QUOTE *;",
+                    $copyCommand,
                     rtrim($query, '; '),
                     $csvFile
                 )
@@ -194,10 +222,9 @@ class PgSQL extends Extractor
             $this->logger->info("Failed \copy command (will attempt via PDO): " . $process->getErrorOutput());
             throw new ApplicationException("Error using copy command.", 42);
         }
-        return true;
     }
 
-    public function testConnection()
+    public function testConnection(): void
     {
         // check PDO connection
         $this->db->query("SELECT 1");
@@ -218,7 +245,7 @@ class PgSQL extends Extractor
         }
     }
 
-    public function getTables(array $tables = null)
+    public function getTables(?array $tables = null): array
     {
         $sql = "SELECT * FROM information_schema.tables as c
                 WHERE c.table_schema != 'pg_catalog' AND c.table_schema != 'information_schema'";
@@ -248,20 +275,22 @@ class PgSQL extends Extractor
             );
         }
 
-        $sql .= $additionalWhereClause . " ORDER BY c.table_schema, c.table_name";
+        $sql .= $additionalWhereClause;
         
         $res = $this->db->query($sql);
-        $arr = $res->fetchAll(\PDO::FETCH_ASSOC);
+        $arr = $res->fetchAll(PDO::FETCH_ASSOC);
         $tableNameArray = [];
         $tableDefs = [];
         foreach ($arr as $table) {
             $tableNameArray[] = $table['table_name'];
             $tableDefs[$table['table_schema'] . '.' . $table['table_name']] = [
                 'name' => $table['table_name'],
-                'schema' => (isset($table['table_schema'])) ? $table['table_schema'] : null,
-                'type' => (isset($table['table_type'])) ? $table['table_type'] : null
+                'schema' => $table['table_schema'] ?? null,
+                'type' => $table['table_type'] ?? null,
             ];
         }
+
+        ksort($tableDefs);
 
         if (count($tableNameArray) === 0) {
             return [];
@@ -272,7 +301,8 @@ class PgSQL extends Extractor
                     FROM information_schema.columns as c 
                     LEFT JOIN (
                       SELECT
-                            tc.constraint_type, tc.constraint_name, tc.table_name, tc.constraint_schema, kcu.column_name,
+                            tc.constraint_type, tc.constraint_name, tc.table_name, 
+                            tc.constraint_schema, kcu.column_name, 
                             ccu.table_name AS foreign_table_name, ccu.column_name AS foreign_column_name 
                         FROM 
                             information_schema.table_constraints AS tc 
@@ -282,14 +312,16 @@ class PgSQL extends Extractor
                               ON ccu.constraint_name = tc.constraint_name
                         WHERE tc.constraint_type IN ('PRIMARY KEY', 'FOREIGN KEY')
                     ) as fks                    
-                    ON c.table_schema = fks.constraint_schema AND fks.table_name = c.table_name AND fks.column_name = c.column_name 
+                    ON c.table_schema = fks.constraint_schema 
+                    AND fks.table_name = c.table_name 
+                    AND fks.column_name = c.column_name 
                     WHERE c.table_schema != 'pg_catalog' AND c.table_schema != 'information_schema'";
 
-        $sql .= $additionalWhereClause . " ORDER BY c.table_schema, c.table_name, c.ordinal_position";
+        $sql .= $additionalWhereClause;
 
         $res = $this->db->query($sql);
 
-        while ($column = $res->fetch(\PDO::FETCH_ASSOC)) {
+        while ($column = $res->fetch(PDO::FETCH_ASSOC)) {
             $curTable = $column['table_schema'] . '.' . $column['table_name'];
             $length = ($column['data_type'] === 'character varying') ? $column['character_maximum_length'] : null;
             if (is_null($length) && !is_null($column['numeric_precision'])) {
@@ -305,12 +337,13 @@ class PgSQL extends Extractor
             }
             $tableDefs[$curTable]['columns'][$column['ordinal_position'] - 1] = [
                 "name" => $column['column_name'],
+                "sanitizedName" => Utils\sanitizeColumnName($column['column_name']),
                 "type" => $column['data_type'],
                 "primaryKey" => ($column['constraint_type'] === "PRIMARY KEY") ? true : false,
                 "length" => $length,
                 "nullable" => ($column['is_nullable'] === "NO") ? false : true,
                 "default" => $default,
-                "ordinalPosition" => $column['ordinal_position']
+                "ordinalPosition" => $column['ordinal_position'],
             ];
 
             if ($column['constraint_type'] === "FOREIGN KEY") {
@@ -325,7 +358,7 @@ class PgSQL extends Extractor
         return array_values($tableDefs);
     }
 
-    public function simpleQuery(array $table, array $columns = array())
+    public function simpleQuery(array $table, array $columns = []): string
     {
         if (count($columns) > 0) {
             return sprintf(
@@ -350,7 +383,7 @@ class PgSQL extends Extractor
             );
         }
     }
-    private function quote($obj)
+    private function quote(string $obj): string
     {
         return "\"{$obj}\"";
     }

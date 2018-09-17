@@ -8,11 +8,7 @@
          processIsolation="false"
          stopOnFailure="false"
          syntaxCheck="false"
-         bootstrap="vendor/keboola/db-extractor-common/bootstrap.php">
-
-    <php>
-        <const name="ROOT_PATH" value="/code/"/>
-    </php>
+         bootstrap="vendor/autoload.php">
 
     <testsuite name="DB Extractor PgSQL Test Suite">
         <directory>tests/Keboola/Extractor</directory>

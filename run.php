@@ -1,52 +1,74 @@
 <?php
 
+declare(strict_types=1);
+
 use Keboola\DbExtractor\Application;
-use Keboola\DbExtractor\Exception\ApplicationException;
 use Keboola\DbExtractor\Exception\UserException;
 use Keboola\DbExtractor\Logger;
 use Monolog\Handler\NullHandler;
+use Symfony\Component\Serializer\Encoder\JsonDecode;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Yaml\Yaml;
 
-define('APP_NAME', 'ex-db-pgsql');
-define('ROOT_PATH', __DIR__);
+require_once(__DIR__ . "/vendor/autoload.php");
 
-require_once dirname(__FILE__) . "/vendor/keboola/db-extractor-common/bootstrap.php";
+$logger = new Logger('ex-db-pgsql');
 
-$logger = new Logger(APP_NAME);
+$runAction = true;
 
 try {
     $arguments = getopt("d::", ["data::"]);
     if (!isset($arguments["data"])) {
         throw new UserException('Data folder not set.');
     }
-    $config = Yaml::parse(file_get_contents($arguments["data"] . "/config.yml"));
+
+    $jsonDecode = new JsonDecode(true);
+
+    if (file_exists($arguments["data"] . "/config.yml")) {
+        $config = Yaml::parse(
+            file_get_contents($arguments["data"] . "/config.yml")
+        );
+    } else if (file_exists($arguments["data"] . "/config.json")) {
+        $config = $jsonDecode->decode(
+            file_get_contents($arguments["data"] . '/config.json'),
+            JsonEncoder::FORMAT
+        );
+    } else {
+        throw new UserException('Configuration file not found.');
+    }
+
     $config['parameters']['data_dir'] = $arguments['data'];
     $config['parameters']['extractor_class'] = 'PgSQL';
 
-    $app = new Application($config);
+    $app = new Application($config, $logger);
 
     if ($app['action'] !== 'run') {
         $app['logger']->setHandlers(array(new NullHandler(Logger::INFO)));
         $runAction = false;
     }
 
-    echo json_encode($app->run());
+    $result = $app->run();
+    if (!$runAction) {
+        echo json_encode($result);
+    }
+    $app['logger']->log('info', "Extractor finished successfully.");
+    exit(0);
 } catch (UserException $e) {
-    $logger->log('error', $e->getMessage(), $e->getData());
+    $logger->log('error', $e->getMessage());
+    if (!$runAction) {
+        echo $e->getMessage();
+    }
     exit(1);
-} catch (ApplicationException $e) {
-    $logger->log('error', $e->getMessage(), $e->getData());
-    exit($e->getCode() > 1 ? $e->getCode(): 2);
-} catch (\Exception $e) {
-    $logger->log(
-        'error',
-        $e->getMessage(),
+} catch (Throwable $e) {
+    $logger->critical(
+        get_class($e) . ':' . $e->getMessage(),
         [
-        'errFile' => $e->getFile(),
-        'errLine' => $e->getLine(),
-        'trace' => $e->getTrace()
+            'errFile' => $e->getFile(),
+            'errLine' => $e->getLine(),
+            'errCode' => $e->getCode(),
+            'errTrace' => $e->getTraceAsString(),
+            'errPrevious' => $e->getPrevious() ? get_class($e->getPrevious()) : '',
         ]
     );
     exit(2);
 }
-exit(0);

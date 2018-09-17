@@ -10,10 +10,14 @@ parameters:
         -
             id: 0
             name: escaping
-            query: "SELECT * FROM escaping"
+            table:
+              schema: public
+              tableName: escaping
             outputTable: in.c-main.escaping
             incremental: false
-            primaryKey: ~
+            primaryKey:
+              - _funnycol
+              - _sadcol
             enabled: true
 
         -
@@ -22,7 +26,9 @@ parameters:
             query: "SELECT * FROM escaping LIMIT 0"
             outputTable: in.c-main.escapingEmpty
             incremental: false
-            primaryKey: ~
+            primaryKey:
+              - _funnycol
+              - _sadcol
             enabled: true
         -
             id: 2

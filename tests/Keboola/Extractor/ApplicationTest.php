@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DbExtractor\Tests;
 
 use Keboola\DbExtractor\Test\ExtractorTest;
@@ -9,20 +11,19 @@ use Symfony\Component\Yaml\Yaml;
 
 class ApplicationTest extends ExtractorTest
 {
-    /**
-     * @var array
-     */
+    /** @var array */
     private $dbConfig;
 
+    /** @var  string */
     protected $rootPath;
 
-    public function setUp()
-    {
+    /** @var string  */
+    protected $dataDir = __DIR__ . '/../../data';
 
-        if (!defined('ROOT_PATH')) {
-            define('ROOT_PATH', '/code/');
-        }
-        $this->rootPath = getenv('ROOT_PATH') ? getenv('ROOT_PATH') : '/code/';
+    public function setUp(): void
+    {
+        $this->rootPath = __DIR__ . '/../../..';
+
         parent::setUp();
         if (getenv('EXTERNAL_PG_HOST') === false) {
             $this->fail("Missing environment var 'EXTERNAL_PG_HOST'");
@@ -43,11 +44,11 @@ class ApplicationTest extends ExtractorTest
         $this->dbConfig['port'] = (!is_null(getenv('EXTERNAL_PG_PORT'))) ? getenv('EXTERNAL_PG_PORT') : 5432;
     }
 
-    public function testRunAction()
+    public function testRunAction(): void
     {
         $outputCsvFile = new CsvFile($this->dataDir . '/out/tables/in.c-main.info_schema.csv');
         $manifestFile = $this->dataDir . '/out/tables/in.c-main.info_schema.csv.manifest';
-        @unlink($outputCsvFile);
+        @unlink($outputCsvFile->getPathname());
         @unlink($manifestFile);
 
         $config = Yaml::parse(file_get_contents($this->dataDir . '/pgsql/external_config.yml'));
@@ -66,7 +67,7 @@ class ApplicationTest extends ExtractorTest
         $this->assertFileExists($manifestFile);
     }
 
-    public function testTestConnectionAction()
+    public function testTestConnectionAction(): void
     {
         $config = Yaml::parse(file_get_contents($this->dataDir . '/pgsql/external_config.yml'));
         @unlink($this->dataDir . '/config.yml');
@@ -82,7 +83,7 @@ class ApplicationTest extends ExtractorTest
         $this->assertEquals("", $process->getErrorOutput());
     }
 
-    public function testTrailingSemicolonQuery()
+    public function testTrailingSemicolonQuery(): void
     {
         $config = Yaml::parse(file_get_contents($this->dataDir . '/pgsql/external_config.yml'));
         $config['parameters']['db'] = $this->dbConfig;
@@ -97,7 +98,7 @@ class ApplicationTest extends ExtractorTest
         $this->assertEquals("", $process->getErrorOutput());
     }
 
-    public function testProcessTimeout()
+    public function testProcessTimeout(): void
     {
         $config = Yaml::parse(file_get_contents($this->dataDir . '/pgsql/external_config.yml'));
         $config['parameters']['db'] = $this->dbConfig;
@@ -112,7 +113,7 @@ class ApplicationTest extends ExtractorTest
         $this->assertEquals("", $process->getErrorOutput());
     }
 
-    public function testUserError()
+    public function testUserError(): void
     {
         $config = Yaml::parse(file_get_contents($this->dataDir . '/pgsql/external_config.yml'));
         $config['parameters']['db'] = $this->dbConfig;
@@ -123,17 +124,17 @@ class ApplicationTest extends ExtractorTest
         $process = new Process('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
         $process->run();
-
+        
         $this->assertFalse(strstr($process->getErrorOutput(), "PGPASSWORD"));
         $this->assertContains($config['parameters']['tables'][0]['name'], $process->getErrorOutput());
         $this->assertEquals(1, $process->getExitCode());
     }
 
-    public function testPDOFallback()
+    public function testPDOFallback(): void
     {
         $outputCsvFile = new CsvFile($this->dataDir . '/out/tables/in.c-main.info_schema.csv');
         $manifestFile = $this->dataDir . '/out/tables/in.c-main.info_schema.csv.manifest';
-        @unlink($outputCsvFile);
+        @unlink($outputCsvFile->getPathname());
         @unlink($manifestFile);
 
         $config = Yaml::parse(file_get_contents($this->dataDir . '/pgsql/external_config.yml'));
@@ -161,7 +162,7 @@ class ApplicationTest extends ExtractorTest
         $this->assertFileExists($manifestFile);
     }
 
-    public function testGetTablesAction()
+    public function testGetTablesAction(): void
     {
         $config = Yaml::parse(file_get_contents($this->dataDir . '/pgsql/external_config.yml'));
         @unlink($this->dataDir . '/config.yml');
