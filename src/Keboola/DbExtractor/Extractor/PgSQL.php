@@ -354,6 +354,8 @@ class PgSQL extends Extractor
                 $tableDefs[$curTable]['columns'][$column['ordinal_position'] - 1]['foreignKeyRef'] =
                     $column['constraint_name'];
             }
+            // make sure columns are sorted by index which is ordinal_position - 1
+            ksort($tableDefs[$curTable]['columns']);
         }
         return array_values($tableDefs);
     }
