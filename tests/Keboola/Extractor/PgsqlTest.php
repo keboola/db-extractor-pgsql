@@ -911,6 +911,40 @@ class PgsqlTest extends ExtractorTest
         }
     }
 
+    public function testColumnOrdering(): void
+    {
+        $config = $this->getConfig();
+
+        // use just 1 table
+        unset($config['parameters']['tables'][0]);
+        unset($config['parameters']['tables'][1]);
+        unset($config['parameters']['tables'][2]['columns']);
+
+        $app = new Application($config, new Logger('ex-db-pgsql-tests'));
+        $result = $app->run();
+
+        $this->assertEquals('success', $result['status']);
+
+        $expectedCsvFile = new CsvFile($this->dataDir . '/pgsql/types.csv');
+        $outputCsvFile = new CsvFile($this->dataDir . '/out/tables/' . $result['imported'][0]['outputTable'] . '.csv');
+        $outputManifestFile = $this->dataDir . '/out/tables/' . $result['imported'][0]['outputTable'] . '.csv.manifest';
+        $outputManifest = json_decode(file_get_contents($outputManifestFile), true);
+        // check that the manifest has the correct column ordering
+        $this->assertEquals(['character', 'integer', 'decimal', 'date'], $outputManifest['columns']);
+
+        // check the data
+        $expectedData = iterator_to_array($expectedCsvFile);
+        $outputData = iterator_to_array($outputCsvFile);
+
+        $this->assertCount(4, $outputData);
+        foreach ($outputData as $rowNum => $line) {
+            // assert timestamp
+            $this->assertNotFalse(strtotime($line[3]));
+            $this->assertEquals($line[1], $expectedData[$rowNum + 1][1]);
+            $this->assertEquals($line[2], $expectedData[$rowNum + 1][2]);
+        }
+    }
+
     public function configTypesProvider(): array
     {
         return [
