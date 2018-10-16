@@ -23,18 +23,31 @@ class PgsqlTest extends ExtractorTest
     /** @var string  */
     protected $dataDir = __DIR__ . '/../../data';
 
-    private function createDbProcess(array $dbConfig, string $query): Process
+    /** @var  array */
+    protected $dbConfig;
+
+    private function createDbProcess(string $query): Process
     {
         return new Process(
             sprintf(
                 "PGPASSWORD='%s' psql -h %s -p %s -U %s -d %s -w -c \"$query\"",
-                $dbConfig['#password'],
-                $dbConfig['host'],
-                $dbConfig['port'],
-                $dbConfig['user'],
-                $dbConfig['database']
+                $this->dbConfig['#password'],
+                $this->dbConfig['host'],
+                $this->dbConfig['port'],
+                $this->dbConfig['user'],
+                $this->dbConfig['database']
             )
         );
+    }
+
+    private function runProcesses(array $processes): void
+    {
+        foreach ($processes as $process) {
+            $process->run();
+            if (!$process->isSuccessful()) {
+                $this->fail($process->getErrorOutput());
+            }
+        }
     }
 
     public function setUp(): void
@@ -44,35 +57,29 @@ class PgsqlTest extends ExtractorTest
         $logger = new Logger('ex-db-pgsql-tests');
         $this->app = new Application($config, $logger);
 
-        $dbConfig = $config['parameters']['db'];
+        $this->dbConfig = $config['parameters']['db'];
 
         // drop test tables
         $processes = [];
         // create a duplicate table in a different schema
         $processes[] = $this->createDbProcess(
-            $dbConfig,
             "CREATE SCHEMA IF NOT EXISTS testing;"
         );
         $processes[] = $this->createDbProcess(
-            $dbConfig,
             "DROP TABLE IF EXISTS escaping;"
         );
         $processes[] = $this->createDbProcess(
-            $dbConfig,
             "DROP TABLE IF EXISTS testing.escaping;"
         );
         $processes[] = $this->createDbProcess(
-            $dbConfig,
             "DROP TABLE IF EXISTS types_fk;"
         );
         $processes[] = $this->createDbProcess(
-            $dbConfig,
             "DROP TABLE IF EXISTS types;"
         );
 
         // create test tables
         $processes[] = $this->createDbProcess(
-            $dbConfig,
             "CREATE TABLE escaping (" .
             "\"_funnycol\" varchar(123) NOT NULL DEFAULT 'column 1', " .
             "\"_sadcol\" varchar(221) NOT NULL DEFAULT 'column 2', " .
@@ -80,12 +87,10 @@ class PgsqlTest extends ExtractorTest
         );
 
         $processes[] = $this->createDbProcess(
-            $dbConfig,
             "\COPY escaping FROM 'vendor/keboola/db-extractor-common/tests/data/escaping.csv' WITH DELIMITER ',' CSV;"
         );
 
         $processes[] = $this->createDbProcess(
-            $dbConfig,
             "CREATE TABLE types " .
             "(character varchar(123) PRIMARY KEY, " .
             "integer integer NOT NULL DEFAULT 42, " .
@@ -94,12 +99,10 @@ class PgsqlTest extends ExtractorTest
         );
 
         $processes[] = $this->createDbProcess(
-            $dbConfig,
             "\COPY types FROM 'tests/data/pgsql/types.csv' WITH DELIMITER ',' CSV HEADER;"
         );
 
         $processes[] = $this->createDbProcess(
-            $dbConfig,
             "CREATE TABLE types_fk " .
             "(character varchar(123) REFERENCES types (character), " .
             "integer integer NOT NULL DEFAULT 42, " .
@@ -108,29 +111,21 @@ class PgsqlTest extends ExtractorTest
         );
 
         $processes[] = $this->createDbProcess(
-            $dbConfig,
             "\COPY types_fk FROM 'tests/data/pgsql/types.csv' WITH DELIMITER ',' CSV HEADER;"
         );
 
         $processes[] = $this->createDbProcess(
-            $dbConfig,
             "CREATE TABLE testing.escaping (" .
             "\"_funnycol\" varchar(123) NOT NULL DEFAULT 'column 1', " .
             "\"_sadcol\" varchar(221) NOT NULL DEFAULT 'column 2', " .
             "PRIMARY KEY (\"_funnY$-col\", \"_sadcol\"));"
         );
         $processes[] = $this->createDbProcess(
-            $dbConfig,
             "\COPY testing.escaping FROM 'vendor/keboola/db-extractor-common/tests/data/escaping.csv' "
                 . "WITH DELIMITER ',' CSV HEADER;"
         );
 
-        foreach ($processes as $process) {
-            $process->run();
-            if (!$process->isSuccessful()) {
-                $this->fail($process->getErrorOutput());
-            }
-        }
+        $this->runProcesses($processes);
     }
 
     public function getConfig(string $driver = 'pgsql', string $format = parent::CONFIG_FORMAT_YAML): array
@@ -943,6 +938,60 @@ class PgsqlTest extends ExtractorTest
             $this->assertEquals($line[1], $expectedData[$rowNum + 1][1]);
             $this->assertEquals($line[2], $expectedData[$rowNum + 1][2]);
         }
+    }
+
+    public function testThousandsOfTablesGetTables(): void
+    {
+        // $this->markTestSkipped("No need to run this test every time.");
+        $testStartTime = time();
+        $numberOfSchemas = 5;
+        $numberOfTablesPerSchema = 100;
+        $numberOfColumnsPerTable = 50;
+
+        $processes = [];
+        for ($i = 0; $i < $numberOfSchemas; $i++) {
+            $processes[] = $this->createDbProcess(sprintf('DROP SCHEMA IF EXISTS testschema_%d CASCADE', $i));
+        }
+
+        // gen columns
+        $columnsSql = "";
+        for ($columnCount = 0; $columnCount < $numberOfColumnsPerTable; $columnCount++) {
+            $columnsSql .= sprintf(', "col_%d" VARCHAR(50) NOT NULL DEFAULT \'\'', $columnCount);
+        }
+
+        for ($schemaCount = 0; $schemaCount < $numberOfSchemas; $schemaCount++) {
+            $processes[] = $this->createDbProcess(sprintf("CREATE SCHEMA testschema_%d", $schemaCount));
+            for ($tableCount = 0; $tableCount < $numberOfTablesPerSchema; $tableCount++) {
+                $processes[] = $this->createDbProcess(
+                    sprintf(
+                        "CREATE TABLE testschema_%d.testtable_%d (ID SERIAL%s, PRIMARY KEY (ID))",
+                        $schemaCount,
+                        $tableCount,
+                        $columnsSql
+                    )
+                );
+            }
+        }
+        $this->runProcesses($processes);
+        $dbBuildTime = time() - $testStartTime;
+        echo "\nTest DB built in  " . $dbBuildTime . " seconds.\n";
+
+        $config = $this->getConfig();
+        $config['action'] = 'getTables';
+
+        $jobStartTime = time();
+        $result = (new Application($config, new Logger('ex-db-pgsql-tests')))->run();
+        $this->assertEquals('success', $result['status']);
+        $runTime = time() - $jobStartTime;
+
+        echo "\nThe tables were fetched in " . $runTime . " seconds.\n";
+        $processes = [];
+        for ($i = 0; $i < $numberOfSchemas; $i++) {
+            $processes[] = $this->createDbProcess(sprintf('DROP SCHEMA IF EXISTS testschema_%d CASCADE', $i));
+        }
+        $this->runProcesses($processes);
+        $entireTime = time() - $testStartTime;
+        echo "\nComplete test finished in  " . $entireTime . " seconds.\n";
     }
 
     public function configTypesProvider(): array
