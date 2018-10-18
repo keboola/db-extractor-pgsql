@@ -247,13 +247,13 @@ class PgSQL extends Extractor
 
     public function getTables(?array $tables = null): array
     {
-        $sql = "SELECT * FROM information_schema.tables as c
-                WHERE c.table_schema != 'pg_catalog' AND c.table_schema != 'information_schema'";
+        $sql = "SELECT * FROM information_schema.tables
+                WHERE table_schema != 'pg_catalog' AND table_schema != 'information_schema'";
 
         $additionalWhereClause = '';
         if (!is_null($tables) && count($tables) > 0) {
             $additionalWhereClause = sprintf(
-                " AND c.table_name IN (%s) AND c.table_schema IN (%s)",
+                " AND table_name IN (%s) AND table_schema IN (%s)",
                 implode(
                     ',',
                     array_map(
