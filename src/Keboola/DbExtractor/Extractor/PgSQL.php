@@ -335,8 +335,29 @@ class PgSQL extends Extractor
       AND ns.nspname NOT LIKE 'pg_toast%'
       AND ns.nspname NOT LIKE 'pg_temp%'
 EOT;
-
-        $sql .= $additionalWhereClause;
+        if (!is_null($tables) && count($tables) > 0) {
+            $sql .= sprintf(
+                " AND c.relname IN (%s) AND ns.nspname IN (%s)",
+                implode(
+                    ',',
+                    array_map(
+                        function ($table) {
+                            return $this->db->quote($table['tableName']);
+                        },
+                        $tables
+                    )
+                ),
+                implode(
+                    ',',
+                    array_map(
+                        function ($table) {
+                            return $this->db->quote($table['schema']);
+                        },
+                        $tables
+                    )
+                )
+            );
+        }
 
         $res = $this->db->query($sql);
         while ($column = $res->fetch(PDO::FETCH_ASSOC)) {
