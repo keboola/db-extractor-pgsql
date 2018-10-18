@@ -844,8 +844,9 @@ class PgsqlTest extends ExtractorTest
         );
 
         foreach ($result['imported'] as $i => $outputArray) {
-            $outputManifest = Yaml::parse(
-                file_get_contents($this->dataDir . '/out/tables/' . $outputArray['outputTable'] . '.csv.manifest')
+            $outputManifest = json_decode(
+                file_get_contents($this->dataDir . '/out/tables/' . $outputArray['outputTable'] . '.csv.manifest'),
+                true
             );
             $this->assertManifestMetadata($outputManifest, $expectedTableMetadata[$i], $expectedColumnMetadata[$i]);
         }
