@@ -293,7 +293,7 @@ class PgsqlTest extends ExtractorTest
                                     'sanitizedName' => 'integer',
                                     'type' => 'integer',
                                     'primaryKey' => false,
-                                    'length' => 32,
+                                    'length' => null,
                                     'nullable' => false,
                                     'default' => '42',
                                     'ordinalPosition' => 2,
@@ -371,7 +371,7 @@ class PgsqlTest extends ExtractorTest
                                     'sanitizedName' => 'integer',
                                     'type' => 'integer',
                                     'primaryKey' => false,
-                                    'length' => 32,
+                                    'length' => null,
                                     'nullable' => false,
                                     'default' => '42',
                                     'ordinalPosition' => 2,
@@ -524,30 +524,25 @@ class PgsqlTest extends ExtractorTest
                         ),
                     3 =>
                         array (
-                            'key' => 'KBC.datatype.length',
-                            'value' => 32,
-                        ),
-                    4 =>
-                        array (
                             'key' => 'KBC.datatype.default',
                             'value' => '42',
                         ),
-                    5 =>
+                    4 =>
                         array (
                             'key' => 'KBC.sourceName',
                             'value' => 'integer',
                         ),
-                    6 =>
+                    5 =>
                         array (
                             'key' => 'KBC.sanitizedName',
                             'value' => 'integer',
                         ),
-                    7 =>
+                    6 =>
                         array (
                             'key' => 'KBC.primaryKey',
                             'value' => false,
                         ),
-                    8 =>
+                    7 =>
                         array (
                             'key' => 'KBC.ordinalPosition',
                             'value' => 2,
@@ -736,30 +731,25 @@ class PgsqlTest extends ExtractorTest
                         ),
                     3 =>
                         array (
-                            'key' => 'KBC.datatype.length',
-                            'value' => 32,
-                        ),
-                    4 =>
-                        array (
                             'key' => 'KBC.datatype.default',
                             'value' => '42',
                         ),
-                    5 =>
+                    4 =>
                         array (
                             'key' => 'KBC.sourceName',
                             'value' => 'integer',
                         ),
-                    6 =>
+                    5 =>
                         array (
                             'key' => 'KBC.sanitizedName',
                             'value' => 'integer',
                         ),
-                    7 =>
+                    6 =>
                         array (
                             'key' => 'KBC.primaryKey',
                             'value' => false,
                         ),
-                    8 =>
+                    7 =>
                         array (
                             'key' => 'KBC.ordinalPosition',
                             'value' => 2,
@@ -944,9 +934,10 @@ class PgsqlTest extends ExtractorTest
     {
         // $this->markTestSkipped("No need to run this test every time.");
         $testStartTime = time();
-        $numberOfSchemas = 5;
+        $numberOfSchemas = 10;
         $numberOfTablesPerSchema = 100;
         $numberOfColumnsPerTable = 50;
+        $maximumRunTime = 15;
 
         $processes = [];
         for ($i = 0; $i < $numberOfSchemas; $i++) {
@@ -985,6 +976,7 @@ class PgsqlTest extends ExtractorTest
         $runTime = time() - $jobStartTime;
 
         echo "\nThe tables were fetched in " . $runTime . " seconds.\n";
+        $this->assertLessThan($maximumRunTime, $runTime);
         $processes = [];
         for ($i = 0; $i < $numberOfSchemas; $i++) {
             $processes[] = $this->createDbProcess(sprintf('DROP SCHEMA IF EXISTS testschema_%d CASCADE', $i));
