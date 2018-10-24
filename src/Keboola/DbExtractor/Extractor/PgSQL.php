@@ -247,13 +247,13 @@ class PgSQL extends Extractor
 
     public function getTables(?array $tables = null): array
     {
-        $sql = "SELECT * FROM information_schema.tables as c
-                WHERE c.table_schema != 'pg_catalog' AND c.table_schema != 'information_schema'";
+        $sql = "SELECT * FROM information_schema.tables
+                WHERE table_schema != 'pg_catalog' AND table_schema != 'information_schema'";
 
         $additionalWhereClause = '';
         if (!is_null($tables) && count($tables) > 0) {
             $additionalWhereClause = sprintf(
-                " AND c.table_name IN (%s) AND c.table_schema IN (%s)",
+                " AND table_name IN (%s) AND table_schema IN (%s)",
                 implode(
                     ',',
                     array_map(
@@ -279,6 +279,7 @@ class PgSQL extends Extractor
         
         $res = $this->db->query($sql);
         $arr = $res->fetchAll(PDO::FETCH_ASSOC);
+        
         $tableNameArray = [];
         $tableDefs = [];
         foreach ($arr as $table) {
@@ -296,63 +297,103 @@ class PgSQL extends Extractor
             return [];
         }
 
-        $sql = "SELECT c.*, 
-                    fks.constraint_type, fks.constraint_name, fks.foreign_table_name, fks.foreign_column_name 
-                    FROM information_schema.columns as c 
-                    LEFT JOIN (
-                      SELECT
-                            tc.constraint_type, tc.constraint_name, tc.table_name, 
-                            tc.constraint_schema, kcu.column_name, 
-                            ccu.table_name AS foreign_table_name, ccu.column_name AS foreign_column_name 
-                        FROM 
-                            information_schema.table_constraints AS tc 
-                            JOIN information_schema.key_column_usage AS kcu
-                              ON tc.constraint_name = kcu.constraint_name
-                            JOIN information_schema.constraint_column_usage AS ccu
-                              ON ccu.constraint_name = tc.constraint_name
-                        WHERE tc.constraint_type IN ('PRIMARY KEY', 'FOREIGN KEY')
-                    ) as fks                    
-                    ON c.table_schema = fks.constraint_schema 
-                    AND fks.table_name = c.table_name 
-                    AND fks.column_name = c.column_name 
-                    WHERE c.table_schema != 'pg_catalog' AND c.table_schema != 'information_schema'";
-
-        $sql .= $additionalWhereClause;
+        $sql = <<<EOT
+    SELECT 
+      ns.nspname AS table_schema,
+      c.relname AS table_name,
+      a.attname AS column_name,
+      format_type(a.atttypid, a.atttypmod) AS data_type_with_length,
+      NOT a.attnotnull AS nullable,
+      i.indisprimary AS primary_key,
+      a.attnum AS ordinal_position,
+      d.adsrc AS default_value,
+      fks.constraint_name AS fk_constraint_name,
+      fks.foreign_table_name AS foreign_table_name,
+      fks.foreign_column_name AS foreign_column_name
+    FROM pg_attribute a
+    JOIN pg_class c ON a.attrelid = c.oid AND c.reltype != 0 --indexes have 0 reltype, we don't want them here
+    INNER JOIN pg_namespace ns ON ns.oid = c.relnamespace --schemas
+    LEFT JOIN pg_index i ON a.attrelid = i.indrelid AND a.attnum = ANY(i.indkey) -- PKs
+    LEFT JOIN pg_catalog.pg_attrdef d ON (a.attrelid, a.attnum) = (d.adrelid,  d.adnum) -- default values
+    LEFT JOIN (
+      SELECT conname AS constraint_name, conrelid AS con_table_oid, ta.attname AS con_column_name, 
+      ta.attnum AS con_ordinal, confrelid::regclass AS foreign_table_name, fa.attname AS foreign_column_name
+          FROM (
+           SELECT conname, conrelid, confrelid,
+                  unnest(conkey) AS conkey, unnest(confkey) AS confkey
+             FROM pg_constraint
+            WHERE contype = 'f'
+          ) sub
+          JOIN pg_attribute AS ta ON ta.attrelid = conrelid AND ta.attnum = conkey
+          JOIN pg_attribute AS fa ON fa.attrelid = confrelid AND fa.attnum = confkey
+    ) fks ON (a.attrelid, a.attnum) = (con_table_oid, con_ordinal) -- foriegn keys
+    WHERE 
+      NOT a.attisdropped -- exclude dropped columns
+      AND a.attnum > 0 -- exclude system columns
+      AND ns.nspname != 'information_schema' -- exclude system namespaces
+      AND ns.nspname != 'pg_catalog' 
+      AND ns.nspname NOT LIKE 'pg_toast%'
+      AND ns.nspname NOT LIKE 'pg_temp%'
+EOT;
+        if (!is_null($tables) && count($tables) > 0) {
+            $sql .= sprintf(
+                " AND c.relname IN (%s) AND ns.nspname IN (%s)",
+                implode(
+                    ',',
+                    array_map(
+                        function ($table) {
+                            return $this->db->quote($table['tableName']);
+                        },
+                        $tables
+                    )
+                ),
+                implode(
+                    ',',
+                    array_map(
+                        function ($table) {
+                            return $this->db->quote($table['schema']);
+                        },
+                        $tables
+                    )
+                )
+            );
+        }
 
         $res = $this->db->query($sql);
-
         while ($column = $res->fetch(PDO::FETCH_ASSOC)) {
             $curTable = $column['table_schema'] . '.' . $column['table_name'];
-            $length = ($column['data_type'] === 'character varying') ? $column['character_maximum_length'] : null;
-            if (is_null($length) && !is_null($column['numeric_precision'])) {
-                if ($column['numeric_scale'] > 0) {
-                    $length = $column['numeric_precision'] . "," . $column['numeric_scale'];
-                } else {
-                    $length = $column['numeric_precision'];
-                }
+
+            $ret = preg_match('/(.*)\((\d+|\d+,\d+)\)/', $column['data_type_with_length'], $parsedType);
+
+            $data_type = $column['data_type_with_length'];
+            $length = null;
+            if ($ret === 1) {
+                $data_type = isset($parsedType[1]) ? $parsedType[1] : null;
+                $length = isset($parsedType[2]) ? $parsedType[2] : null;
             }
-            $default = $column['column_default'];
-            if ($column['data_type'] === 'character varying' && $default !== null) {
-                $default = str_replace("'", "", explode("::", $column['column_default'])[0]);
+
+            $default = $column['default_value'];
+            if ($data_type === 'character varying' && $default !== null) {
+                $default = str_replace("'", "", explode("::", $column['default_value'])[0]);
             }
             $tableDefs[$curTable]['columns'][$column['ordinal_position'] - 1] = [
                 "name" => $column['column_name'],
                 "sanitizedName" => Utils\sanitizeColumnName($column['column_name']),
-                "type" => $column['data_type'],
-                "primaryKey" => ($column['constraint_type'] === "PRIMARY KEY") ? true : false,
+                "type" => $data_type,
+                "primaryKey" => $column['primary_key'] ?: false,
                 "length" => $length,
-                "nullable" => ($column['is_nullable'] === "NO") ? false : true,
+                "nullable" => $column['nullable'],
                 "default" => $default,
                 "ordinalPosition" => $column['ordinal_position'],
             ];
 
-            if ($column['constraint_type'] === "FOREIGN KEY") {
+            if (isset($column['fk_constraint_name'])) {
                 $tableDefs[$curTable]['columns'][$column['ordinal_position'] - 1]['foreignKeyRefTable'] =
                     $column['foreign_table_name'];
                 $tableDefs[$curTable]['columns'][$column['ordinal_position'] - 1]['foreignKeyRefColumn'] =
                     $column['foreign_column_name'];
                 $tableDefs[$curTable]['columns'][$column['ordinal_position'] - 1]['foreignKeyRef'] =
-                    $column['constraint_name'];
+                    $column['fk_constraint_name'];
             }
             // make sure columns are sorted by index which is ordinal_position - 1
             ksort($tableDefs[$curTable]['columns']);
