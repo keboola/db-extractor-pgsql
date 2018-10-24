@@ -380,7 +380,7 @@ EOT;
                 "name" => $column['column_name'],
                 "sanitizedName" => Utils\sanitizeColumnName($column['column_name']),
                 "type" => $data_type,
-                "primaryKey" => $column['primary_key'] ?? false,
+                "primaryKey" => $column['primary_key'] ?: false,
                 "length" => $length,
                 "nullable" => $column['nullable'],
                 "default" => $default,
