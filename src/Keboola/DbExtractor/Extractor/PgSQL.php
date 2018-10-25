@@ -306,27 +306,12 @@ class PgSQL extends Extractor
       NOT a.attnotnull AS nullable,
       i.indisprimary AS primary_key,
       a.attnum AS ordinal_position,
-      d.adsrc AS default_value,
-      fks.constraint_name AS fk_constraint_name,
-      fks.foreign_table_name AS foreign_table_name,
-      fks.foreign_column_name AS foreign_column_name
+      d.adsrc AS default_value
     FROM pg_attribute a
     JOIN pg_class c ON a.attrelid = c.oid AND c.reltype != 0 --indexes have 0 reltype, we don't want them here
     INNER JOIN pg_namespace ns ON ns.oid = c.relnamespace --schemas
     LEFT JOIN pg_index i ON a.attrelid = i.indrelid AND a.attnum = ANY(i.indkey) -- PKs
     LEFT JOIN pg_catalog.pg_attrdef d ON (a.attrelid, a.attnum) = (d.adrelid,  d.adnum) -- default values
-    LEFT JOIN (
-      SELECT conname AS constraint_name, conrelid AS con_table_oid, ta.attname AS con_column_name, 
-      ta.attnum AS con_ordinal, confrelid::regclass AS foreign_table_name, fa.attname AS foreign_column_name
-          FROM (
-           SELECT conname, conrelid, confrelid,
-                  unnest(conkey) AS conkey, unnest(confkey) AS confkey
-             FROM pg_constraint
-            WHERE contype = 'f'
-          ) sub
-          JOIN pg_attribute AS ta ON ta.attrelid = conrelid AND ta.attnum = conkey
-          JOIN pg_attribute AS fa ON fa.attrelid = confrelid AND fa.attnum = confkey
-    ) fks ON (a.attrelid, a.attnum) = (con_table_oid, con_ordinal) -- foriegn keys
     WHERE 
       NOT a.attisdropped -- exclude dropped columns
       AND a.attnum > 0 -- exclude system columns
@@ -387,14 +372,6 @@ EOT;
                 "ordinalPosition" => $column['ordinal_position'],
             ];
 
-            if (isset($column['fk_constraint_name'])) {
-                $tableDefs[$curTable]['columns'][$column['ordinal_position'] - 1]['foreignKeyRefTable'] =
-                    $column['foreign_table_name'];
-                $tableDefs[$curTable]['columns'][$column['ordinal_position'] - 1]['foreignKeyRefColumn'] =
-                    $column['foreign_column_name'];
-                $tableDefs[$curTable]['columns'][$column['ordinal_position'] - 1]['foreignKeyRef'] =
-                    $column['fk_constraint_name'];
-            }
             // make sure columns are sorted by index which is ordinal_position - 1
             ksort($tableDefs[$curTable]['columns']);
         }
