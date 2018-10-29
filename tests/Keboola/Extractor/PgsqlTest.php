@@ -350,9 +350,6 @@ class PgsqlTest extends ExtractorTest
                                     'nullable' => true,
                                     'default' => null,
                                     'ordinalPosition' => 1,
-                                    'foreignKeyRefTable' => 'types',
-                                    'foreignKeyRefColumn' => 'character',
-                                    'foreignKeyRef' => 'types_fk_character_fkey',
                                 ),
                             3 =>
                                 array (
@@ -695,21 +692,6 @@ class PgsqlTest extends ExtractorTest
                         array (
                             'key' => 'KBC.ordinalPosition',
                             'value' => 1,
-                        ),
-                    8 =>
-                        array (
-                            'key' => 'KBC.foreignKeyRefTable',
-                            'value' => 'types',
-                        ),
-                    9 =>
-                        array (
-                            'key' => 'KBC.foreignKeyRefColumn',
-                            'value' => 'character',
-                        ),
-                    10 =>
-                        array (
-                            'key' => 'KBC.foreignKeyRef',
-                            'value' => 'types_fk_character_fkey',
                         ),
                 ),
             'integer' =>
