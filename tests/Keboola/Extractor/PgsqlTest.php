@@ -969,6 +969,25 @@ class PgsqlTest extends ExtractorTest
         echo "\nComplete test finished in  " . $entireTime . " seconds.\n";
     }
 
+    public function testBadSprintf(): void
+    {
+        $config = $this->getConfig();
+
+        // use just 1 table
+        unset($config['parameters']['tables'][0]);
+        unset($config['parameters']['tables'][1]);
+        unset($config['parameters']['tables'][2]['columns']);
+        unset($config['parameters']['tables'][2]['table']);
+        $config['parameters']['tables'][2]['query'] = "SELECT %s FROM types";
+
+        $this->setExpectedExceptionRegExp(
+            UserException::class,
+            "/^Error executing \[types\]\: SQLSTATE\[42601\]\:.*/"
+        );
+        $app = new Application($config, new Logger('ex-db-pgsql-tests'));
+        $app->run();
+    }
+
     public function configTypesProvider(): array
     {
         return [
