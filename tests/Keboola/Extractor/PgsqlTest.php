@@ -980,8 +980,10 @@ class PgsqlTest extends ExtractorTest
         unset($config['parameters']['tables'][2]['table']);
         $config['parameters']['tables'][2]['query'] = "SELECT %s FROM types";
 
-        $this->setExpectedException(UserException::class);
-
+        $this->setExpectedExceptionRegExp(
+            UserException::class,
+            "/^Error executing \[types\]\: SQLSTATE\[42601\]\:.*/"
+        );
         $app = new Application($config, new Logger('ex-db-pgsql-tests'));
         $app->run();
     }
