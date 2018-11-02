@@ -118,8 +118,9 @@ class PgSQL extends Extractor
             } catch (PDOException $pdoError) {
                 throw new UserException(
                     sprintf(
-                        "Error executing [%s]: " . $pdoError->getMessage(),
-                        $table['name']
+                        "Error executing [%s]: %s",
+                        $table['name'],
+                        $pdoError->getMessage()
                     )
                 );
             } catch (Throwable $generalError) {
