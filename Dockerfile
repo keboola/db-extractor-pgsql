@@ -14,6 +14,8 @@ RUN apt-get update \
 RUN mkdir -p /usr/share/man/man1 /usr/share/man/man7 \
   && apt-get install -y postgresql postgresql-contrib --no-install-recommends
 
+RUN echo "memory_limit = -1" >> /usr/local/etc/php/php.ini
+
 WORKDIR /root
 
 RUN curl -sS https://getcomposer.org/installer | php \
