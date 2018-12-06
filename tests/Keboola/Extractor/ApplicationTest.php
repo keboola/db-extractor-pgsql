@@ -178,4 +178,20 @@ class ApplicationTest extends ExtractorTest
         $this->assertEquals(0, $process->getExitCode());
         $this->assertEquals("", $process->getErrorOutput());
     }
+
+    public function testCommentQuery(): void
+    {
+        $config = Yaml::parse(file_get_contents($this->dataDir . '/pgsql/external_config.yml'));
+        @unlink($this->dataDir . '/config.yml');
+        $config['parameters']['tables'][0]['query'] = "SELECT * FROM information_schema.tables -- with some comment";
+        $config['parameters']['db'] = $this->dbConfig;
+        file_put_contents($this->dataDir . '/config.yml', Yaml::dump($config));
+
+        $process = new Process('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
+        $process->setTimeout(300);
+        $process->run();
+
+        $this->assertNotContains("Failed \copy command", $process->getOutput());
+        $this->assertEquals(0, $process->getExitCode());
+    }
 }
