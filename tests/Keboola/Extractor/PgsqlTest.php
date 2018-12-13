@@ -236,7 +236,7 @@ class PgsqlTest extends ExtractorTest
             $this->assertStringStartsWith("Error connecting", $exception->getMessage());
         }
     }
-    
+
     public function testGetTables(): void
     {
         $config = $this->getConfig();
@@ -980,10 +980,9 @@ class PgsqlTest extends ExtractorTest
         unset($config['parameters']['tables'][2]['table']);
         $config['parameters']['tables'][2]['query'] = "SELECT %s FROM types";
 
-        $this->setExpectedExceptionRegExp(
-            UserException::class,
-            "/^Error executing \[types\]\: SQLSTATE\[42601\]\:.*/"
-        );
+        $this->expectException(UserException::class);
+        $this->expectExceptionMessageRegExp("/^Error executing \[types\]\: SQLSTATE\[42601\]\:.*/");
+
         $app = new Application($config, new Logger('ex-db-pgsql-tests'));
         $app->run();
     }
