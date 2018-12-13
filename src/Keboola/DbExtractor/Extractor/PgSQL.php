@@ -52,6 +52,12 @@ class PgSQL extends Extractor
         return $pdo;
     }
 
+    public function createSshTunnel(array $dbConfig): array
+    {
+        $dbConfig['ssh']['compression'] = true;
+        return parent::createSshTunnel($dbConfig);
+    }
+
     private function restartConnection(): void
     {
         try {
@@ -277,10 +283,10 @@ class PgSQL extends Extractor
         }
 
         $sql .= $additionalWhereClause;
-        
+
         $res = $this->db->query($sql);
         $arr = $res->fetchAll(PDO::FETCH_ASSOC);
-        
+
         $tableNameArray = [];
         $tableDefs = [];
         foreach ($arr as $table) {

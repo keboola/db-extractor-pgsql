@@ -56,7 +56,7 @@ class ApplicationTest extends ExtractorTest
         @unlink($this->dataDir . '/config.yml');
         file_put_contents($this->dataDir . '/config.yml', Yaml::dump($config));
 
-        $process = new Process('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
+        $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
         $process->run();
 
@@ -75,7 +75,7 @@ class ApplicationTest extends ExtractorTest
         $config['parameters']['db'] = $this->dbConfig;
         file_put_contents($this->dataDir . '/config.yml', Yaml::dump($config));
 
-        $process = new Process('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
+        $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
         $process->run();
         $this->assertJson($process->getOutput());
@@ -91,7 +91,7 @@ class ApplicationTest extends ExtractorTest
         @unlink($this->dataDir . '/config.yml');
         file_put_contents($this->dataDir . '/config.yml', Yaml::dump($config));
 
-        $process = new Process('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
+        $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
         $process->run();
         $this->assertEquals(0, $process->getExitCode());
@@ -106,7 +106,7 @@ class ApplicationTest extends ExtractorTest
         @unlink($this->dataDir . '/config.yml');
         file_put_contents($this->dataDir . '/config.yml', Yaml::dump($config));
 
-        $process = new Process('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
+        $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
         $process->run();
         $this->assertEquals(0, $process->getExitCode());
@@ -121,10 +121,10 @@ class ApplicationTest extends ExtractorTest
         @unlink($this->dataDir . '/config.yml');
         file_put_contents($this->dataDir . '/config.yml', Yaml::dump($config));
 
-        $process = new Process('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
+        $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
         $process->run();
-        
+
         $this->assertFalse(strstr($process->getErrorOutput(), "PGPASSWORD"));
         $this->assertContains($config['parameters']['tables'][0]['name'], $process->getErrorOutput());
         $this->assertEquals(1, $process->getExitCode());
@@ -150,7 +150,7 @@ class ApplicationTest extends ExtractorTest
         @unlink($this->dataDir . '/config.yml');
         file_put_contents($this->dataDir . '/config.yml', Yaml::dump($config));
 
-        $process = new Process('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
+        $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
         $process->run();
 
@@ -170,7 +170,7 @@ class ApplicationTest extends ExtractorTest
         $config['parameters']['db'] = $this->dbConfig;
         file_put_contents($this->dataDir . '/config.yml', Yaml::dump($config));
 
-        $process = new Process('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
+        $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
         $process->run();
         $this->assertJson($process->getOutput());
