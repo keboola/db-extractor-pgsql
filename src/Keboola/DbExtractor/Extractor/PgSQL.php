@@ -220,14 +220,12 @@ class PgSQL extends Extractor
                 )
             )
         );
-        echo "\mCOMMAND: $command\m";
 
         $process = new Process($command);
         // allow it to run for as long as it needs
         $process->setTimeout(null);
         $process->run();
         if (!$process->isSuccessful()) {
-            var_export($process->getErrorOutput());
             $this->logger->info("Failed \copy command (will attempt via PDO): " . $process->getErrorOutput());
             throw new ApplicationException("Error using copy command.", 42);
         }
