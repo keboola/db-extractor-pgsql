@@ -28,6 +28,7 @@ class PgSQL extends Extractor
         // convert errors to PDOExceptions
         $options = [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_TIMEOUT => 60,
         ];
 
         // check params
