@@ -9,7 +9,7 @@ use Keboola\DbExtractor\Test\ExtractorTest;
 use Keboola\DbExtractor\Application;
 use Keboola\DbExtractor\Logger;
 use Symfony\Component\Process\Process;
-use Symfony\Component\Yaml\Yaml;
+use Symfony\Component\Filesystem\Filesystem;
 
 class BaseTest extends ExtractorTest
 {
@@ -51,8 +51,16 @@ class BaseTest extends ExtractorTest
         }
     }
 
+    protected function cleanOutputDir(): void
+    {
+        $fs = new Filesystem();
+        $fs->remove($this->dataDir . '/out/tables');
+        $fs->mkdir($this->dataDir . '/out/tables');
+    }
+
     public function setUp(): void
     {
+        $this->cleanOutputDir();
         $this->rootPath = '/code/';
         $config = $this->getConfig();
         $logger = new Logger('ex-db-pgsql-tests');

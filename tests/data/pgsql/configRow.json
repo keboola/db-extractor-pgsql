@@ -8,7 +8,7 @@
       "password": "some password"
     },
     "table": {
-      "tableNema": "escaping",
+      "tableName": "escaping",
       "schema": "public"
     },
     "outputTable": "in.c-main-escaping",
