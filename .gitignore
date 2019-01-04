@@ -6,5 +6,6 @@ runtests.sh
 test.php
 tests/data/out/
 tests/data/config.yml
+tests/data/config.json
 .DS_Store
 .env
