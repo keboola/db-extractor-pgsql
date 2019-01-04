@@ -10,7 +10,7 @@
     "tables": [
       {
         "id": 0,
-        "mane": "escaping",
+        "name": "escaping",
         "query": "SELECT * FROM escaping",
         "outputTable": "in.c-main-escaping",
         "incremental": false,
