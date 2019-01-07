@@ -857,7 +857,7 @@ class PgsqlTest extends BaseTest
         $config['parameters']['tables'][2]['query'] = "SELECT %s FROM types";
 
         $this->expectException(UserException::class);
-        $this->expectExceptionMessageRegExp("/^Error executing \[types\]\: SQLSTATE\[42601\]\:.*/");
+        $this->expectExceptionMessageRegExp("/^Error executing \[in.c-main.types\]\: SQLSTATE\[42601\]\:.*/");
 
         $app = new Application($config, new Logger('ex-db-pgsql-tests'));
         $app->run();

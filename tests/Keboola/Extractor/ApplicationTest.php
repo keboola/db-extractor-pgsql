@@ -34,19 +34,15 @@ class ApplicationTest extends BaseTest
         $process->setTimeout(300);
         $process->mustRun();
 
-        var_export($process->getErrorOutput());
-        var_export($process->getOutput());
         $this->assertEquals(0, $process->getExitCode());
         $this->assertEquals("", $process->getErrorOutput());
     }
 
-    /**
-     * @dataProvider configProvider
-     */
-    public function testTestConnectionAction(array $config, string $format): void
+    public function testTestConnectionAction(): void
     {
         $config['action'] = 'testConnection';
-        $this->replaceConfig($config, $format);
+        $config['parameters']['db'] = $this->getConfigRow(self::DRIVER)['parameters']['db'];
+        $this->replaceConfig($config, self::CONFIG_FORMAT_JSON);
 
         $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
@@ -63,22 +59,6 @@ class ApplicationTest extends BaseTest
     {
         $config['parameters']['tables'][0]['query'] = $config['parameters']['tables'][0]['query'] . ";";
         $this->replaceConfig($config, $format);
-        $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
-        $process->setTimeout(300);
-        $process->mustRun();
-        $this->assertEquals(0, $process->getExitCode());
-        $this->assertEquals("", $process->getErrorOutput());
-    }
-
-    /**
-     * @dataProvider configProvider
-     */
-    public function testProcessTimeout(array $config, string $format): void
-    {
-        $config['parameters']['tables'][0]['query'] = "SELECT pg_sleep(65), 1";
-        $this->replaceConfig($config, $format);
-        file_put_contents($this->dataDir . '/config.yml', Yaml::dump($config));
-
         $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
         $process->mustRun();
@@ -137,13 +117,12 @@ class ApplicationTest extends BaseTest
         $this->assertFileExists($manifestFile);
     }
 
-    /**
-     * @dataProvider configProvider
-     */
-    public function testGetTablesAction(array $config, string $format): void
+    public function testGetTablesAction(): void
     {
+        $config = $this->getConfig();
+        unset($config['parameters']['tables']);
         $config['action'] = 'getTables';
-        $this->replaceConfig($config, $format);
+        $this->replaceConfig($config, self::CONFIG_FORMAT_JSON);
 
         $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
