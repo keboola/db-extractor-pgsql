@@ -52,13 +52,12 @@ class ApplicationTest extends BaseTest
         $this->assertEquals("", $process->getErrorOutput());
     }
 
-    /**
-     * @dataProvider configProvider
-     */
-    public function testTrailingSemicolonQuery(array $config, string $format): void
+    public function testTrailingSemicolonQuery(): void
     {
-        $config['parameters']['tables'][0]['query'] = $config['parameters']['tables'][0]['query'] . ";";
-        $this->replaceConfig($config, $format);
+        $config = $this->getConfig();
+        unset($config['parameters']['tables'][0]['table']);
+        $config['parameters']['tables'][0]['query'] = "SELECT * FROM escaping;";
+        $this->replaceConfig($config, self::CONFIG_FORMAT_JSON);
         $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
         $process->mustRun();
@@ -93,21 +92,23 @@ class ApplicationTest extends BaseTest
         @unlink($outputCsvFile->getPathname());
         @unlink($manifestFile);
 
-        $config = $this->getConfig();
+        $config = $this->getConfigRow(self::DRIVER);
 
         // queries with comments will break the () in the \copy command.
         // Failed \copy commands should fallback to using the old PDO method
-        $config['parameters']['tables'][0]['query'] = "
+        unset($config['parameters']['table']);
+        $config['parameters']['query'] = "
             select * from information_schema.TABLES as tables JOIN (
                 -- this is a comment --
                 select * from information_schema.columns
             ) as columns ON tables.table_schema = columns.table_schema AND tables.table_name = columns.table_name;
         ";
+        $config['parameters']['outputTable'] = 'in.c-main.info_schema';
         $this->replaceConfig($config, self::CONFIG_FORMAT_JSON);
 
         $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
-        $process->run();
+        $process->mustRun();
 
         // valid query should not error
         $this->assertContains('Failed \copy command', $process->getOutput());
