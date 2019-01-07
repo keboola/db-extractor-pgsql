@@ -93,7 +93,7 @@ class PgSQL extends Extractor
             $this->executeCopyQuery(
                 $query,
                 $this->createOutputCsv($outputTable),
-                $table['name'],
+                $table['outputTable'],
                 $advancedQuery
             );
             $csvCreated = true;
@@ -126,7 +126,7 @@ class PgSQL extends Extractor
                 throw new UserException(
                     sprintf(
                         "Error executing [%s]: %s",
-                        $table['name'],
+                        $table['outputTable'],
                         $pdoError->getMessage()
                     )
                 );
