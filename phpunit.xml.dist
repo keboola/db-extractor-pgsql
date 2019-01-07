@@ -11,6 +11,7 @@
 
     <testsuite name="DB Extractor PgSQL Test Suite">
         <directory>tests/Keboola/Extractor</directory>
+        <exclude>tests/Keboola/Extractor/BaseTest.php</exclude>
     </testsuite>
 
 </phpunit>
