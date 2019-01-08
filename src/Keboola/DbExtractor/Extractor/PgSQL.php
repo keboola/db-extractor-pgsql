@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Keboola\DbExtractor\Extractor;
 
 use Keboola\Csv\CsvFile;
+use Keboola\Datatype\Definition\GenericStorage;
 use Keboola\DbExtractor\Exception\ApplicationException;
 use Keboola\DbExtractor\Exception\UserException;
 use Keboola\DbExtractor\RetryProxy;
@@ -17,6 +18,10 @@ use Throwable;
 class PgSQL extends Extractor
 {
     public const DEFAULT_MAX_TRIES = 5;
+    public const INCREMENT_TYPE_NUMERIC = 'numeric';
+    public const INCREMENT_TYPE_TIMESTAMP = 'timestamp';
+    public const NUMERIC_BASE_TYPES = ['INTEGER', 'NUMERIC', 'FLOAT'];
+
 
     /** @var  array */
     private $dbConfig;
@@ -388,8 +393,10 @@ EOT;
 
     public function simpleQuery(array $table, array $columns = []): string
     {
+        $incrementalAddon = null;
+
         if (count($columns) > 0) {
-            return sprintf(
+            $query = sprintf(
                 "SELECT %s FROM %s.%s",
                 implode(
                     ', ',
@@ -404,13 +411,83 @@ EOT;
                 $this->quote($table['tableName'])
             );
         } else {
-            return sprintf(
+            $query = sprintf(
                 "SELECT * FROM %s.%s",
                 $this->quote($table['schema']),
                 $this->quote($table['tableName'])
             );
         }
+
+        if ($this->incrementalFetching && isset($this->incrementalFetching['column'])) {
+            if (isset($this->state['lastFetchedRow'])) {
+                $incrementalAddon = sprintf(
+                    " WHERE %s >= %s",
+                    $this->quote($this->incrementalFetching['column']),
+                    $this->db->quote((string) $this->state['lastFetchedRow'])
+                );
+            }
+            $incrementalAddon .= sprintf(" ORDER BY %s", $this->quote($this->incrementalFetching['column']));
+        }
+
+        if ($incrementalAddon) {
+            $query .= $incrementalAddon;
+        }
+        if (isset($this->incrementalFetching['limit'])) {
+            $query .= sprintf(
+                " LIMIT %d",
+                $this->incrementalFetching['limit']
+            );
+        }
+        return $query;
     }
+
+    public function validateIncrementalFetching(array $table, string $columnName, ?int $limit = null): void
+    {
+        $res = $this->db->query(
+            sprintf(
+                'SELECT * FROM INFORMATION_SCHEMA.COLUMNS as cols 
+                            WHERE TABLE_SCHEMA = %s AND TABLE_NAME = %s AND COLUMN_NAME = %s',
+                $this->db->quote($table['schema']),
+                $this->db->quote($table['tableName']),
+                $this->db->quote($columnName)
+            )
+        );
+        $columns = $res->fetchAll();
+        if (count($columns) === 0) {
+            throw new UserException(
+                sprintf(
+                    'Column [%s] specified for incremental fetching was not found in the table',
+                    $columnName
+                )
+            );
+        }
+
+        try {
+            $datatype = new GenericStorage($columns[0]['data_type']);
+            echo "\nBASETYPE\n" . $datatype->getBasetype();
+            if (in_array($datatype->getBasetype(), self::NUMERIC_BASE_TYPES)) {
+                $this->incrementalFetching['column'] = $columnName;
+                $this->incrementalFetching['type'] = self::INCREMENT_TYPE_NUMERIC;
+            } else if ($datatype->getBasetype() === 'TIMESTAMP') {
+                $this->incrementalFetching['column'] = $columnName;
+                $this->incrementalFetching['type'] = self::INCREMENT_TYPE_TIMESTAMP;
+            } else {
+                throw new UserException('invalid incremental fetching column type');
+            }
+        } catch (\Keboola\Datatype\Definition\Exception\InvalidLengthException | UserException $exception) {
+            throw new UserException(
+                sprintf(
+                    'Column [%s] specified for incremental fetching is not a numeric or timestamp type column',
+                    $columnName
+                )
+            );
+        }
+
+        if ($limit) {
+            $this->incrementalFetching['limit'] = $limit;
+        }
+    }
+
     private function quote(string $obj): string
     {
         return "\"{$obj}\"";
