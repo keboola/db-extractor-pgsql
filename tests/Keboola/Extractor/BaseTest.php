@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\DbExtractor\Tests;
 
+use Keboola\DbExtractor\Exception\ApplicationException;
 use Keboola\DbExtractor\Test\ExtractorTest;
 
 use Keboola\DbExtractor\Application;
@@ -149,6 +150,11 @@ abstract class BaseTest extends ExtractorTest
         $config = parent::getConfig($driver, $format);
         $config['parameters']['extractor_class'] = 'PgSQL';
         return $config;
+    }
+
+    protected function createApplication(array $config): Application
+    {
+        return new Application($config, new Logger('ex-db-pgsql-tests'));
     }
 
     public function configProvider(): array
