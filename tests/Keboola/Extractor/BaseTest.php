@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Keboola\DbExtractor\Tests;
 
-use Keboola\DbExtractor\Exception\ApplicationException;
 use Keboola\DbExtractor\Test\ExtractorTest;
 
 use Keboola\DbExtractor\Application;

@@ -307,7 +307,7 @@ class PgsqlTest extends BaseTest
         $config['parameters']['tables'][3]['primaryKey'] = null;
         $config['parameters']['tables'][3]['table']['tableName'] = 'types_fk';
 
-        // use just 1 table
+        // use just 2 tables
         unset($config['parameters']['tables'][0]);
         unset($config['parameters']['tables'][1]);
 
