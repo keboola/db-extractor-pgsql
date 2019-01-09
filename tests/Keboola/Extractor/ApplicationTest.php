@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Keboola\DbExtractor\Tests;
 
 use Keboola\Csv\CsvFile;
+use Symfony\Component\Filesystem;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Yaml\Yaml;
 use Keboola\DbExtractor\Exception\UserException;
@@ -132,5 +133,54 @@ class ApplicationTest extends BaseTest
 
         $this->assertEquals(0, $process->getExitCode());
         $this->assertEquals("", $process->getErrorOutput());
+    }
+
+    public function testStateFile(): void
+    {
+        $outputStateFile = $this->dataDir . '/out/state.json';
+        $inputStateFile = $this->dataDir . '/in/state.json';
+
+        $fs = new Filesystem\Filesystem();
+        if (!$fs->exists($inputStateFile)) {
+            $fs->mkdir($this->dataDir . '/in');
+            $fs->touch($inputStateFile);
+        }
+
+        // unset the state file
+        @unlink($outputStateFile);
+        @unlink($inputStateFile);
+
+        $config = $this->getConfigRow(self::DRIVER);
+        $config['table']['tableName'] = 'types';
+        $config['incrementalFetchingColumn'] = 'integer';
+
+        $this->replaceConfig($config, self::CONFIG_FORMAT_JSON);
+
+        $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
+        $process->setTimeout(300);
+        $process->mustRun();
+
+        $this->assertFileExists($outputStateFile);
+        $this->assertFileExists($outputStateFile);
+        $this->assertEquals(['lastFetchedRow' => '2'], json_decode(file_get_contents($outputStateFile), true));
+
+        // add a couple rows
+        $this->runProcesses([
+            $this->createDbProcess('INSERT INTO types (`integer`) VALUES (89), (101)')
+        ]);
+
+        // copy state to input state file
+        file_put_contents($inputStateFile, file_get_contents($outputStateFile));
+
+        // run the config again
+        $process = new Process('php ' . $this->rootPath . '/src/run.php --data=' . $this->dataDir);
+        $process->setTimeout(300);
+        $process->run();
+
+        var_dump($process->getErrorOutput());
+        var_dump($process->getOutput());
+
+        $this->assertEquals(0, $process->getExitCode());
+        $this->assertEquals(['lastFetchedRow' => '101'], json_decode(file_get_contents($outputStateFile), true));
     }
 }
