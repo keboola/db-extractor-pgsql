@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Keboola\DbExtractor\Tests;
 
 use Keboola\DbExtractor\Exception\UserException;
+use Keboola\Csv\CsvFile;
 
 class IncrementalFetchingTest extends BaseTest
 {
@@ -24,7 +25,8 @@ class IncrementalFetchingTest extends BaseTest
             PRIMARY KEY ("_weird_id")  
         )');
         $incrTableProcesses[] = $this->createDbProcess(
-            'INSERT INTO auto_increment_timestamp (weird_Name, floatColumn, decimalColumn) VALUES (\'george\', 2.2, 20.2)'
+            'INSERT INTO auto_increment_timestamp ' .
+            '(weird_Name, floatColumn, decimalColumn) VALUES (\'george\', 2.2, 20.2)'
         );
 
         $this->runProcesses($incrTableProcesses);
@@ -33,8 +35,9 @@ class IncrementalFetchingTest extends BaseTest
 
         $incrTableProcesses = [
             $this->createDbProcess(
-                'INSERT INTO auto_increment_timestamp (weird_Name, floatColumn, decimalColumn) VALUES (\'henry\', 3.3, 30.3)'
-            )
+                'INSERT INTO auto_increment_timestamp ' .
+                '(weird_Name, floatColumn, decimalColumn) VALUES (\'henry\', 3.3, 30.3)'
+            ),
         ];
         $this->runProcesses($incrTableProcesses);
     }
@@ -88,7 +91,7 @@ class IncrementalFetchingTest extends BaseTest
         $this->runProcesses([
             $this->createDbProcess(
                 'INSERT INTO auto_increment_timestamp (weird_Name) VALUES (\'charles\'), (\'william\')'
-            )
+            ),
         ]);
 
         $newResult = ($this->createApplication($config, $result['state']))->run();
@@ -135,7 +138,7 @@ class IncrementalFetchingTest extends BaseTest
         $this->runProcesses([
             $this->createDbProcess(
                 'INSERT INTO auto_increment_timestamp (weird_Name) VALUES (\'charles\'), (\'william\')'
-            )
+            ),
         ]);
 
         $newResult = ($this->createApplication($config, $result['state']))->run();
@@ -178,8 +181,9 @@ class IncrementalFetchingTest extends BaseTest
         //now add a couple rows and run it again.
         $this->runProcesses([
             $this->createDbProcess(
-                'INSERT INTO auto_increment_timestamp (weird_Name, floatColumn) VALUES (\'charles\', 4.4), (\'william\', 7.7)'
-            )
+                'INSERT INTO auto_increment_timestamp ' .
+                '(weird_Name, floatColumn) VALUES (\'charles\', 4.4), (\'william\', 7.7)'
+            ),
         ]);
 
         $newResult = ($this->createApplication($config, $result['state']))->run();
@@ -222,8 +226,9 @@ class IncrementalFetchingTest extends BaseTest
         //now add a couple rows and run it again.  Only the one row that has decimal >= to 30.3 should be included
         $this->runProcesses([
             $this->createDbProcess(
-                'INSERT INTO auto_increment_timestamp (weird_Name, decimalColumn) VALUES (\'charles\', 4.4), (\'william\', 70.7)'
-            )
+                'INSERT INTO auto_increment_timestamp ' .
+                '(weird_Name, decimalColumn) VALUES (\'charles\', 4.4), (\'william\', 70.7)'
+            ),
         ]);
 
         $newResult = ($this->createApplication($config, $result['state']))->run();
