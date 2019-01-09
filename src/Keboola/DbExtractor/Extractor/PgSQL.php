@@ -73,36 +73,65 @@ class PgSQL extends Extractor
         }
     }
 
+    private function getColumnMetadataFromTable(array $table): array
+    {
+        $columns = $table['columns'];
+        $tableMetadata = $this->getTables([$table['table']]);
+        if (count($tableMetadata) === 0) {
+            throw new UserException(sprintf(
+                "Could not find the table: [%s].[%s]",
+                $table['table']['schema'],
+                $table['table']['tableName']
+            ));
+        }
+        $tableMetadata = $tableMetadata[0];
+        $columnMetadata = $tableMetadata['columns'];
+        // if columns are selected
+        if (count($columns) > 0) {
+            $columnMetadata = array_filter($columnMetadata, function ($columnMeta) use ($columns) {
+                return in_array($columnMeta['name'], $columns);
+            });
+            $colOrder = array_flip($columns);
+            usort($columnMetadata, function (array $colA, array $colB) use ($colOrder) {
+                return $colOrder[$colA['name']] - $colOrder[$colB['name']];
+            });
+        }
+        return $columnMetadata;
+    }
+
     public function export(array $table): array
     {
         $outputTable = $table['outputTable'];
 
         $this->logger->info("Exporting to " . $outputTable);
         $advancedQuery = true;
+        $columnMetadata = [];
         if (!isset($table['query']) || $table['query'] === '') {
-            $query = $this->simpleQuery($table['table'], $table['columns']);
+            $columnMetadata = $this->getColumnMetadataFromTable($table);
+            $query = $this->simpleQuery($table['table'], $columnMetadata);
             $advancedQuery = false;
         } else {
             $query = $table['query'];
         }
 
-        $copyFailed = false;
         $maxTries = isset($table['retries']) ? (int) $table['retries'] : self::DEFAULT_MAX_TRIES;
-        $counter = 0;
         $exception = null;
 
         $csvCreated = false;
 
-
         try {
-            $this->executeCopyQuery(
+            $result = $this->executeCopyQuery(
                 $query,
                 $this->createOutputCsv($outputTable),
                 $table['outputTable'],
                 $advancedQuery
             );
+            if (!$advancedQuery) {
+                $result['lastFetchedRow'] = $this->getLastFetchedValue($columnMetadata, $result['lastFetchedRow']);
+            }
             $csvCreated = true;
         } catch (Throwable $copyError) {
+            echo "\nVOPY ERROR\n " . $copyError->getMessage() . "s\n";
             // There was an error, so let's try the old method
             if (!$copyError instanceof ApplicationException) {
                 $this->logger->warning("Unexpected exception executing \copy: " . $copyError->getMessage());
@@ -115,7 +144,7 @@ class PgSQL extends Extractor
             $proxy = new RetryProxy($this->logger, $maxTries);
 
             try {
-                $csvCreated = $proxy->call(function () use ($query, $outputTable, $advancedQuery) {
+                $result = $proxy->call(function () use ($query, $outputTable, $advancedQuery) {
                     try {
                         $this->executeQueryPDO($query, $this->createOutputCsv($outputTable), $advancedQuery);
                         return true;
@@ -152,12 +181,18 @@ class PgSQL extends Extractor
             }
         }
 
-        return [
+        $output = [
             "outputTable"=> $outputTable,
+            "rows" => $result['rows'],
         ];
+        // output state
+        if (!empty($result['lastFetchedRow'])) {
+            $output["state"]['lastFetchedRow'] = $result['lastFetchedRow'];
+        }
+        return $output;
     }
 
-    protected function executeQueryPDO(string $query, CsvFile $csv, bool $advancedQuery): void
+    protected function executeQueryPDO(string $query, CsvFile $csv, bool $advancedQuery): array
     {
         $cursorName = 'exdbcursor' . intval(microtime(true));
         $curSql = "DECLARE $cursorName CURSOR FOR $query";
@@ -172,24 +207,48 @@ class PgSQL extends Extractor
             $resultRow = $innerStatement->fetch(PDO::FETCH_ASSOC);
             if (!is_array($resultRow) || empty($resultRow)) {
                 $this->logger->warning("Query returned empty result. Nothing was imported");
-                return;
+                // no rows found.  If incremental fetching is turned on, we need to preserve the last state
+                if ($this->incrementalFetching['column'] && isset($this->state['lastFetchedRow'])) {
+                    $output = $this->state;
+                }
+                $output['rows'] = 0;
+                return $output;
             }
             // only write header for advanced query case
             if ($advancedQuery) {
                 $csv->writeRow(array_keys($resultRow));
             }
             $csv->writeRow($resultRow);
+
+            $numRows = 1;
+            $lastRow = $resultRow;
             // write the rest
             $this->logger->info("Fetching data...");
             $innerStatement = $this->db->prepare("FETCH 10000 FROM $cursorName");
             while ($innerStatement->execute() && count($resultRows = $innerStatement->fetchAll(PDO::FETCH_ASSOC)) > 0) {
                 foreach ($resultRows as $resultRow) {
                     $csv->writeRow($resultRow);
+                    $lastRow = $resultRow;
+                    $numRows++;
                 }
             }
             // close the cursor
             $this->db->exec("CLOSE $cursorName");
             $this->db->commit();
+
+            // get last fetched value
+            if (isset($this->incrementalFetching['column'])) {
+                if (!array_key_exists($this->incrementalFetching['column'], $lastRow)) {
+                    throw new UserException(
+                        sprintf(
+                            "The specified incremental fetching column %s not found in the table",
+                            $this->incrementalFetching['column']
+                        )
+                    );
+                }
+                $output['lastFetchedRow'] = $lastRow[$this->incrementalFetching['column']];
+            }
+            $output['rows'] = $numRows;
             $this->logger->info("Extraction completed");
         } catch (PDOException $e) {
             try {
@@ -200,9 +259,10 @@ class PgSQL extends Extractor
             $stmt = null;
             throw $e;
         }
+        return $output;
     }
 
-    protected function executeCopyQuery(string $query, CsvFile $csvFile, string $tableName, bool $advancedQuery): void
+    protected function executeCopyQuery(string $query, CsvFile $csvFile, string $tableName, bool $advancedQuery): array
     {
         $this->logger->info(sprintf("Executing query '%s' via \copy ...", $tableName));
 
@@ -235,6 +295,48 @@ class PgSQL extends Extractor
             $this->logger->info("Failed \copy command (will attempt via PDO): " . $process->getErrorOutput());
             throw new ApplicationException("Error using copy command.", 42);
         }
+        return $this->analyseOutput($csvFile);
+    }
+
+    private function analyseOutput(CsvFile $csvFile): array
+    {
+        // Get the number of written rows and lastFetchedValue
+        $outputFile = $csvFile;
+        $numRows = 0;
+        $lastFetchedRow = null;
+        $colCount = $outputFile->getColumnsCount();
+        while ($outputFile->valid()) {
+            if (count($outputFile->current()) !== $colCount) {
+                throw new UserException("The \copy command produced an invalid csv.");
+            }
+            $lastRow = $outputFile->current();
+            $outputFile->next();
+            if (!$outputFile->valid()) {
+                $lastFetchedRow = $lastRow;
+            }
+            $numRows++;
+        }
+        $this->logger->info(sprintf("Successfully exported %d rows.", $numRows));
+        $output = ['rows' => $numRows];
+        if ($lastFetchedRow && isset($this->incrementalFetching['column'])) {
+            $output['lastFetchedRow'] = $lastFetchedRow;
+        }
+        return $output;
+    }
+
+    private function getLastFetchedValue(array $columnMetadata, array $lastExportedRow): string
+    {
+        foreach ($columnMetadata as $key => $column) {
+            if ($column['name'] === $this->incrementalFetching['column']) {
+                return $lastExportedRow[$key];
+            }
+        }
+        throw new UserException(
+            sprintf(
+                "The specified incremental fetching column %s not found in the table",
+                $this->incrementalFetching['column']
+            )
+        );
     }
 
     public function testConnection(): void
@@ -402,7 +504,7 @@ EOT;
                     ', ',
                     array_map(
                         function ($column) {
-                            return $this->quote($column);
+                            return $this->quote($column['name']);
                         },
                         $columns
                     )
@@ -445,13 +547,14 @@ EOT;
     {
         $res = $this->db->query(
             sprintf(
-                'SELECT * FROM INFORMATION_SCHEMA.COLUMNS as cols 
+                'SELECT * FROM INFORMATION_SCHEMA.COLUMNS as cols
                             WHERE TABLE_SCHEMA = %s AND TABLE_NAME = %s AND COLUMN_NAME = %s',
                 $this->db->quote($table['schema']),
                 $this->db->quote($table['tableName']),
                 $this->db->quote($columnName)
             )
         );
+
         $columns = $res->fetchAll();
         if (count($columns) === 0) {
             throw new UserException(
@@ -464,7 +567,6 @@ EOT;
 
         try {
             $datatype = new GenericStorage($columns[0]['data_type']);
-            echo "\nBASETYPE\n" . $datatype->getBasetype();
             if (in_array($datatype->getBasetype(), self::NUMERIC_BASE_TYPES)) {
                 $this->incrementalFetching['column'] = $columnName;
                 $this->incrementalFetching['type'] = self::INCREMENT_TYPE_NUMERIC;
