@@ -18,15 +18,15 @@ class IncrementalFetchingTest extends BaseTest
         $incrTableProcesses[] = $this->createDbProcess('CREATE TABLE auto_increment_timestamp (
             "_weird_id" INT NOT NULL DEFAULT nextval(\'user_id_seq\'),
             "serial_id" SERIAL,
-            "weird_Name" character varying (30) NOT NULL DEFAULT \'pam\',
+            "weird_name" character varying (30) NOT NULL DEFAULT \'pam\',
             "timestamp" timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            "floatColumn" float DEFAULT 1.23,
-            "decimalColumn" DECIMAL(10,2) DEFAULT 10.2,
+            "floatcolumn" float DEFAULT 1.23,
+            "decimalcolumn" DECIMAL(10,2) DEFAULT 10.2,
             PRIMARY KEY ("_weird_id")  
         )');
         $incrTableProcesses[] = $this->createDbProcess(
             'INSERT INTO auto_increment_timestamp ' .
-            '(weird_Name, floatColumn, decimalColumn) VALUES (\'george\', 2.2, 20.2)'
+            '(weird_Name, floatcolumn, decimalcolumn) VALUES (\'george\', 2.2, 20.2)'
         );
 
         $this->runProcesses($incrTableProcesses);
@@ -36,7 +36,7 @@ class IncrementalFetchingTest extends BaseTest
         $incrTableProcesses = [
             $this->createDbProcess(
                 'INSERT INTO auto_increment_timestamp ' .
-                '(weird_Name, floatColumn, decimalColumn) VALUES (\'henry\', 3.3, 30.3)'
+                '(weird_Name, floatcolumn, decimalcolumn) VALUES (\'henry\', 3.3, 30.3)'
             ),
         ];
         $this->runProcesses($incrTableProcesses);
@@ -60,7 +60,6 @@ class IncrementalFetchingTest extends BaseTest
 
     public function testIncrementalFetchingByTimestamp(): void
     {
-        $this->markTestSkipped('waiting on php-datatypes update');
         $config = $this->getIncrementalFetchingConfig();
         $config['parameters']['incrementalFetchingColumn'] = 'timestamp';
         $this->createAutoIncrementAndTimestampTable();
@@ -90,7 +89,7 @@ class IncrementalFetchingTest extends BaseTest
         //now add a couple rows and run it again.
         $this->runProcesses([
             $this->createDbProcess(
-                'INSERT INTO auto_increment_timestamp (weird_Name) VALUES (\'charles\'), (\'william\')'
+                'INSERT INTO auto_increment_timestamp (weird_name) VALUES (\'charles\'), (\'william\')'
             ),
         ]);
 
@@ -150,7 +149,7 @@ class IncrementalFetchingTest extends BaseTest
         $this->assertEquals(3, $newResult['imported']['rows']);
     }
 
-    public function testIncrementalFetchingByInteger(): void
+    public function testIncrementalFetchingBySerial(): void
     {
         $config = $this->getIncrementalFetchingConfig();
         $config['parameters']['incrementalFetchingColumn'] = 'serial_id';
@@ -170,7 +169,7 @@ class IncrementalFetchingTest extends BaseTest
         //check that output state contains expected information
         $this->assertArrayHasKey('state', $result);
         $this->assertArrayHasKey('lastFetchedRow', $result['state']);
-        $this->assertEquals(3, $result['state']['lastFetchedRow']);
+        $this->assertEquals(2, $result['state']['lastFetchedRow']);
 
         sleep(2);
         // the next fetch should be empty
@@ -182,7 +181,7 @@ class IncrementalFetchingTest extends BaseTest
         $this->runProcesses([
             $this->createDbProcess(
                 'INSERT INTO auto_increment_timestamp ' .
-                '(weird_Name, floatColumn) VALUES (\'charles\', 4.4), (\'william\', 7.7)'
+                '(weird_name, floatcolumn) VALUES (\'charles\', 4.4), (\'william\', 7.7)'
             ),
         ]);
 
@@ -191,14 +190,59 @@ class IncrementalFetchingTest extends BaseTest
         //check that output state contains expected information
         $this->assertArrayHasKey('state', $newResult);
         $this->assertArrayHasKey('lastFetchedRow', $newResult['state']);
-        $this->assertEquals(7, $newResult['state']['lastFetchedRow']);
+        $this->assertEquals(4, $newResult['state']['lastFetchedRow']);
+        $this->assertEquals(3, $newResult['imported']['rows']);
+    }
+
+    public function testIncrementalFetchingByFloat(): void
+    {
+        $config = $this->getIncrementalFetchingConfig();
+        $config['parameters']['incrementalFetchingColumn'] = 'floatcolumn';
+        $this->createAutoIncrementAndTimestampTable();
+
+        $result = ($this->createApplication($config))->run();
+
+        $this->assertEquals('success', $result['status']);
+        $this->assertEquals(
+            [
+                'outputTable' => 'in.c-main.auto-increment-timestamp',
+                'rows' => 2,
+            ],
+            $result['imported']
+        );
+
+        //check that output state contains expected information
+        $this->assertArrayHasKey('state', $result);
+        $this->assertArrayHasKey('lastFetchedRow', $result['state']);
+        $this->assertEquals(3.3, $result['state']['lastFetchedRow']);
+
+        sleep(2);
+        // the next fetch should be empty
+        $noNewRowsResult = ($this->createApplication($config, $result['state']))->run();
+        $this->assertEquals(1, $noNewRowsResult['imported']['rows']);
+
+        sleep(2);
+        //now add a couple rows and run it again.
+        $this->runProcesses([
+            $this->createDbProcess(
+                'INSERT INTO auto_increment_timestamp ' .
+                '(weird_name, floatcolumn) VALUES (\'charles\', 4.4), (\'william\', 7.7)'
+            ),
+        ]);
+
+        $newResult = ($this->createApplication($config, $result['state']))->run();
+
+        //check that output state contains expected information
+        $this->assertArrayHasKey('state', $newResult);
+        $this->assertArrayHasKey('lastFetchedRow', $newResult['state']);
+        $this->assertEquals(7.7, $newResult['state']['lastFetchedRow']);
         $this->assertEquals(3, $newResult['imported']['rows']);
     }
 
     public function testIncrementalFetchingByDecimal(): void
     {
         $config = $this->getIncrementalFetchingConfig();
-        $config['parameters']['incrementalFetchingColumn'] = 'decimalColumn';
+        $config['parameters']['incrementalFetchingColumn'] = 'decimalcolumn';
         $this->createAutoIncrementAndTimestampTable();
 
         $result = ($this->createApplication($config))->run();
@@ -227,7 +271,7 @@ class IncrementalFetchingTest extends BaseTest
         $this->runProcesses([
             $this->createDbProcess(
                 'INSERT INTO auto_increment_timestamp ' .
-                '(weird_Name, decimalColumn) VALUES (\'charles\', 4.4), (\'william\', 70.7)'
+                '(weird_name, decimalColumn) VALUES (\'charles\', 4.4), (\'william\', 70.7)'
             ),
         ]);
 
@@ -325,7 +369,7 @@ class IncrementalFetchingTest extends BaseTest
 
         $this->expectException(UserException::class);
         $this->expectExceptionMessage($expectedExceptionMessage);
-        ($this->createApplication($config))->run();
+        $this->createApplication($config)->run();
     }
 
     public function invalidColumnProvider(): array
@@ -336,8 +380,8 @@ class IncrementalFetchingTest extends BaseTest
                 "Column [fakeCol] specified for incremental fetching was not found in the table",
             ],
             'column exists but is not auto-increment nor updating timestamp so should fail' => [
-                "weird_Name",
-                "Column [weird_Name] specified for incremental fetching is not a numeric or timestamp type column",
+                "weird_name",
+                "Column [weird_name] specified for incremental fetching is not a numeric or timestamp type column",
             ],
         ];
     }
