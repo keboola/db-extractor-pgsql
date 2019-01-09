@@ -126,12 +126,11 @@ class PgSQL extends Extractor
                 $table['outputTable'],
                 $advancedQuery
             );
-            if (!$advancedQuery) {
+            if (!$advancedQuery && isset($result['lastFetchedRow'])) {
                 $result['lastFetchedRow'] = $this->getLastFetchedValue($columnMetadata, $result['lastFetchedRow']);
             }
             $csvCreated = true;
         } catch (Throwable $copyError) {
-            echo "\nVOPY ERROR\n " . $copyError->getMessage() . "s\n";
             // There was an error, so let's try the old method
             if (!$copyError instanceof ApplicationException) {
                 $this->logger->warning("Unexpected exception executing \copy: " . $copyError->getMessage());
