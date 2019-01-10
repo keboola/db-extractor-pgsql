@@ -10,8 +10,11 @@
     "tables": [
       {
         "id": 0,
-        "mane": "escaping",
-        "query": "SELECT * FROM escaping",
+        "name": "escaping",
+        "table": {
+          "tableName": "escaping",
+          "schema": "public"
+        },
         "outputTable": "in.c-main-escaping",
         "incremental": false,
         "primaryKey": ["_funnycol", "_sadcol"],

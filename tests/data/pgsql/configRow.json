@@ -1,0 +1,22 @@
+{
+  "parameters": {
+    "db": {
+      "host": "pgsql",
+      "port": 5432,
+      "database": "postgres",
+      "user": "postgres",
+      "password": "some password"
+    },
+    "table": {
+      "tableName": "escaping",
+      "schema": "public"
+    },
+    "outputTable": "in.c-main-escaping",
+    "incremental": false,
+    "primaryKey": [
+      "_funnycol",
+      "_sadcol"
+    ],
+    "enabled": true
+  }
+}
