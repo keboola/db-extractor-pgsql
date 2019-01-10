@@ -5,6 +5,7 @@ composer.phar
 runtests.sh
 test.php
 tests/data/out/
+tests/data/in/
 tests/data/config.yml
 tests/data/config.json
 .DS_Store
