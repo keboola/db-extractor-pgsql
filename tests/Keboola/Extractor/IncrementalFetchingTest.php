@@ -12,8 +12,6 @@ class IncrementalFetchingTest extends BaseTest
     protected function createAutoIncrementAndTimestampTable(): void
     {
         $incrTableProcesses = [];
-        $incrTableProcesses[] = $this->createDbProcess('DROP TABLE IF EXISTS auto_increment_timestamp');
-        $incrTableProcesses[] = $this->createDbProcess('DROP SEQUENCE IF EXISTS user_id_seq;');
         $incrTableProcesses[] = $this->createDbProcess('CREATE SEQUENCE user_id_seq;');
         $incrTableProcesses[] = $this->createDbProcess('CREATE TABLE auto_increment_timestamp (
             "_weird_id" INT NOT NULL DEFAULT nextval(\'user_id_seq\'),

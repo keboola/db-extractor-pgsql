@@ -86,6 +86,10 @@ abstract class BaseTest extends ExtractorTest
         $processes[] = $this->createDbProcess(
             "DROP TABLE IF EXISTS types;"
         );
+        $processes[] = $this->createDbProcess(
+            'DROP TABLE IF EXISTS auto_increment_timestamp'
+        );
+        $processes[] = $this->createDbProcess('DROP SEQUENCE IF EXISTS user_id_seq;');
 
         // create test tables
         $processes[] = $this->createDbProcess(
