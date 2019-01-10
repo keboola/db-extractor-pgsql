@@ -166,14 +166,14 @@ class ApplicationTest extends BaseTest
 
         // add a couple rows
         $this->runProcesses([
-            $this->createDbProcess('INSERT INTO types (`integer`) VALUES (89), (101)')
+            $this->createDbProcess('INSERT INTO types (`integer`) VALUES (89), (101)'),
         ]);
 
         // copy state to input state file
         file_put_contents($inputStateFile, file_get_contents($outputStateFile));
 
         // run the config again
-        $process = new Process('php ' . $this->rootPath . '/src/run.php --data=' . $this->dataDir);
+        $process = Process::fromShellCommandline('php ' . $this->rootPath . '/src/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
         $process->run();
 
