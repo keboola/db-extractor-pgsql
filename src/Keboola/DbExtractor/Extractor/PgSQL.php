@@ -155,6 +155,7 @@ class PgSQL extends Extractor
                         throw $queryError;
                     }
                 });
+                $csvCreated = true;
             } catch (PDOException $pdoError) {
                 throw new UserException(
                     sprintf(
