@@ -11,7 +11,7 @@ use Keboola\DbExtractor\Logger;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Filesystem\Filesystem;
 
-class BaseTest extends ExtractorTest
+abstract class BaseTest extends ExtractorTest
 {
     public const DRIVER = 'pgsql';
 
