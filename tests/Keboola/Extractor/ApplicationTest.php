@@ -151,8 +151,9 @@ class ApplicationTest extends BaseTest
         @unlink($inputStateFile);
 
         $config = $this->getConfigRow(self::DRIVER);
-        $config['table']['tableName'] = 'types';
-        $config['incrementalFetchingColumn'] = 'integer';
+        $config['parameters']['table']['tableName'] = 'types';
+        $config['parameters']['incrementalFetchingColumn'] = 'integer';
+        $config['parameters']['outputTable'] = 'in.c-main.types';
 
         $this->replaceConfig($config, self::CONFIG_FORMAT_JSON);
 
@@ -162,18 +163,18 @@ class ApplicationTest extends BaseTest
 
         $this->assertFileExists($outputStateFile);
         $this->assertFileExists($outputStateFile);
-        $this->assertEquals(['lastFetchedRow' => '2'], json_decode(file_get_contents($outputStateFile), true));
+        $this->assertEquals(['lastFetchedRow' => '32'], json_decode(file_get_contents($outputStateFile), true));
 
         // add a couple rows
         $this->runProcesses([
-            $this->createDbProcess('INSERT INTO types (`integer`) VALUES (89), (101)'),
+            $this->createDbProcess('INSERT INTO types ("character", "integer") VALUES (\'abc\', 89), (\'def\', 101)'),
         ]);
 
         // copy state to input state file
         file_put_contents($inputStateFile, file_get_contents($outputStateFile));
 
         // run the config again
-        $process = Process::fromShellCommandline('php ' . $this->rootPath . '/src/run.php --data=' . $this->dataDir);
+        $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
         $process->run();
 
