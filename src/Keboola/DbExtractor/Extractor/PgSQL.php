@@ -529,16 +529,13 @@ EOT;
                 );
             }
             $incrementalAddon .= sprintf(" ORDER BY %s", $this->quote($this->incrementalFetching['column']));
-        }
-
-        if ($incrementalAddon) {
             $query .= $incrementalAddon;
-        }
-        if (isset($this->incrementalFetching['limit'])) {
-            $query .= sprintf(
-                " LIMIT %d",
-                $this->incrementalFetching['limit']
-            );
+            if (isset($this->incrementalFetching['limit'])) {
+                $query .= sprintf(
+                    " LIMIT %d",
+                    $this->incrementalFetching['limit']
+                );
+            }
         }
         return $query;
     }
