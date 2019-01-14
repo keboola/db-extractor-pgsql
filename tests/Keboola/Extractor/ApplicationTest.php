@@ -176,10 +176,7 @@ class ApplicationTest extends BaseTest
         // run the config again
         $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
-        $process->run();
-
-        var_dump($process->getErrorOutput());
-        var_dump($process->getOutput());
+        $process->mustRun();
 
         $this->assertEquals(0, $process->getExitCode());
         $this->assertEquals(['lastFetchedRow' => '101'], json_decode(file_get_contents($outputStateFile), true));
