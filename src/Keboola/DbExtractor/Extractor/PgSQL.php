@@ -582,8 +582,10 @@ EOT;
             );
         }
 
-        if ($limit) {
+        if ($limit && $limit >= 0) {
             $this->incrementalFetching['limit'] = $limit;
+        } else {
+            throw new UserException('The limit parameter must be an integer >= 0');
         }
     }
 
