@@ -522,14 +522,14 @@ EOT;
 
         if ($this->incrementalFetching && isset($this->incrementalFetching['column'])) {
             if (isset($this->state['lastFetchedRow'])) {
-                $incrementalAddon = sprintf(
+                $query .= sprintf(
                     " WHERE %s >= %s",
                     $this->quote($this->incrementalFetching['column']),
                     $this->db->quote((string) $this->state['lastFetchedRow'])
                 );
             }
-            $incrementalAddon .= sprintf(" ORDER BY %s", $this->quote($this->incrementalFetching['column']));
-            $query .= $incrementalAddon;
+            $query .= sprintf(" ORDER BY %s", $this->quote($this->incrementalFetching['column']));
+            
             if (isset($this->incrementalFetching['limit'])) {
                 $query .= sprintf(
                     " LIMIT %d",
