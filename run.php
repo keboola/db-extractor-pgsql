@@ -40,7 +40,17 @@ try {
     $config['parameters']['data_dir'] = $arguments['data'];
     $config['parameters']['extractor_class'] = 'PgSQL';
 
-    $app = new Application($config, $logger);
+    // get the state
+    $inputState = [];
+    $inputStateFile = $arguments['data'] . '/in/state.json';
+    if (file_exists($inputStateFile)) {
+        $inputState = $jsonDecode->decode(
+            file_get_contents($inputStateFile),
+            JsonEncoder::FORMAT
+        );
+    }
+
+    $app = new Application($config, $logger, $inputState);
 
     if ($app['action'] !== 'run') {
         $app['logger']->setHandlers(array(new NullHandler(Logger::INFO)));
@@ -50,6 +60,13 @@ try {
     $result = $app->run();
     if (!$runAction) {
         echo json_encode($result);
+    } else {
+        if (!empty($result['state'])) {
+            // write state
+            $outputStateFile = $arguments['data'] . '/out/state.json';
+            $jsonEncode = new \Symfony\Component\Serializer\Encoder\JsonEncode();
+            file_put_contents($outputStateFile, $jsonEncode->encode($result['state'], JsonEncoder::FORMAT));
+        }
     }
     $app['logger']->log('info', "Extractor finished successfully.");
     exit(0);

@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace Keboola\DbExtractor\Tests;
 
 use Keboola\Csv\CsvFile;
-use Keboola\DbExtractor\Application;
 use Keboola\DbExtractor\Exception\UserException;
-use Keboola\DbExtractor\Logger;
 
 class PgsqlTest extends BaseTest
 {
@@ -18,7 +16,7 @@ class PgsqlTest extends BaseTest
     public function testRunConfig(string $configFormat): void
     {
         $config = $this->getConfig('pgsql', $configFormat);
-        $result = (new Application($config, new Logger('ex-db-pgsql-tests')))->run();
+        $result = $this->createApplication($config)->run();
         $expectedCsvFile = new CsvFile($this->dataDir . '/pgsql/escaping.csv');
         $outputCsvFile = new CsvFile($this->dataDir . '/out/tables/' . $result['imported'][0]['outputTable'] . '.csv');
         $outputManifestFile = $this->dataDir . '/out/tables/' . $result['imported'][0]['outputTable'] . '.csv.manifest';
@@ -50,7 +48,7 @@ class PgsqlTest extends BaseTest
             'sshHost' => 'sshproxy',
         ];
 
-        $app = new Application($config, new Logger('ex-db-pgsql-tests'));
+        $app = $this->createApplication($config);
         $result = $app->run();
 
         $expectedCsvFile = new CsvFile($this->dataDir . '/pgsql/escaping.csv');
@@ -77,7 +75,7 @@ class PgsqlTest extends BaseTest
     {
         $config = $this->getConfig();
         $config['action'] = 'testConnection';
-        $app = new Application($config, new Logger('ex-db-pgsql-tests'));
+        $app = $this->createApplication($config);
 
         $result = $app->run();
         $this->assertEquals('success', $result['status']);
@@ -89,7 +87,7 @@ class PgsqlTest extends BaseTest
         $config['action'] = 'testConnection';
 
         $config['parameters']['db']['user'] = "fakeguy";
-        $app = new Application($config, new Logger('ex-db-pgsql-tests'));
+        $app = $this->createApplication($config);
 
         try {
             $result = $app->run();
@@ -104,7 +102,7 @@ class PgsqlTest extends BaseTest
         $config = $this->getConfig();
         $config['parameters']['db']['#password'] = "fakepass";
 
-        $app = new Application($config, new Logger('ex-db-pgsql-tests'));
+        $app = $this->createApplication($config);
         try {
             $result = $app->run();
             $this->fail("Invalid credentials should throw exception");
@@ -117,7 +115,7 @@ class PgsqlTest extends BaseTest
     {
         $config = $this->getConfig();
         $config['action'] = 'getTables';
-        $app = new Application($config, new Logger('ex-db-pgsql-tests'));
+        $app = $this->createApplication($config);
 
         $result = $app->run();
         $this->assertArrayHasKey('status', $result);
@@ -309,11 +307,11 @@ class PgsqlTest extends BaseTest
         $config['parameters']['tables'][3]['primaryKey'] = null;
         $config['parameters']['tables'][3]['table']['tableName'] = 'types_fk';
 
-        // use just 1 table
+        // use just 2 tables
         unset($config['parameters']['tables'][0]);
         unset($config['parameters']['tables'][1]);
 
-        $app = new Application($config, new Logger('ex-db-pgsql-tests'));
+        $app = $this->createApplication($config);
 
         $result = $app->run();
 
@@ -732,7 +730,7 @@ class PgsqlTest extends BaseTest
         unset($config['parameters']['tables'][0]);
         unset($config['parameters']['tables'][1]);
 
-        $app = new Application($config, new Logger('ex-db-pgsql-tests'));
+        $app = $this->createApplication($config);
 
         $result = $app->run();
 
@@ -764,7 +762,7 @@ class PgsqlTest extends BaseTest
         unset($config['parameters']['tables'][1]);
         unset($config['parameters']['tables'][2]['columns']);
 
-        $app = new Application($config, new Logger('ex-db-pgsql-tests'));
+        $app = $this->createApplication($config);
         $result = $app->run();
 
         $this->assertEquals('success', $result['status']);
@@ -830,7 +828,7 @@ class PgsqlTest extends BaseTest
         $config['action'] = 'getTables';
 
         $jobStartTime = time();
-        $result = (new Application($config, new Logger('ex-db-pgsql-tests')))->run();
+        $result = $this->createApplication($config)->run();
         $this->assertEquals('success', $result['status']);
         $runTime = time() - $jobStartTime;
 
@@ -859,7 +857,7 @@ class PgsqlTest extends BaseTest
         $this->expectException(UserException::class);
         $this->expectExceptionMessageRegExp("/^Error executing \[in.c-main.types\]\: SQLSTATE\[42601\]\:.*/");
 
-        $app = new Application($config, new Logger('ex-db-pgsql-tests'));
+        $app = $this->createApplication($config);
         $app->run();
     }
 

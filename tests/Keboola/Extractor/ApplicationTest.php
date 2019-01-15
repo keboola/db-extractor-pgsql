@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Keboola\DbExtractor\Tests;
 
 use Keboola\Csv\CsvFile;
+use Symfony\Component\Filesystem;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Yaml\Yaml;
 use Keboola\DbExtractor\Exception\UserException;
@@ -132,5 +133,52 @@ class ApplicationTest extends BaseTest
 
         $this->assertEquals(0, $process->getExitCode());
         $this->assertEquals("", $process->getErrorOutput());
+    }
+
+    public function testStateFile(): void
+    {
+        $outputStateFile = $this->dataDir . '/out/state.json';
+        $inputStateFile = $this->dataDir . '/in/state.json';
+
+        $fs = new Filesystem\Filesystem();
+        if (!$fs->exists($inputStateFile)) {
+            $fs->mkdir($this->dataDir . '/in');
+            $fs->touch($inputStateFile);
+        }
+
+        // unset the state file
+        @unlink($outputStateFile);
+        @unlink($inputStateFile);
+
+        $config = $this->getConfigRow(self::DRIVER);
+        $config['parameters']['table']['tableName'] = 'types';
+        $config['parameters']['incrementalFetchingColumn'] = 'integer';
+        $config['parameters']['outputTable'] = 'in.c-main.types';
+
+        $this->replaceConfig($config, self::CONFIG_FORMAT_JSON);
+
+        $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
+        $process->setTimeout(300);
+        $process->mustRun();
+
+        $this->assertFileExists($outputStateFile);
+        $this->assertFileExists($outputStateFile);
+        $this->assertEquals(['lastFetchedRow' => '32'], json_decode(file_get_contents($outputStateFile), true));
+
+        // add a couple rows
+        $this->runProcesses([
+            $this->createDbProcess('INSERT INTO types ("character", "integer") VALUES (\'abc\', 89), (\'def\', 101)'),
+        ]);
+
+        // copy state to input state file
+        file_put_contents($inputStateFile, file_get_contents($outputStateFile));
+
+        // run the config again
+        $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
+        $process->setTimeout(300);
+        $process->mustRun();
+
+        $this->assertEquals(0, $process->getExitCode());
+        $this->assertEquals(['lastFetchedRow' => '101'], json_decode(file_get_contents($outputStateFile), true));
     }
 }

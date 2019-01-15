@@ -3,7 +3,8 @@ MAINTAINER Miro Cillik <miro@keboola.com>
 
 ENV DEBIAN_FRONTEND noninteractive
 
-ENV COMPOSER_ALLOW_SUPERUSER=1
+ENV COMPOSER_ALLOW_SUPERUSER 1
+ENV COMPOSER_PROCESS_TIMEOUT 3600
 
 RUN apt-get update \
   && apt-get install -y git ssh zip unzip libpq-dev --no-install-recommends \
