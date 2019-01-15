@@ -367,10 +367,13 @@ class IncrementalFetchingTest extends BaseTest
         unset($config['parameters']['table']);
 
         try {
-            $result = ($this->createApplication($config))->run();
+            ($this->createApplication($config))->run();
             $this->fail('cannot use incremental fetching with advanced query, should fail.');
         } catch (UserException $e) {
-            $this->assertStringStartsWith("Invalid Configuration", $e->getMessage());
+            $this->assertStringContainsString(
+                "Incremental fetching is not supported for advanced queries",
+                $e->getMessage()
+            );
         }
     }
 
