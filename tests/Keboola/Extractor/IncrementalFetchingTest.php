@@ -326,18 +326,36 @@ class IncrementalFetchingTest extends BaseTest
     {
         $this->createAutoIncrementAndTimestampTable();
         $config = $this->getIncrementalFetchingConfig();
+        $config['parameters']['incrementalFetchingColumn'] = 'decimalcolumn';
 
+        //check that output state contains expected information
+        $this->runProcesses([
+            $this->createDbProcess(
+                'INSERT INTO auto_increment_timestamp ' .
+                '(weird_name, decimalColumn) VALUES (\'william\', 70.7), (\'charles\', 4.4)'
+            ),
+        ]);
+
+        sleep(2);
+        // the next fetch should be empty
         $result = ($this->createApplication($config))->run();
+
+        //check that output state contains expected information
+        $this->assertArrayHasKey('state', $result);
+        $this->assertArrayHasKey('lastFetchedRow', $result['state']);
+        $this->assertEquals(70.7, $result['state']['lastFetchedRow']);
+        $this->assertEquals(4, $result['imported']['rows']);
+
         $outputCsvFile = iterator_to_array(
             new CsvFile(
                 $this->dataDir . '/out/tables/' . $result['imported']['outputTable'] . '.csv'
             )
         );
 
-        $previousId = 0;
+        $previousValue = 0.0;
         foreach ($outputCsvFile as $key => $row) {
-            $this->assertGreaterThan($previousId, (int) $row[0]);
-            $previousId = (int) $row[0];
+            $this->assertGreaterThan($previousValue, (float) $row[5]);
+            $previousValue = (float) $row[5];
         }
     }
 
