@@ -529,7 +529,7 @@ EOT;
                 );
             }
             $query .= sprintf(" ORDER BY %s", $this->quote($this->incrementalFetching['column']));
-            
+
             if (isset($this->incrementalFetching['limit'])) {
                 $query .= sprintf(
                     " LIMIT %d",
@@ -584,7 +584,7 @@ EOT;
 
         if ($limit && $limit >= 0) {
             $this->incrementalFetching['limit'] = $limit;
-        } else {
+        } else if ($limit < 0) {
             throw new UserException('The limit parameter must be an integer >= 0');
         }
     }
