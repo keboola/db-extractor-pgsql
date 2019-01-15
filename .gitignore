@@ -1,11 +1,6 @@
 vendor/
-/data/
 .idea/
 composer.phar
-runtests.sh
-test.php
-tests/data/out/
-tests/data/config.yml
-tests/data/config.json
+tests/data/
 .DS_Store
 .env
