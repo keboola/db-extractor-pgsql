@@ -120,6 +120,9 @@ class PgSQL extends Extractor
         $csvCreated = false;
 
         try {
+            if (isset($table['forceFallback']) && $table['forceFallback'] === true) {
+                throw new \Exception("Forcing extractor to use PDO fallback fetching");
+            }
             $result = $this->executeCopyQuery(
                 $query,
                 $this->createOutputCsv($outputTable),
