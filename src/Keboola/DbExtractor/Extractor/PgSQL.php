@@ -148,8 +148,7 @@ class PgSQL extends Extractor
             try {
                 $result = $proxy->call(function () use ($query, $outputTable, $advancedQuery) {
                     try {
-                        $this->executeQueryPDO($query, $this->createOutputCsv($outputTable), $advancedQuery);
-                        return true;
+                        return $this->executeQueryPDO($query, $this->createOutputCsv($outputTable), $advancedQuery);
                     } catch (Throwable $queryError) {
                         try {
                             $this->db = $this->createConnection($this->getDbParameters());
