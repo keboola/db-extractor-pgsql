@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\DbExtractor\Tests;
 
+use Keboola\DbExtractor\PgsqlApplication;
 use Keboola\DbExtractor\Test\ExtractorTest;
 
 use Keboola\DbExtractor\Application;
@@ -157,7 +158,7 @@ abstract class BaseTest extends ExtractorTest
 
     protected function createApplication(array $config, array $state = []): Application
     {
-        return new Application($config, new Logger('ex-db-pgsql-tests'), $state);
+        return new PgsqlApplication($config, new Logger('ex-db-pgsql-tests'), $state);
     }
 
     public function configProvider(): array
