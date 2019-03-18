@@ -6,6 +6,8 @@ namespace Keboola\DbExtractor\Tests;
 
 use Keboola\DbExtractor\Exception\UserException;
 use Keboola\Csv\CsvFile;
+use Keboola\DbExtractor\Logger;
+use Monolog\Handler\TestHandler;
 
 class IncrementalFetchingTest extends BaseTest
 {
@@ -389,8 +391,13 @@ class IncrementalFetchingTest extends BaseTest
         ]);
         // set the config to use the pdo fallback
         $config['parameters']['forceFallback'] = true;
-        $newResult = ($this->createApplication($config, $result['state']))->run();
+        // use a test logger to make sure we can tell that it actually falls back to pdo
+        $handler = new TestHandler();
+        $logger = new Logger('test');
+        $logger->pushHandler($handler);
+        $newResult = ($this->createApplication($config, $result['state'], $logger))->run();
 
+        $this->assertTrue($handler->hasInfoThatContains("Executing query via PDO"));
         //check that output state contains expected information
         $this->assertArrayHasKey('state', $newResult);
         $this->assertArrayHasKey('lastFetchedRow', $newResult['state']);
