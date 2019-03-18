@@ -50,7 +50,7 @@ try {
         );
     }
 
-    $app = new PgsqlApplication($config, $logger, $inputState);
+    $app = new PgsqlApplication($config, $logger, $inputState, $arguments['data']);
 
     if ($app['action'] !== 'run') {
         $app['logger']->setHandlers(array(new NullHandler(Logger::INFO)));

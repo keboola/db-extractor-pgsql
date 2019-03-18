@@ -144,7 +144,6 @@ class PgSQL extends Extractor
             } catch (Throwable $connectionError) {
             };
             $proxy = new RetryProxy($this->logger, $maxTries);
-
             try {
                 $result = $proxy->call(function () use ($query, $outputTable, $advancedQuery) {
                     try {
@@ -251,7 +250,7 @@ class PgSQL extends Extractor
                 $output['lastFetchedRow'] = $lastRow[$this->incrementalFetching['column']];
             }
             $output['rows'] = $numRows;
-            $this->logger->info("Extraction completed");
+            $this->logger->info("Extraction completed. Fetched {$numRows} rows.");
         } catch (PDOException $e) {
             try {
                 $this->db->rollBack();
