@@ -158,7 +158,7 @@ abstract class BaseTest extends ExtractorTest
 
     protected function createApplication(array $config, array $state = []): Application
     {
-        return new PgsqlApplication($config, new Logger('ex-db-pgsql-tests'), $state);
+        return new PgsqlApplication($config, new Logger('ex-db-pgsql-tests'), $state, $this->dataDir);
     }
 
     public function configProvider(): array
