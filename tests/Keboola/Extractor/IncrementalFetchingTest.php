@@ -359,6 +359,45 @@ class IncrementalFetchingTest extends BaseTest
         }
     }
 
+    public function testIncrementalFetchingPDOFallback(): void
+    {
+        $this->createAutoIncrementAndTimestampTable();
+        $config = $this->getIncrementalFetchingConfig();
+
+        $result = ($this->createApplication($config))->run();
+
+        $this->assertEquals('success', $result['status']);
+        $this->assertEquals(
+            [
+                'outputTable' => 'in.c-main.auto-increment-timestamp',
+                'rows' => 2,
+            ],
+            $result['imported']
+        );
+
+        //check that output state contains expected information
+        $this->assertArrayHasKey('state', $result);
+        $this->assertArrayHasKey('lastFetchedRow', $result['state']);
+        $this->assertEquals(2, $result['state']['lastFetchedRow']);
+
+        sleep(2);
+        //now add a couple rows and run it again.
+        $this->runProcesses([
+            $this->createDbProcess(
+                'INSERT INTO auto_increment_timestamp (weird_Name) VALUES (\'charles\'), (\'william\')'
+            ),
+        ]);
+        // set the config to use the pdo fallback
+        $config['parameters']['forceFallback'] = true;
+        $newResult = ($this->createApplication($config, $result['state']))->run();
+
+        //check that output state contains expected information
+        $this->assertArrayHasKey('state', $newResult);
+        $this->assertArrayHasKey('lastFetchedRow', $newResult['state']);
+        $this->assertEquals(4, $newResult['state']['lastFetchedRow']);
+        $this->assertEquals(3, $newResult['imported']['rows']);
+    }
+
     public function testIncrementalFetchingInvalidConfig(): void
     {
         $this->createAutoIncrementAndTimestampTable();
