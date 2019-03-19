@@ -120,6 +120,9 @@ class PgSQL extends Extractor
         $csvCreated = false;
 
         try {
+            if (isset($table['forceFallback']) && $table['forceFallback'] === true) {
+                throw new \Exception("Forcing extractor to use PDO fallback fetching");
+            }
             $result = $this->executeCopyQuery(
                 $query,
                 $this->createOutputCsv($outputTable),
@@ -133,7 +136,11 @@ class PgSQL extends Extractor
         } catch (Throwable $copyError) {
             // There was an error, so let's try the old method
             if (!$copyError instanceof ApplicationException) {
-                $this->logger->warning("Unexpected exception executing \copy: " . $copyError->getMessage());
+                if (isset($table['forceFallback']) && $table['forceFallback'] === true) {
+                    $this->logger->warning($copyError->getMessage());
+                } else {
+                    $this->logger->warning("Unexpected exception executing \copy: " . $copyError->getMessage());
+                }
             }
             try {
                 // recreate the db connection
@@ -141,12 +148,10 @@ class PgSQL extends Extractor
             } catch (Throwable $connectionError) {
             };
             $proxy = new RetryProxy($this->logger, $maxTries);
-
             try {
                 $result = $proxy->call(function () use ($query, $outputTable, $advancedQuery) {
                     try {
-                        $this->executeQueryPDO($query, $this->createOutputCsv($outputTable), $advancedQuery);
-                        return true;
+                        return $this->executeQueryPDO($query, $this->createOutputCsv($outputTable), $advancedQuery);
                     } catch (Throwable $queryError) {
                         try {
                             $this->db = $this->createConnection($this->getDbParameters());
@@ -249,7 +254,7 @@ class PgSQL extends Extractor
                 $output['lastFetchedRow'] = $lastRow[$this->incrementalFetching['column']];
             }
             $output['rows'] = $numRows;
-            $this->logger->info("Extraction completed");
+            $this->logger->info("Extraction completed. Fetched {$numRows} rows.");
         } catch (PDOException $e) {
             try {
                 $this->db->rollBack();

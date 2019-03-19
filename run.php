@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Keboola\DbExtractor\Application;
+use \Keboola\DbExtractor\PgsqlApplication;
 use Keboola\DbExtractor\Exception\UserException;
 use Keboola\DbExtractor\Logger;
 use Monolog\Handler\NullHandler;
@@ -50,7 +50,7 @@ try {
         );
     }
 
-    $app = new Application($config, $logger, $inputState);
+    $app = new PgsqlApplication($config, $logger, $inputState, $arguments['data']);
 
     if ($app['action'] !== 'run') {
         $app['logger']->setHandlers(array(new NullHandler(Logger::INFO)));
