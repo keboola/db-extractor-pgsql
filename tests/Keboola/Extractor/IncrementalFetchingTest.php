@@ -397,6 +397,7 @@ class IncrementalFetchingTest extends BaseTest
         $logger->pushHandler($handler);
         $newResult = ($this->createApplication($config, $result['state'], $logger))->run();
 
+        $this->assertTrue($handler->hasWarningThatContains("Forcing extractor to use PDO fallback fetching"));
         $this->assertTrue($handler->hasInfoThatContains("Executing query via PDO"));
         //check that output state contains expected information
         $this->assertArrayHasKey('state', $newResult);

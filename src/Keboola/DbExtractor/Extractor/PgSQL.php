@@ -136,7 +136,11 @@ class PgSQL extends Extractor
         } catch (Throwable $copyError) {
             // There was an error, so let's try the old method
             if (!$copyError instanceof ApplicationException) {
-                $this->logger->warning("Unexpected exception executing \copy: " . $copyError->getMessage());
+                if (isset($table['forceFallback']) && $table['forceFallback'] === true) {
+                    $this->logger->warning($copyError->getMessage());
+                } else {
+                    $this->logger->warning("Unexpected exception executing \copy: " . $copyError->getMessage());
+                }
             }
             try {
                 // recreate the db connection
