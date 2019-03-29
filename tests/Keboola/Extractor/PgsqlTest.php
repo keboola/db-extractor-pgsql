@@ -127,7 +127,7 @@ class PgsqlTest extends BaseTest
                 array (
                     'name' => 'escaping',
                     'schema' => 'public',
-                    'type' => 'BASE TABLE',
+                    'type' => 'table',
                     'columns' =>
                         array (
                             0 =>
@@ -158,7 +158,7 @@ class PgsqlTest extends BaseTest
                 array (
                     'name' => 'types',
                     'schema' => 'public',
-                    'type' => 'BASE TABLE',
+                    'type' => 'table',
                     'columns' =>
                         array (
                             1 =>
@@ -211,7 +211,7 @@ class PgsqlTest extends BaseTest
                 array (
                     'name' => 'types_fk',
                     'schema' => 'public',
-                    'type' => 'BASE TABLE',
+                    'type' => 'table',
                     'columns' =>
                         array (
                             0 =>
@@ -264,7 +264,7 @@ class PgsqlTest extends BaseTest
                 array (
                     'name' => 'escaping',
                     'schema' => 'testing',
-                    'type' => 'BASE TABLE',
+                    'type' => 'table',
                     'columns' =>
                         array (
                             0 =>
@@ -329,7 +329,7 @@ class PgsqlTest extends BaseTest
                 2 =>
                 [
                     'key' => 'KBC.type',
-                    'value' => 'BASE TABLE',
+                    'value' => 'table',
                 ],
         ];
         $expectedColumnMetadata[0] = array (
@@ -521,7 +521,7 @@ class PgsqlTest extends BaseTest
                 2 =>
                 [
                     'key' => 'KBC.type',
-                    'value' => 'BASE TABLE',
+                    'value' => 'table',
                 ],
         ];
         $expectedColumnMetadata[1] = array (
