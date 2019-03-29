@@ -458,6 +458,7 @@ EOT;
             // make sure columns are sorted by index which is ordinal_position - 1
             ksort($tableDefs[$curTable]['columns']);
         }
+        ksort($tableDefs);
         return array_values($tableDefs);
     }
     private function tableTypeFromCode(string $code): ?string
