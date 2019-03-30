@@ -472,6 +472,14 @@ EOT;
                 return "materialized view";
             case 'f':
                 return "foreign table";
+            case 'i':
+                return "index";
+            case 'S':
+                return "sequence";
+            case 'c':
+                return "composite type";
+            case 't':
+                return "toast table";
             default:
                 return null;
         }
