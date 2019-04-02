@@ -367,60 +367,11 @@ class PgSQL extends Extractor
 
     public function getTables(?array $tables = null): array
     {
-        $sql = "SELECT * FROM information_schema.tables
-                WHERE table_schema != 'pg_catalog' AND table_schema != 'information_schema'";
-
-        $additionalWhereClause = '';
-        if (!is_null($tables) && count($tables) > 0) {
-            $additionalWhereClause = sprintf(
-                " AND table_name IN (%s) AND table_schema IN (%s)",
-                implode(
-                    ',',
-                    array_map(
-                        function ($table) {
-                            return $this->db->quote($table['tableName']);
-                        },
-                        $tables
-                    )
-                ),
-                implode(
-                    ',',
-                    array_map(
-                        function ($table) {
-                            return $this->db->quote($table['schema']);
-                        },
-                        $tables
-                    )
-                )
-            );
-        }
-
-        $sql .= $additionalWhereClause;
-
-        $res = $this->db->query($sql);
-        $arr = $res->fetchAll(PDO::FETCH_ASSOC);
-
-        $tableNameArray = [];
-        $tableDefs = [];
-        foreach ($arr as $table) {
-            $tableNameArray[] = $table['table_name'];
-            $tableDefs[$table['table_schema'] . '.' . $table['table_name']] = [
-                'name' => $table['table_name'],
-                'schema' => $table['table_schema'] ?? null,
-                'type' => $table['table_type'] ?? null,
-            ];
-        }
-
-        ksort($tableDefs);
-
-        if (count($tableNameArray) === 0) {
-            return [];
-        }
-
         $sql = <<<EOT
     SELECT 
       ns.nspname AS table_schema,
       c.relname AS table_name,
+      c.relkind AS table_type,
       a.attname AS column_name,
       format_type(a.atttypid, a.atttypmod) AS data_type_with_length,
       NOT a.attnotnull AS nullable,
@@ -465,8 +416,20 @@ EOT;
         }
 
         $res = $this->db->query($sql);
+
+        if ($res->rowCount() === 0) {
+            return [];
+        }
+        $tableDefs = [];
         while ($column = $res->fetch(PDO::FETCH_ASSOC)) {
             $curTable = $column['table_schema'] . '.' . $column['table_name'];
+            if (!array_key_exists($curTable, $tableDefs)) {
+                $tableDefs[$curTable] = [
+                    'name' => $column['table_name'],
+                    'schema' => $column['table_schema'] ?? null,
+                    'type' => $this->tableTypeFromCode($column['table_type']),
+                ];
+            }
 
             $ret = preg_match('/(.*)\((\d+|\d+,\d+)\)/', $column['data_type_with_length'], $parsedType);
 
@@ -495,7 +458,31 @@ EOT;
             // make sure columns are sorted by index which is ordinal_position - 1
             ksort($tableDefs[$curTable]['columns']);
         }
+        ksort($tableDefs);
         return array_values($tableDefs);
+    }
+    private function tableTypeFromCode(string $code): ?string
+    {
+        switch ($code) {
+            case 'r':
+                return "table";
+            case 'v':
+                return "view";
+            case 'm':
+                return "materialized view";
+            case 'f':
+                return "foreign table";
+            case 'i':
+                return "index";
+            case 'S':
+                return "sequence";
+            case 'c':
+                return "composite type";
+            case 't':
+                return "toast table";
+            default:
+                return null;
+        }
     }
 
     public function simpleQuery(array $table, array $columns = []): string
