@@ -376,13 +376,11 @@ class PgSQL extends Extractor
       format_type(a.atttypid, a.atttypmod) AS data_type_with_length,
       NOT a.attnotnull AS nullable,
       i.indisprimary AS primary_key,
-      a.attnum AS ordinal_position,
-      d.adsrc AS default_value
+      a.attnum AS ordinal_position
     FROM pg_attribute a
     JOIN pg_class c ON a.attrelid = c.oid AND c.reltype != 0 
     INNER JOIN pg_namespace ns ON ns.oid = c.relnamespace 
     LEFT JOIN pg_index i ON a.attrelid = i.indrelid AND a.attnum = ANY(i.indkey) 
-    LEFT JOIN pg_catalog.pg_attrdef d ON (a.attrelid, a.attnum) = (d.adrelid,  d.adnum) 
     WHERE 
       NOT a.attisdropped 
       AND a.attnum > 0 
@@ -431,7 +429,6 @@ EOT;
              * 5 - nullable
              * 6 - primary_key
              * 7 - ordinal_position
-             * 8 - default_value
              */
 
             $curTable = $column[0] . '.' . $column[1];
@@ -452,10 +449,6 @@ EOT;
                 $length = isset($parsedType[2]) ? $parsedType[2] : null;
             }
 
-            $default = $column[8];
-            if ($data_type === 'character varying' && $default !== null) {
-                $default = str_replace("'", "", explode("::", $column[8])[0]);
-            }
             $tableDefs[$curTable]['columns'][$column[7] - 1] = [
                 "name" => $column[3],
                 "sanitizedName" => Utils\sanitizeColumnName($column[3]),
@@ -463,7 +456,6 @@ EOT;
                 "primaryKey" => $column[6] === 't' ? true : false,
                 "length" => $length,
                 "nullable" => $column[5] === 't' ? true : false,
-                "default" => $default,
                 "ordinalPosition" => $column[7],
             ];
 
