@@ -424,9 +424,10 @@ EOT;
             );
         }
 
-        $this->runCopyCommand($sql, "tables.csv");
+        $tableListingFile = sys_get_temp_dir() . '/' . uniqid('tables-csv');
+        $this->runCopyCommand($sql, $tableListingFile);
 
-        $tablesCsv = new CsvFile("tables.csv");
+        $tablesCsv = new CsvFile($tableListingFile);
 
         $tableDefs = [];
         $data = iterator_to_array($tablesCsv);
