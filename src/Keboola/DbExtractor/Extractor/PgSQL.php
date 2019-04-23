@@ -367,6 +367,17 @@ class PgSQL extends Extractor
 
     public function getTables(?array $tables = null): array
     {
+        /**
+         * Comments for the following query (extracted because inline comments break the \copy command
+         *
+         * JOIN pg_class c ON a.attrelid = c.oid AND c.reltype != 0 --indexes have 0 reltype, we don't want them here
+         * INNER JOIN pg_namespace ns ON ns.oid = c.relnamespace --schemas
+         * LEFT JOIN pg_index i ON a.attrelid = i.indrelid AND a.attnum = ANY(i.indkey) -- PKs
+         *
+         * NOT a.attisdropped -- exclude dropped columns
+         * AND a.attnum > 0 -- exclude system columns
+         * AND ns.nspname != 'information_schema' -- exclude system namespaces
+         */
         $sql = <<<EOT
     SELECT 
       ns.nspname AS table_schema,
@@ -376,17 +387,15 @@ class PgSQL extends Extractor
       format_type(a.atttypid, a.atttypmod) AS data_type_with_length,
       NOT a.attnotnull AS nullable,
       i.indisprimary AS primary_key,
-      a.attnum AS ordinal_position,
-      d.adsrc AS default_value
+      a.attnum AS ordinal_position
     FROM pg_attribute a
-    JOIN pg_class c ON a.attrelid = c.oid AND c.reltype != 0 --indexes have 0 reltype, we don't want them here
-    INNER JOIN pg_namespace ns ON ns.oid = c.relnamespace --schemas
-    LEFT JOIN pg_index i ON a.attrelid = i.indrelid AND a.attnum = ANY(i.indkey) -- PKs
-    LEFT JOIN pg_catalog.pg_attrdef d ON (a.attrelid, a.attnum) = (d.adrelid,  d.adnum) -- default values
+    JOIN pg_class c ON a.attrelid = c.oid AND c.reltype != 0 
+    INNER JOIN pg_namespace ns ON ns.oid = c.relnamespace 
+    LEFT JOIN pg_index i ON a.attrelid = i.indrelid AND a.attnum = ANY(i.indkey) 
     WHERE 
-      NOT a.attisdropped -- exclude dropped columns
-      AND a.attnum > 0 -- exclude system columns
-      AND ns.nspname != 'information_schema' -- exclude system namespaces
+      NOT a.attisdropped 
+      AND a.attnum > 0 
+      AND ns.nspname != 'information_schema' 
       AND ns.nspname != 'pg_catalog' 
       AND ns.nspname NOT LIKE 'pg_toast%'
       AND ns.nspname NOT LIKE 'pg_temp%'
@@ -415,44 +424,51 @@ EOT;
             );
         }
 
-        $res = $this->db->query($sql);
+        $tableListingFile = sys_get_temp_dir() . '/' . uniqid('tables-csv');
+        $this->runCopyCommand($sql, $tableListingFile);
 
-        if ($res->rowCount() === 0) {
-            return [];
-        }
+        $tablesCsv = new CsvFile($tableListingFile);
+
         $tableDefs = [];
-        while ($column = $res->fetch(PDO::FETCH_ASSOC)) {
-            $curTable = $column['table_schema'] . '.' . $column['table_name'];
+        $data = iterator_to_array($tablesCsv);
+        foreach ($data as $column) {
+            /**
+             * 0 - table_schema
+             * 1 - table_name
+             * 2 - table_type
+             * 3 - column_name
+             * 4 - data_type_with_length
+             * 5 - nullable
+             * 6 - primary_key
+             * 7 - ordinal_position
+             */
+
+            $curTable = $column[0] . '.' . $column[1];
             if (!array_key_exists($curTable, $tableDefs)) {
                 $tableDefs[$curTable] = [
-                    'name' => $column['table_name'],
-                    'schema' => $column['table_schema'] ?? null,
-                    'type' => $this->tableTypeFromCode($column['table_type']),
+                    'name' => $column[1],
+                    'schema' => $column[0] ?? null,
+                    'type' => $this->tableTypeFromCode($column[2]),
                 ];
             }
 
-            $ret = preg_match('/(.*)\((\d+|\d+,\d+)\)/', $column['data_type_with_length'], $parsedType);
+            $ret = preg_match('/(.*)\((\d+|\d+,\d+)\)/', $column[4], $parsedType);
 
-            $data_type = $column['data_type_with_length'];
+            $data_type = $column[4];
             $length = null;
             if ($ret === 1) {
                 $data_type = isset($parsedType[1]) ? $parsedType[1] : null;
                 $length = isset($parsedType[2]) ? $parsedType[2] : null;
             }
 
-            $default = $column['default_value'];
-            if ($data_type === 'character varying' && $default !== null) {
-                $default = str_replace("'", "", explode("::", $column['default_value'])[0]);
-            }
-            $tableDefs[$curTable]['columns'][$column['ordinal_position'] - 1] = [
-                "name" => $column['column_name'],
-                "sanitizedName" => Utils\sanitizeColumnName($column['column_name']),
+            $tableDefs[$curTable]['columns'][$column[7] - 1] = [
+                "name" => $column[3],
+                "sanitizedName" => Utils\sanitizeColumnName($column[3]),
                 "type" => $data_type,
-                "primaryKey" => $column['primary_key'] ?: false,
+                "primaryKey" => $column[6] === 't' ? true : false,
                 "length" => $length,
-                "nullable" => $column['nullable'],
-                "default" => $default,
-                "ordinalPosition" => $column['ordinal_position'],
+                "nullable" => $column[5] === 't' ? true : false,
+                "ordinalPosition" => $column[7],
             ];
 
             // make sure columns are sorted by index which is ordinal_position - 1
@@ -461,6 +477,39 @@ EOT;
         ksort($tableDefs);
         return array_values($tableDefs);
     }
+
+    private function runCopyCommand(string $query, string $outputFile): void
+    {
+
+        $copyCommand = "\COPY (%s) TO '%s' WITH CSV DELIMITER ',' FORCE QUOTE *;";
+        $command = sprintf(
+            "PGPASSWORD='%s' psql -h %s -p %s -U %s -d %s -w -c %s",
+            $this->dbConfig['password'],
+            $this->dbConfig['host'],
+            $this->dbConfig['port'],
+            $this->dbConfig['user'],
+            $this->dbConfig['database'],
+            escapeshellarg(
+                sprintf(
+                    $copyCommand,
+                    rtrim(rtrim($query), ';'),
+                    $outputFile
+                )
+            )
+        );
+
+        $process = new Process($command);
+        // allow it to run for as long as it needs
+        $process->setTimeout(null);
+        $process->run();
+        if (!$process->isSuccessful()) {
+            $this->logger->info(
+                "Failed Get Tables \copy command: " . $query . "\n" . $process->getErrorOutput()
+            );
+            throw new ApplicationException("Error using copy command.", 42);
+        }
+    }
+
     private function tableTypeFromCode(string $code): ?string
     {
         switch ($code) {

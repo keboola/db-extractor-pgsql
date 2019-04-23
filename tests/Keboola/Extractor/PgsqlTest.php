@@ -138,7 +138,6 @@ class PgsqlTest extends BaseTest
                                     'primaryKey' => true,
                                     'length' => 123,
                                     'nullable' => false,
-                                    'default' => 'column 1',
                                     'ordinalPosition' => 1,
                                 ),
                             1 =>
@@ -149,7 +148,6 @@ class PgsqlTest extends BaseTest
                                     'primaryKey' => true,
                                     'length' => 221,
                                     'nullable' => false,
-                                    'default' => 'column 2',
                                     'ordinalPosition' => 2,
                                 ),
                         ),
@@ -169,7 +167,6 @@ class PgsqlTest extends BaseTest
                                     'primaryKey' => false,
                                     'length' => null,
                                     'nullable' => false,
-                                    'default' => '42',
                                     'ordinalPosition' => 2,
                                 ),
                             2 =>
@@ -180,7 +177,6 @@ class PgsqlTest extends BaseTest
                                     'primaryKey' => false,
                                     'length' => '5,3',
                                     'nullable' => false,
-                                    'default' => '1.2',
                                     'ordinalPosition' => 3,
                                 ),
                             0 =>
@@ -191,7 +187,6 @@ class PgsqlTest extends BaseTest
                                     'primaryKey' => true,
                                     'length' => 123,
                                     'nullable' => false,
-                                    'default' => null,
                                     'ordinalPosition' => 1,
                                 ),
                             3 =>
@@ -202,7 +197,6 @@ class PgsqlTest extends BaseTest
                                     'primaryKey' => false,
                                     'length' => null,
                                     'nullable' => true,
-                                    'default' => null,
                                     'ordinalPosition' => 4,
                                 ),
                         ),
@@ -222,7 +216,6 @@ class PgsqlTest extends BaseTest
                                     'primaryKey' => false,
                                     'length' => 123,
                                     'nullable' => true,
-                                    'default' => null,
                                     'ordinalPosition' => 1,
                                 ),
                             3 =>
@@ -233,7 +226,6 @@ class PgsqlTest extends BaseTest
                                     'primaryKey' => false,
                                     'length' => null,
                                     'nullable' => true,
-                                    'default' => null,
                                     'ordinalPosition' => 4,
                                 ),
                             1 =>
@@ -244,7 +236,6 @@ class PgsqlTest extends BaseTest
                                     'primaryKey' => false,
                                     'length' => null,
                                     'nullable' => false,
-                                    'default' => '42',
                                     'ordinalPosition' => 2,
                                 ),
                             2 =>
@@ -255,7 +246,6 @@ class PgsqlTest extends BaseTest
                                     'primaryKey' => false,
                                     'length' => '5,3',
                                     'nullable' => false,
-                                    'default' => '1.2',
                                     'ordinalPosition' => 3,
                                 ),
                         ),
@@ -275,7 +265,6 @@ class PgsqlTest extends BaseTest
                                     'primaryKey' => true,
                                     'length' => 123,
                                     'nullable' => false,
-                                    'default' => 'column 1',
                                     'ordinalPosition' => 1,
                                 ),
                             1 =>
@@ -286,7 +275,6 @@ class PgsqlTest extends BaseTest
                                     'primaryKey' => true,
                                     'length' => 221,
                                     'nullable' => false,
-                                    'default' => 'column 2',
                                     'ordinalPosition' => 2,
                                 ),
                         ),
@@ -395,25 +383,20 @@ class PgsqlTest extends BaseTest
                         ),
                     3 =>
                         array (
-                            'key' => 'KBC.datatype.default',
-                            'value' => '42',
-                        ),
-                    4 =>
-                        array (
                             'key' => 'KBC.sourceName',
                             'value' => 'integer',
                         ),
-                    5 =>
+                    4 =>
                         array (
                             'key' => 'KBC.sanitizedName',
                             'value' => 'integer',
                         ),
-                    6 =>
+                    5 =>
                         array (
                             'key' => 'KBC.primaryKey',
                             'value' => false,
                         ),
-                    7 =>
+                    6 =>
                         array (
                             'key' => 'KBC.ordinalPosition',
                             'value' => 2,
@@ -443,25 +426,20 @@ class PgsqlTest extends BaseTest
                         ),
                     4 =>
                         array (
-                            'key' => 'KBC.datatype.default',
-                            'value' => '1.2',
-                        ),
-                    5 =>
-                        array (
                             'key' => 'KBC.sourceName',
                             'value' => 'decimal',
                         ),
-                    6 =>
+                    5 =>
                         array (
                             'key' => 'KBC.sanitizedName',
                             'value' => 'decimal',
                         ),
-                    7 =>
+                    6 =>
                         array (
                             'key' => 'KBC.primaryKey',
                             'value' => false,
                         ),
-                    8 =>
+                    7 =>
                         array (
                             'key' => 'KBC.ordinalPosition',
                             'value' => 3,
@@ -587,25 +565,20 @@ class PgsqlTest extends BaseTest
                         ),
                     3 =>
                         array (
-                            'key' => 'KBC.datatype.default',
-                            'value' => '42',
-                        ),
-                    4 =>
-                        array (
                             'key' => 'KBC.sourceName',
                             'value' => 'integer',
                         ),
-                    5 =>
+                    4 =>
                         array (
                             'key' => 'KBC.sanitizedName',
                             'value' => 'integer',
                         ),
-                    6 =>
+                    5 =>
                         array (
                             'key' => 'KBC.primaryKey',
                             'value' => false,
                         ),
-                    7 =>
+                    6 =>
                         array (
                             'key' => 'KBC.ordinalPosition',
                             'value' => 2,
@@ -635,25 +608,20 @@ class PgsqlTest extends BaseTest
                         ),
                     4 =>
                         array (
-                            'key' => 'KBC.datatype.default',
-                            'value' => '1.2',
-                        ),
-                    5 =>
-                        array (
                             'key' => 'KBC.sourceName',
                             'value' => 'decimal',
                         ),
-                    6 =>
+                    5 =>
                         array (
                             'key' => 'KBC.sanitizedName',
                             'value' => 'decimal',
                         ),
-                    7 =>
+                    6 =>
                         array (
                             'key' => 'KBC.primaryKey',
                             'value' => false,
                         ),
-                    8 =>
+                    7 =>
                         array (
                             'key' => 'KBC.ordinalPosition',
                             'value' => 3,
