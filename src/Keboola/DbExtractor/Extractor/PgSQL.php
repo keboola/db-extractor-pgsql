@@ -492,7 +492,7 @@ EOT;
             escapeshellarg(
                 sprintf(
                     $copyCommand,
-                    rtrim($query, '; '),
+                    rtrim(rtrim($query), ';'),
                     $outputFile
                 )
             )
