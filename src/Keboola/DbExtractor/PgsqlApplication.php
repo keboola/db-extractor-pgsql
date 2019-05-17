@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Keboola\DbExtractor;
 
 use Keboola\DbExtractor\Configuration\PgsqlConfigRowDefinition;
+use Keboola\DbExtractor\Configuration\PgsqlGetTablesDefinition;
 
 class PgsqlApplication extends Application
 {
@@ -18,6 +19,8 @@ class PgsqlApplication extends Application
         if (!isset($this['parameters']['tables']) && $this['action'] === 'run') {
             // use config definition that allows --forceFallback override
             $this->setConfigDefinition(new PgsqlConfigRowDefinition());
+        } else if ($this['action'] === 'getTables') {
+            $this->setConfigDefinition(new PgsqlGetTablesDefinition());
         }
     }
 }
