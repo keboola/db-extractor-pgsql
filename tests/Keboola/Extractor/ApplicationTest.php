@@ -119,22 +119,6 @@ class ApplicationTest extends BaseTest
         $this->assertFileExists($manifestFile);
     }
 
-    public function testGetTablesAction(): void
-    {
-        $config = $this->getConfig();
-        unset($config['parameters']['tables']);
-        $config['action'] = 'getTables';
-        $this->replaceConfig($config, self::CONFIG_FORMAT_JSON);
-
-        $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
-        $process->setTimeout(300);
-        $process->mustRun();
-        $this->assertJson($process->getOutput());
-
-        $this->assertEquals(0, $process->getExitCode());
-        $this->assertEquals("", $process->getErrorOutput());
-    }
-
     public function testStateFile(): void
     {
         $outputStateFile = $this->dataDir . '/out/state.json';

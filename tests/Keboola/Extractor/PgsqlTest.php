@@ -115,6 +115,7 @@ class PgsqlTest extends BaseTest
     {
         $config = $this->getConfig();
         $config['action'] = 'getTables';
+        unset($config['parameters']['tables']);
         $app = $this->createApplication($config);
 
         $result = $app->run();
@@ -825,6 +826,7 @@ class PgsqlTest extends BaseTest
         echo "\nTest DB built in  " . $dbBuildTime . " seconds.\n";
 
         $config = $this->getConfig();
+        unset($config['parameters']['tables']);
         $config['action'] = 'getTables';
 
         $jobStartTime = time();

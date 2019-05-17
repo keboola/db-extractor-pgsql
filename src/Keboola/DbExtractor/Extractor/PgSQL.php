@@ -8,6 +8,7 @@ use Keboola\Csv\CsvFile;
 use Keboola\Datatype\Definition\GenericStorage;
 use Keboola\DbExtractor\Exception\ApplicationException;
 use Keboola\DbExtractor\Exception\UserException;
+use Keboola\DbExtractor\Logger;
 use Keboola\DbExtractor\RetryProxy;
 use Keboola\Utils;
 use Symfony\Component\Process\Process;
@@ -25,6 +26,25 @@ class PgSQL extends Extractor
 
     /** @var  array */
     private $dbConfig;
+
+    /** @var array */
+    private $tablesToList = [];
+
+    /** @var bool */
+    private $listColumns = true;
+
+    public function __construct(array $parameters, array $state = [], ?Logger $logger = null)
+    {
+        parent::__construct($parameters, $state, $logger);
+        if (!empty($parameters['tableListFilter'])) {
+            if (!empty($parameters['tableListFilter']['tablesToList'])) {
+                $this->tablesToList = $parameters['tableListFilter']['tablesToList'];
+            }
+            if (isset($parameters['tableListFilter']['listColumns'])) {
+                $this->listColumns = $parameters['tableListFilter']['listColumns'];
+            }
+        }
+    }
 
     public function createConnection(array $dbParams): PDO
     {
@@ -365,8 +385,67 @@ class PgSQL extends Extractor
         }
     }
 
+    private function getOnlyTables(array $tables = []): array
+    {
+        $sql = <<<EOT
+    SELECT 
+      ns.nspname AS table_schema,
+      c.relname AS table_name,
+      c.relkind AS table_type
+    FROM pg_class c 
+    INNER JOIN pg_namespace ns ON ns.oid = c.relnamespace --schemas    
+    WHERE c.relkind IN ('r', 'S', 't', 'v', 'm', 'f', 'p') 
+      AND ns.nspname != 'information_schema' -- exclude system namespaces
+      AND ns.nspname != 'pg_catalog' 
+      AND ns.nspname NOT LIKE 'pg_toast%'
+      AND ns.nspname NOT LIKE 'pg_temp%'
+EOT;
+        if ($tables) {
+            $sql .= sprintf(
+                " AND c.relname IN (%s) AND ns.nspname IN (%s)",
+                implode(
+                    ',',
+                    array_map(
+                        function ($table) {
+                            return $this->db->quote($table['tableName']);
+                        },
+                        $tables
+                    )
+                ),
+                implode(
+                    ',',
+                    array_map(
+                        function ($table) {
+                            return $this->db->quote($table['schema']);
+                        },
+                        $tables
+                    )
+                )
+            );
+        }
+        $res = $this->db->query($sql);
+        $tableDefs = [];
+        while ($table = $res->fetch(PDO::FETCH_ASSOC)) {
+            $tableDefs[$table['table_schema'] . '.' . $table['table_name']] = [
+                'name' => $table['table_name'],
+                'schema' => $table['table_schema'] ?? null,
+                'type' => $this->tableTypeFromCode($table['table_type']),
+            ];
+        }
+        ksort($tableDefs);
+        return array_values($tableDefs);
+    }
+
+
     public function getTables(?array $tables = null): array
     {
+        if (!$this->listColumns) {
+            return $this->getOnlyTables($this->tablesToList);
+        }
+        if ($this->tablesToList && !$tables) {
+            $tables = $this->tablesToList;
+        }
+
         $sql = <<<EOT
     SELECT 
       ns.nspname AS table_schema,
