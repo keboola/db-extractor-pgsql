@@ -127,15 +127,15 @@ class IncrementalFetchingTest extends BaseTest
         $this->assertNotEquals(57, $result['state']['lastFetchedRow']);
 
         sleep(2);
-        // the next fetch should be empty
+        // the next fetch should only have the last 2 rows since they have the same last updqted time
         $noNewRowsResult = ($this->createApplication($config, $result['state']))->run();
-        $this->assertEquals(1, $noNewRowsResult['imported']['rows']);
+        $this->assertEquals(2, $noNewRowsResult['imported']['rows']);
 
         sleep(2);
         //now add a couple rows and run it again.
         $this->runProcesses([
             $this->createDbProcess(
-                'INSERT INTO moving_targets (int_id, name, someint) VALUES (12, \'charles\', 77), (\'william\', 78)'
+                'INSERT INTO moving_targets (int_id, name, someint) VALUES (12, \'charles\', 77), (32, \'william\', 78)'
             ),
         ]);
 
@@ -148,7 +148,7 @@ class IncrementalFetchingTest extends BaseTest
             $result['state']['lastFetchedRow'],
             $newResult['state']['lastFetchedRow']
         );
-        $this->assertEquals(3, $newResult['imported']['rows']);
+        $this->assertEquals(4, $newResult['imported']['rows']);
         $this->assertNotEquals(78, $result['state']['lastFetchedRow']);
     }
 
