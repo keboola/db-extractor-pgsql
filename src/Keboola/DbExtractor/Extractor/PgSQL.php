@@ -351,10 +351,12 @@ class PgSQL extends Extractor
 
     private function getLastFetchedValue(array $columnMetadata, array $lastExportedRow): string
     {
-        foreach ($columnMetadata as $key => $column) {
+        $i = 0;
+        foreach ($columnMetadata as $column) {
             if ($column['name'] === $this->incrementalFetching['column']) {
-                return $lastExportedRow[$key];
+                return $lastExportedRow[$i];
             }
+            $i++;
         }
         throw new UserException(
             sprintf(
