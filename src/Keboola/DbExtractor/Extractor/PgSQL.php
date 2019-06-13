@@ -116,7 +116,7 @@ class PgSQL extends Extractor
                 return $colOrder[$colA['name']] - $colOrder[$colB['name']];
             });
         }
-        return $columnMetadata;
+        return array_values($columnMetadata);
     }
 
     public function export(array $table): array
@@ -351,12 +351,10 @@ class PgSQL extends Extractor
 
     private function getLastFetchedValue(array $columnMetadata, array $lastExportedRow): string
     {
-        $i = 0;
-        foreach ($columnMetadata as $column) {
+        foreach ($columnMetadata as $key => $column) {
             if ($column['name'] === $this->incrementalFetching['column']) {
-                return $lastExportedRow[$i];
+                return $lastExportedRow[$key];
             }
-            $i++;
         }
         throw new UserException(
             sprintf(
