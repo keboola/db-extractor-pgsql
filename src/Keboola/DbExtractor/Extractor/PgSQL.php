@@ -537,6 +537,9 @@ EOT;
             // make sure columns are sorted by index which is ordinal_position - 1
             ksort($tableDefs[$curTable]['columns']);
         }
+        foreach ($tableDefs as $tableId => $tableData) {
+            $tableDefs[$tableId]['columns'] = array_values($tableData['columns']);
+        }
         ksort($tableDefs);
         return array_values($tableDefs);
     }

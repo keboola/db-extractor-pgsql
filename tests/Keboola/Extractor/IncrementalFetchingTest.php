@@ -42,6 +42,43 @@ class IncrementalFetchingTest extends BaseTest
         $this->runProcesses($incrTableProcesses);
     }
 
+    private function createGeoHellTable(): void
+    {
+        $incrTableProcesses = [];
+        $incrTableProcesses[] = $this->createDbProcess('CREATE TABLE moving_targets (
+            "int_id" INT NOT NULL,
+            "name" character varying (30) DEFAULT NULL,
+            "another_string" character varying (30) DEFAULT NULL,
+            "created_at" timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            "updated_at" timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            "someint" INT DEFAULT NULL,
+            PRIMARY KEY ("int_id")  
+        )');
+
+        $incrTableProcesses[] = $this->createDbProcess('ALTER TABLE moving_targets DROP COLUMN another_string;');
+
+        $incrTableProcesses[] = $this->createDbProcess(
+            'INSERT INTO moving_targets' .
+            '(int_id, name, someint) VALUES ' .
+            '(2, \'george\', 42),' .
+            '(3, \'ed\', 43)'
+        );
+
+        $this->runProcesses($incrTableProcesses);
+        // Stagger the new column input timestamps
+        sleep(1);
+
+        $incrTableProcesses = [
+            $this->createDbProcess(
+                'INSERT INTO moving_targets ' .
+                '(int_id, name, someint) VALUES ' .
+                '(4, \'fred\', 55),' .
+                '(5, \'art\', 57)'
+            ),
+        ];
+        $this->runProcesses($incrTableProcesses);
+    }
+
     protected function getIncrementalFetchingConfig(): array
     {
         $config = $this->getConfigRow(self::DRIVER);
@@ -56,6 +93,63 @@ class IncrementalFetchingTest extends BaseTest
         $config['parameters']['primaryKey'] = ['_weird_id'];
         $config['parameters']['incrementalFetchingColumn'] = '_weird_id';
         return $config;
+    }
+
+    public function testBrokenIncrFetchDroppedColumn(): void
+    {
+        $config = $this->getIncrementalFetchingConfig();
+        $config['parameters']['table'] = [
+            'tableName' => 'moving_targets',
+            'schema' => 'public',
+        ];
+        $config['parameters']['name'] = 'moving_targets';
+        $config['parameters']['outputTable'] = 'in.c-main.moving_targets';
+        $config['parameters']['primaryKey'] = ['int_id'];
+        $config['parameters']['incrementalFetchingColumn'] = 'updated_at';
+        $this->createGeoHellTable();
+
+        $result = ($this->createApplication($config))->run();
+
+        $this->assertEquals('success', $result['status']);
+        $this->assertEquals(
+            [
+                'outputTable' => 'in.c-main.moving_targets',
+                'rows' => 4,
+            ],
+            $result['imported']
+        );
+        //check that output state contains expected information
+        $this->assertArrayHasKey('state', $result);
+        $this->assertArrayHasKey('lastFetchedRow', $result['state']);
+        $this->assertNotEmpty($result['state']['lastFetchedRow']);
+        // The dropped column will make the incr fetch retrieve the wrong value
+        // because it is based on the columns ordinal position which does not change when a column is dropped
+        $this->assertNotEquals(57, $result['state']['lastFetchedRow']);
+
+        sleep(2);
+        // the next fetch should only have the last 2 rows since they have the same last updqted time
+        $noNewRowsResult = ($this->createApplication($config, $result['state']))->run();
+        $this->assertEquals(2, $noNewRowsResult['imported']['rows']);
+
+        sleep(2);
+        //now add a couple rows and run it again.
+        $this->runProcesses([
+            $this->createDbProcess(
+                'INSERT INTO moving_targets (int_id, name, someint) VALUES (12, \'charles\', 77), (32, \'william\', 78)'
+            ),
+        ]);
+
+        $newResult = ($this->createApplication($config, $result['state']))->run();
+
+        //check that output state contains expected information
+        $this->assertArrayHasKey('state', $newResult);
+        $this->assertArrayHasKey('lastFetchedRow', $newResult['state']);
+        $this->assertGreaterThan(
+            $result['state']['lastFetchedRow'],
+            $newResult['state']['lastFetchedRow']
+        );
+        $this->assertEquals(4, $newResult['imported']['rows']);
+        $this->assertNotEquals(78, $result['state']['lastFetchedRow']);
     }
 
     public function testIncrementalFetchingByTimestamp(): void
