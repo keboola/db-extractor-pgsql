@@ -162,6 +162,17 @@ class PgsqlTest extends BaseTest
                     'type' => 'table',
                     'columns' =>
                         array (
+                            0 =>
+                                array (
+                                    'name' => 'character',
+                                    'sanitizedName' => 'character',
+                                    'type' => 'character varying',
+                                    'primaryKey' => true,
+                                    'length' => 123,
+                                    'nullable' => false,
+                                    'default' => null,
+                                    'ordinalPosition' => 1,
+                                ),
                             1 =>
                                 array (
                                     'name' => 'integer',
@@ -183,17 +194,6 @@ class PgsqlTest extends BaseTest
                                     'nullable' => false,
                                     'default' => '1.2',
                                     'ordinalPosition' => 3,
-                                ),
-                            0 =>
-                                array (
-                                    'name' => 'character',
-                                    'sanitizedName' => 'character',
-                                    'type' => 'character varying',
-                                    'primaryKey' => true,
-                                    'length' => 123,
-                                    'nullable' => false,
-                                    'default' => null,
-                                    'ordinalPosition' => 1,
                                 ),
                             3 =>
                                 array (
@@ -226,17 +226,6 @@ class PgsqlTest extends BaseTest
                                     'default' => null,
                                     'ordinalPosition' => 1,
                                 ),
-                            3 =>
-                                array (
-                                    'name' => 'date',
-                                    'sanitizedName' => 'date',
-                                    'type' => 'date',
-                                    'primaryKey' => false,
-                                    'length' => null,
-                                    'nullable' => true,
-                                    'default' => null,
-                                    'ordinalPosition' => 4,
-                                ),
                             1 =>
                                 array (
                                     'name' => 'integer',
@@ -258,6 +247,17 @@ class PgsqlTest extends BaseTest
                                     'nullable' => false,
                                     'default' => '1.2',
                                     'ordinalPosition' => 3,
+                                ),
+                            3 =>
+                                array (
+                                    'name' => 'date',
+                                    'sanitizedName' => 'date',
+                                    'type' => 'date',
+                                    'primaryKey' => false,
+                                    'length' => null,
+                                    'nullable' => true,
+                                    'default' => null,
+                                    'ordinalPosition' => 4,
                                 ),
                         ),
                 ),
