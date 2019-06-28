@@ -870,4 +870,14 @@ class PgsqlTest extends BaseTest
             [self::CONFIG_FORMAT_JSON],
         ];
     }
+
+    public function getPrivateKey(string $driver): string
+    {
+        return file_get_contents('/root/.ssh/id_rsa');
+    }
+
+    public function getPublicKey(string $driver): string
+    {
+        return file_get_contents('/root/.ssh/id_rsa.pub');
+    }
 }
