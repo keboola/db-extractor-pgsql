@@ -4,8 +4,6 @@ services:
     build: .
     image: keboola/ex-db-pgsql
     command: composer ci
-    env_file:
-      - ssh-keys.env
     environment:
       - EXTERNAL_PG_HOST
       - EXTERNAL_PG_PORT
@@ -26,8 +24,6 @@ services:
     volumes:
       - .:/code
     command: composer ci
-    env_file:
-      - ssh-keys.env
     environment:
       - EXTERNAL_PG_HOST
       - EXTERNAL_PG_PORT

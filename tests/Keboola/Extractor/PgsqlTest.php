@@ -41,8 +41,8 @@ class PgsqlTest extends BaseTest
         $config['parameters']['db']['ssh'] = [
             'enabled' => true,
             'keys' => [
-                '#private' => $this->getPrivateKey('pgsql'),
-                'public' => $this->getEnv('pgsql', 'DB_SSH_KEY_PUBLIC', true),
+                '#private' => $this->getPrivateKey(self::DRIVER),
+                'public' => $this->getPublicKey(self::DRIVER),
             ],
             'user' => 'root',
             'sshHost' => 'sshproxy',
