@@ -9,9 +9,11 @@ use Keboola\Datatype\Definition\GenericStorage;
 use Keboola\DbExtractor\Exception\ApplicationException;
 use Keboola\DbExtractor\Exception\DeadConnectionException;
 use Keboola\DbExtractor\Exception\UserException;
-use Keboola\DbExtractor\Logger;
-use Keboola\DbExtractor\RetryProxy;
+use Keboola\DbExtractorLogger\Logger;
 use Keboola\Utils;
+use Retry\BackOff\ExponentialBackOffPolicy;
+use Retry\Policy\SimpleRetryPolicy;
+use Retry\RetryProxy;
 use Symfony\Component\Process\Process;
 use PDO;
 use PDOException;
@@ -159,7 +161,17 @@ class PgSQL extends Extractor
                 $this->tryReconnect();
             } catch (Throwable $connectionError) {
             };
-            $proxy = new RetryProxy($this->logger, $maxTries);
+
+            $simplyRetryPolicy = new SimpleRetryPolicy(
+                $maxTries
+            );
+            $exponentialBackOffPolicy = new ExponentialBackOffPolicy();
+
+            $proxy = new RetryProxy(
+                $simplyRetryPolicy,
+                $exponentialBackOffPolicy,
+                $this->logger
+            );
             try {
                 $result = $proxy->call(function () use ($query, $outputTable, $advancedQuery) {
                     try {

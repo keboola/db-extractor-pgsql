@@ -6,6 +6,7 @@ namespace Keboola\DbExtractor;
 
 use Keboola\DbExtractor\Configuration\PgsqlConfigRowDefinition;
 use Keboola\DbExtractor\Configuration\PgsqlGetTablesDefinition;
+use Keboola\DbExtractorLogger\Logger;
 
 class PgsqlApplication extends Application
 {

@@ -863,6 +863,11 @@ class PgsqlTest extends BaseTest
         $app->run();
     }
 
+    public function getPrivateKey(string $driver): string
+    {
+        return str_replace('"', '', str_replace('\n', "\n", $this->getEnv($driver, 'DB_SSH_KEY_PRIVATE')));
+    }
+
     public function configTypesProvider(): array
     {
         return [

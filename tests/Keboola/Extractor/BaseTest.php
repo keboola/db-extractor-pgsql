@@ -8,7 +8,7 @@ use Keboola\DbExtractor\PgsqlApplication;
 use Keboola\DbExtractor\Test\ExtractorTest;
 
 use Keboola\DbExtractor\Application;
-use Keboola\DbExtractor\Logger;
+use Keboola\DbExtractorLogger\Logger;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Filesystem\Filesystem;
 
