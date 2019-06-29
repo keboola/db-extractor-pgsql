@@ -41,8 +41,8 @@ class PgsqlTest extends BaseTest
         $config['parameters']['db']['ssh'] = [
             'enabled' => true,
             'keys' => [
-                '#private' => $this->getPrivateKey(self::DRIVER),
-                'public' => $this->getPublicKey(self::DRIVER),
+                '#private' => $this->getPrivateKey(),
+                'public' => $this->getPublicKey(),
             ],
             'user' => 'root',
             'sshHost' => 'sshproxy',
@@ -871,12 +871,12 @@ class PgsqlTest extends BaseTest
         ];
     }
 
-    public function getPrivateKey(string $driver): string
+    public function getPrivateKey(): string
     {
         return file_get_contents('/root/.ssh/id_rsa');
     }
 
-    public function getPublicKey(string $driver): string
+    public function getPublicKey(): string
     {
         return file_get_contents('/root/.ssh/id_rsa.pub');
     }
