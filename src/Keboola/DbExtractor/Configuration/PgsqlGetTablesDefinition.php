@@ -15,6 +15,7 @@ class PgsqlGetTablesDefinition extends ActionConfigRowDefinition
 
         // @formatter:off
         $rootNode
+            ->ignoreExtraKeys(true)
             ->children()
                 ->scalarNode('data_dir')
                     ->isRequired()
