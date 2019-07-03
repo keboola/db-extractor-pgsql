@@ -165,4 +165,17 @@ class ApplicationTest extends BaseTest
         $this->assertEquals(0, $process->getExitCode());
         $this->assertEquals(['lastFetchedRow' => '101'], json_decode(file_get_contents($outputStateFile), true));
     }
+
+    public function testGetTablesNonConfigRowConfig(): void
+    {
+        $config = $this->getConfig(self::DRIVER, self::CONFIG_FORMAT_JSON);
+        $config['action'] = 'getTables';
+        $this->replaceConfig($config, self::CONFIG_FORMAT_JSON);
+
+        $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
+        $process->setTimeout(300);
+        $process->mustRun();
+
+        $this->assertJson($process->getOutput());
+    }
 }
