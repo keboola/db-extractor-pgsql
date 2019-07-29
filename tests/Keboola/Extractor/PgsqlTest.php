@@ -863,26 +863,11 @@ class PgsqlTest extends BaseTest
         $app->run();
     }
 
-    public function getPrivateKey(string $driver): string
-    {
-        return str_replace('"', '', str_replace('\n', "\n", $this->getEnv($driver, 'DB_SSH_KEY_PRIVATE')));
-    }
-
     public function configTypesProvider(): array
     {
         return [
             [self::CONFIG_FORMAT_YAML],
             [self::CONFIG_FORMAT_JSON],
         ];
-    }
-
-    public function getPrivateKey(): string
-    {
-        return file_get_contents('/root/.ssh/id_rsa');
-    }
-
-    public function getPublicKey(): string
-    {
-        return file_get_contents('/root/.ssh/id_rsa.pub');
     }
 }
