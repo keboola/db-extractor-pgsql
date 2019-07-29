@@ -41,8 +41,8 @@ class PgsqlTest extends BaseTest
         $config['parameters']['db']['ssh'] = [
             'enabled' => true,
             'keys' => [
-                '#private' => $this->getPrivateKey('pgsql'),
-                'public' => $this->getEnv('pgsql', 'DB_SSH_KEY_PUBLIC', true),
+                '#private' => $this->getPrivateKey(),
+                'public' => $this->getPublicKey(),
             ],
             'user' => 'root',
             'sshHost' => 'sshproxy',
@@ -869,5 +869,15 @@ class PgsqlTest extends BaseTest
             [self::CONFIG_FORMAT_YAML],
             [self::CONFIG_FORMAT_JSON],
         ];
+    }
+
+    public function getPrivateKey(): string
+    {
+        return file_get_contents('/root/.ssh/id_rsa');
+    }
+
+    public function getPublicKey(): string
+    {
+        return file_get_contents('/root/.ssh/id_rsa.pub');
     }
 }

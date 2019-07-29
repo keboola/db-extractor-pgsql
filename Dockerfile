@@ -1,3 +1,4 @@
+FROM db-ex-pgsql-sshproxy AS sshproxy
 FROM php:7.2
 MAINTAINER Miro Cillik <miro@keboola.com>
 
@@ -27,5 +28,7 @@ WORKDIR /code
 ADD . /code
 
 RUN composer install --no-interaction
+
+COPY --from=sshproxy /root/.ssh /root/.ssh
 
 CMD php ./run.php --data=/data
