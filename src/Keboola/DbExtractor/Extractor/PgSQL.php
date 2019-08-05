@@ -418,8 +418,6 @@ EOT;
         $resultArray = $this->runRetriableQuery($sql);
         $tableDefs = [];
         foreach ($resultArray as $table) {
-            //echo "\nTABLE NAME : " . $table['table_name'] . "\n";
-            //var_dump($table);
             $tableDefs[$table['table_schema'] . '.' . $table['table_name']] = [
                 'name' => $table['table_name'],
                 'schema' => $table['table_schema'] ?? null,
