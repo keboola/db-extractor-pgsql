@@ -7,6 +7,7 @@ namespace Keboola\DbExtractor\Extractor;
 use Keboola\Csv\CsvFile;
 use Keboola\Datatype\Definition\GenericStorage;
 use Keboola\DbExtractor\Exception\ApplicationException;
+use Keboola\DbExtractor\Exception\DeadConnectionException;
 use Keboola\DbExtractor\Exception\UserException;
 use Keboola\DbExtractor\Logger;
 use Keboola\DbExtractor\RetryProxy;
@@ -84,15 +85,6 @@ class PgSQL extends Extractor
         return parent::createSshTunnel($dbConfig);
     }
 
-    private function restartConnection(): void
-    {
-        try {
-            $this->db = $this->createConnection($this->dbConfig);
-        } catch (Throwable $e) {
-            throw new UserException(sprintf("Error connecting to DB: %s", $e->getMessage()), 0, $e);
-        }
-    }
-
     private function getColumnMetadataFromTable(array $table): array
     {
         $columns = $table['columns'];
@@ -164,7 +156,7 @@ class PgSQL extends Extractor
             }
             try {
                 // recreate the db connection
-                $this->restartConnection();
+                $this->tryReconnect();
             } catch (Throwable $connectionError) {
             };
             $proxy = new RetryProxy($this->logger, $maxTries);
@@ -423,9 +415,9 @@ EOT;
                 )
             );
         }
-        $res = $this->db->query($sql);
+        $resultArray = $this->runRetriableQuery($sql);
         $tableDefs = [];
-        while ($table = $res->fetch(PDO::FETCH_ASSOC)) {
+        foreach ($resultArray as $table) {
             $tableDefs[$table['table_schema'] . '.' . $table['table_name']] = [
                 'name' => $table['table_name'],
                 'schema' => $table['table_schema'] ?? null,
@@ -494,13 +486,13 @@ EOT;
             );
         }
 
-        $res = $this->db->query($sql);
+        $resultArray = $this->runRetriableQuery($sql);
 
-        if ($res->rowCount() === 0) {
+        if (empty($resultArray)) {
             return [];
         }
         $tableDefs = [];
-        while ($column = $res->fetch(PDO::FETCH_ASSOC)) {
+        foreach ($resultArray as $column) {
             $curTable = $column['table_schema'] . '.' . $column['table_name'];
             if (!array_key_exists($curTable, $tableDefs)) {
                 $tableDefs[$curTable] = [
@@ -616,17 +608,15 @@ EOT;
 
     public function validateIncrementalFetching(array $table, string $columnName, ?int $limit = null): void
     {
-        $res = $this->db->query(
-            sprintf(
-                'SELECT * FROM INFORMATION_SCHEMA.COLUMNS as cols
+        $sql = sprintf(
+            'SELECT * FROM INFORMATION_SCHEMA.COLUMNS as cols
                             WHERE TABLE_SCHEMA = %s AND TABLE_NAME = %s AND COLUMN_NAME = %s',
-                $this->db->quote($table['schema']),
-                $this->db->quote($table['tableName']),
-                $this->db->quote($columnName)
-            )
+            $this->db->quote($table['schema']),
+            $this->db->quote($table['tableName']),
+            $this->db->quote($columnName)
         );
 
-        $columns = $res->fetchAll();
+        $columns = $this->runRetriableQuery($sql);
         if (count($columns) === 0) {
             throw new UserException(
                 sprintf(
@@ -660,6 +650,30 @@ EOT;
             $this->incrementalFetching['limit'] = $limit;
         } else if ($limit < 0) {
             throw new UserException('The limit parameter must be an integer >= 0');
+        }
+    }
+
+    private function runRetriableQuery(string $query, array $values = []): array
+    {
+        $retryProxy = new RetryProxy($this->logger);
+        return $retryProxy->call(function () use ($query, $values): array {
+            try {
+                $stmt = $this->db->prepare($query);
+                $stmt->execute($values);
+                return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            } catch (\Throwable $exception) {
+                $this->tryReconnect();
+                throw $exception;
+            }
+        });
+    }
+
+    private function tryReconnect(): void
+    {
+        try {
+            $this->isAlive();
+        } catch (DeadConnectionException $deadConnectionException) {
+            $this->db = $this->createConnection($this->getDbParameters());
         }
     }
 
