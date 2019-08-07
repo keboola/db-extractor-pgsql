@@ -81,12 +81,6 @@ class PgSQL extends Extractor
         return $pdo;
     }
 
-    public function createSshTunnel(array $dbConfig): array
-    {
-        $dbConfig['ssh']['compression'] = true;
-        return parent::createSshTunnel($dbConfig);
-    }
-
     private function getColumnMetadataFromTable(array $table): array
     {
         $columns = $table['columns'];
