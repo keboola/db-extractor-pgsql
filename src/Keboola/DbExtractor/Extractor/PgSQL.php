@@ -661,7 +661,16 @@ EOT;
 
     private function runRetriableQuery(string $query, array $values = []): array
     {
-        $retryProxy = new RetryProxy($this->logger);
+        $simplyRetryPolicy = new SimpleRetryPolicy(
+            self::DEFAULT_MAX_TRIES
+        );
+        $exponentialBackOffPolicy = new ExponentialBackOffPolicy();
+
+        $retryProxy = new RetryProxy(
+            $simplyRetryPolicy,
+            $exponentialBackOffPolicy,
+            $this->logger
+        );
         return $retryProxy->call(function () use ($query, $values): array {
             try {
                 $stmt = $this->db->prepare($query);
