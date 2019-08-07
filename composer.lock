@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "80e0fe10ae74ecdb5c333b28d42b5866",
+    "content-hash": "b565c7534e32004f98d13c087308a394",
     "packages": [
         {
             "name": "keboola/csv",
@@ -54,23 +54,23 @@
         },
         {
             "name": "keboola/db-extractor-common",
-            "version": "dev-ondra-severance-repository",
+            "version": "9.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/db-extractor-common.git",
-                "reference": "4dc0fbce6f81054ea2c74dd00aea0eb33e27fe80"
+                "reference": "5fe26b72846244f2d8043024afa5b6c3cf1a1137"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/db-extractor-common/zipball/4dc0fbce6f81054ea2c74dd00aea0eb33e27fe80",
-                "reference": "4dc0fbce6f81054ea2c74dd00aea0eb33e27fe80",
+                "url": "https://api.github.com/repos/keboola/db-extractor-common/zipball/5fe26b72846244f2d8043024afa5b6c3cf1a1137",
+                "reference": "5fe26b72846244f2d8043024afa5b6c3cf1a1137",
                 "shasum": ""
             },
             "require": {
                 "ext-pdo": "*",
                 "keboola/csv": "^1.1",
-                "keboola/db-extractor-logger": "dev-ondra-init-repo",
-                "keboola/db-extractor-ssh-tunnel": "dev-ondra-init-repo",
+                "keboola/db-extractor-logger": "^1.0",
+                "keboola/db-extractor-ssh-tunnel": "^1.0",
                 "keboola/php-datatypes": "^4.0",
                 "keboola/php-utils": "^2.3",
                 "keboola/retry": "^0.3.0",
@@ -82,11 +82,12 @@
                 "symfony/yaml": "^3.0"
             },
             "require-dev": {
-                "aws/aws-sdk-php": "^3.67",
-                "keboola/coding-standard": "^2.0",
-                "phpstan/phpstan": "^0.8",
-                "phpunit/phpunit": "^7.0",
-                "symfony/finder": "*"
+                "aws/aws-sdk-php": "^3.107",
+                "keboola/coding-standard": "^8.0",
+                "phpstan/phpstan-shim": "^0.11.12",
+                "phpunit/phpunit": "^7.5",
+                "symfony/debug": "^4.3",
+                "symfony/finder": "^4.3"
             },
             "type": "library",
             "autoload": {
@@ -105,20 +106,20 @@
                 }
             ],
             "description": "Common library from Keboola Database Extractors",
-            "time": "2019-07-01T05:51:38+00:00"
+            "time": "2019-08-06T10:22:34+00:00"
         },
         {
             "name": "keboola/db-extractor-logger",
-            "version": "dev-ondra-init-repo",
+            "version": "1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/db-extractor-logger.git",
-                "reference": "bf37c7856034b1ce0effe168fe25de080a7cf2b1"
+                "reference": "b5aac726191e7bb5627282a0a46ca7cf20f5b2cd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/db-extractor-logger/zipball/bf37c7856034b1ce0effe168fe25de080a7cf2b1",
-                "reference": "bf37c7856034b1ce0effe168fe25de080a7cf2b1",
+                "url": "https://api.github.com/repos/keboola/db-extractor-logger/zipball/b5aac726191e7bb5627282a0a46ca7cf20f5b2cd",
+                "reference": "b5aac726191e7bb5627282a0a46ca7cf20f5b2cd",
                 "shasum": ""
             },
             "require": {
@@ -126,8 +127,8 @@
                 "monolog/monolog": "^1.17"
             },
             "require-dev": {
-                "keboola/coding-standard": "^2.0",
-                "phpstan/phpstan": "^0.8",
+                "keboola/coding-standard": "^8.0",
+                "phpstan/phpstan-shim": "^0.11.12",
                 "phpunit/phpunit": "^8.2"
             },
             "type": "library",
@@ -141,31 +142,32 @@
                 "MIT"
             ],
             "description": "Print info from db-extractor",
-            "time": "2019-07-01T05:56:56+00:00"
+            "time": "2019-07-30T13:28:08+00:00"
         },
         {
             "name": "keboola/db-extractor-ssh-tunnel",
-            "version": "dev-ondra-init-repo",
+            "version": "1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/db-extractor-ssh-tunnel.git",
-                "reference": "4b06e35dab88faac75789542c893e79abbd2ffb2"
+                "reference": "890b1b8a98b09440fb1db88f9a9b998053722898"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/db-extractor-ssh-tunnel/zipball/4b06e35dab88faac75789542c893e79abbd2ffb2",
-                "reference": "4b06e35dab88faac75789542c893e79abbd2ffb2",
+                "url": "https://api.github.com/repos/keboola/db-extractor-ssh-tunnel/zipball/890b1b8a98b09440fb1db88f9a9b998053722898",
+                "reference": "890b1b8a98b09440fb1db88f9a9b998053722898",
                 "shasum": ""
             },
             "require": {
-                "keboola/db-extractor-logger": "dev-ondra-init-repo",
                 "keboola/retry": "^0.3",
-                "keboola/ssh-tunnel": "^1.0|^2.0"
+                "keboola/ssh-tunnel": "^1.0|^2.0",
+                "psr/log": "^1.1"
             },
             "require-dev": {
-                "keboola/coding-standard": "^2.0",
-                "phpstan/phpstan": "^0.8",
-                "phpunit/phpunit": "^7.0"
+                "keboola/coding-standard": "^8.0",
+                "monolog/monolog": "^1.24",
+                "phpstan/phpstan-shim": "^0.11.12",
+                "phpunit/phpunit": "^8.2"
             },
             "type": "library",
             "autoload": {
@@ -178,7 +180,7 @@
                 "MIT"
             ],
             "description": "Create SSH tunnel for DB Extractors",
-            "time": "2019-07-01T09:53:48+00:00"
+            "time": "2019-07-30T13:20:15+00:00"
         },
         {
             "name": "keboola/php-datatypes",
@@ -320,7 +322,7 @@
             ],
             "authors": [
                 {
-                    "name": "keboola",
+                    "name": "Keboola",
                     "email": "devel@keboola.com"
                 }
             ],
@@ -412,7 +414,7 @@
             ],
             "authors": [
                 {
-                    "name": "keboola",
+                    "name": "Keboola",
                     "email": "devel@keboola.com"
                 }
             ],
@@ -559,7 +561,7 @@
                     "homepage": "https://nette.org/contributors"
                 }
             ],
-            "description": "🛠 Nette Utils: lightweight utilities for string & array manipulation, image handling, safe JSON encoding/decoding, validation, slug or strong password generating etc.",
+            "description": "? Nette Utils: lightweight utilities for string & array manipulation, image handling, safe JSON encoding/decoding, validation, slug or strong password generating etc.",
             "homepage": "https://nette.org",
             "keywords": [
                 "array",
@@ -1381,7 +1383,7 @@
                     "homepage": "https://nette.org/contributors"
                 }
             ],
-            "description": "🅱 Nette Bootstrap: the simple way to configure and bootstrap your Nette application.",
+            "description": "? Nette Bootstrap: the simple way to configure and bootstrap your Nette application.",
             "homepage": "https://nette.org",
             "keywords": [
                 "bootstrapping",
@@ -1446,7 +1448,7 @@
                     "homepage": "https://nette.org/contributors"
                 }
             ],
-            "description": "💎 Nette Dependency Injection Container: Flexible, compiled and full-featured DIC with perfectly usable autowiring and support for all new PHP 7.1 features.",
+            "description": "? Nette Dependency Injection Container: Flexible, compiled and full-featured DIC with perfectly usable autowiring and support for all new PHP 7.1 features.",
             "homepage": "https://nette.org",
             "keywords": [
                 "compiled",
@@ -1511,7 +1513,7 @@
                     "homepage": "https://nette.org/contributors"
                 }
             ],
-            "description": "🔍 Nette Finder: find files and directories with an intuitive API.",
+            "description": "? Nette Finder: find files and directories with an intuitive API.",
             "homepage": "https://nette.org",
             "keywords": [
                 "filesystem",
@@ -1571,7 +1573,7 @@
                     "homepage": "https://nette.org/contributors"
                 }
             ],
-            "description": "🍸 Nette NEON: encodes and decodes NEON file format.",
+            "description": "? Nette NEON: encodes and decodes NEON file format.",
             "homepage": "http://ne-on.org",
             "keywords": [
                 "export",
@@ -1634,7 +1636,7 @@
                     "homepage": "https://nette.org/contributors"
                 }
             ],
-            "description": "🐘 Nette PHP Generator: generates neat PHP code for you. Supports new PHP 7.2 features.",
+            "description": "? Nette PHP Generator: generates neat PHP code for you. Supports new PHP 7.2 features.",
             "homepage": "https://nette.org",
             "keywords": [
                 "code",
@@ -1698,7 +1700,7 @@
                     "homepage": "https://nette.org/contributors"
                 }
             ],
-            "description": "🍀 Nette RobotLoader: high performance and comfortable autoloader that will search and autoload classes within your application.",
+            "description": "? Nette RobotLoader: high performance and comfortable autoloader that will search and autoload classes within your application.",
             "homepage": "https://nette.org",
             "keywords": [
                 "autoload",
@@ -3497,11 +3499,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "keboola/db-extractor-common": 20,
-        "keboola/db-extractor-logger": 20,
-        "keboola/db-extractor-ssh-tunnel": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],

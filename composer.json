@@ -10,9 +10,7 @@
         }
     ],
     "require": {
-        "keboola/db-extractor-common": "dev-ondra-severance-repository@dev",
-        "keboola/db-extractor-logger": "dev-ondra-init-repo",
-        "keboola/db-extractor-ssh-tunnel": "dev-ondra-init-repo"
+        "keboola/db-extractor-common": "^9.4.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^7.0",
