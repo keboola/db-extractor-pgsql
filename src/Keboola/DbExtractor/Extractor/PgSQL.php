@@ -38,6 +38,7 @@ class PgSQL extends Extractor
 
     public function __construct(array $parameters, array $state = [], ?Logger $logger = null)
     {
+        $parameters['db']['ssh']['compression'] = true;
         parent::__construct($parameters, $state, $logger);
         if (!empty($parameters['tableListFilter'])) {
             if (!empty($parameters['tableListFilter']['tablesToList'])) {
