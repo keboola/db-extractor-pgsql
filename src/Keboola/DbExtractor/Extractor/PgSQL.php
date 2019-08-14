@@ -673,7 +673,15 @@ EOT;
         try {
             $this->isAlive();
         } catch (DeadConnectionException $deadConnectionException) {
-            $this->db = $this->createConnection($this->getDbParameters());
+            try {
+                $this->db = $this->createConnection($this->getDbParameters());
+            } catch (\Throwable $reconnectException) {
+                throw new UserException(
+                    "Unable to reconnect to the database: " . $reconnectException->getMessage(),
+                    $reconnectException->getCode(),
+                    $reconnectException
+                );
+            }
         }
     }
 
