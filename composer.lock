@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "fa514c2ac1d27f4595165be090c8613e",
+    "content-hash": "4d6c2443d9b1a3f1001413f8a9d20442",
     "packages": [
         {
             "name": "keboola/csv",
@@ -54,26 +54,26 @@
         },
         {
             "name": "keboola/db-extractor-common",
-            "version": "9.4.0",
+            "version": "9.4.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/db-extractor-common.git",
-                "reference": "5fe26b72846244f2d8043024afa5b6c3cf1a1137"
+                "reference": "41e0ba498018634a4ec73ad14469a958871cb142"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/db-extractor-common/zipball/5fe26b72846244f2d8043024afa5b6c3cf1a1137",
-                "reference": "5fe26b72846244f2d8043024afa5b6c3cf1a1137",
+                "url": "https://api.github.com/repos/keboola/db-extractor-common/zipball/41e0ba498018634a4ec73ad14469a958871cb142",
+                "reference": "41e0ba498018634a4ec73ad14469a958871cb142",
                 "shasum": ""
             },
             "require": {
                 "ext-pdo": "*",
                 "keboola/csv": "^1.1",
                 "keboola/db-extractor-logger": "^1.0",
-                "keboola/db-extractor-ssh-tunnel": "^1.0",
+                "keboola/db-extractor-ssh-tunnel": "^1.1",
                 "keboola/php-datatypes": "^4.0",
                 "keboola/php-utils": "^2.3",
-                "keboola/retry": "^0.3.0",
+                "keboola/retry": "^0.4",
                 "nette/utils": "^2.4",
                 "php": ">=7.1",
                 "pimple/pimple": "^3.0",
@@ -106,7 +106,7 @@
                 }
             ],
             "description": "Common library from Keboola Database Extractors",
-            "time": "2019-08-06T10:22:34+00:00"
+            "time": "2019-08-09T08:47:28+00:00"
         },
         {
             "name": "keboola/db-extractor-logger",
@@ -146,20 +146,20 @@
         },
         {
             "name": "keboola/db-extractor-ssh-tunnel",
-            "version": "1.0",
+            "version": "1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/db-extractor-ssh-tunnel.git",
-                "reference": "890b1b8a98b09440fb1db88f9a9b998053722898"
+                "reference": "98b6c296f2dc4c71f38dccc090f70ad378c52684"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/db-extractor-ssh-tunnel/zipball/890b1b8a98b09440fb1db88f9a9b998053722898",
-                "reference": "890b1b8a98b09440fb1db88f9a9b998053722898",
+                "url": "https://api.github.com/repos/keboola/db-extractor-ssh-tunnel/zipball/98b6c296f2dc4c71f38dccc090f70ad378c52684",
+                "reference": "98b6c296f2dc4c71f38dccc090f70ad378c52684",
                 "shasum": ""
             },
             "require": {
-                "keboola/retry": "^0.3",
+                "keboola/retry": "^0.4",
                 "keboola/ssh-tunnel": "^1.0|^2.0",
                 "psr/log": "^1.1"
             },
@@ -180,7 +180,7 @@
                 "MIT"
             ],
             "description": "Create SSH tunnel for DB Extractors",
-            "time": "2019-07-30T13:20:15+00:00"
+            "time": "2019-08-08T10:28:43+00:00"
         },
         {
             "name": "keboola/php-datatypes",
@@ -334,21 +334,24 @@
         },
         {
             "name": "keboola/retry",
-            "version": "0.3.1",
+            "version": "0.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/retry.git",
-                "reference": "bd1769bc93e726a912c0a1f434fcde91cf015047"
+                "reference": "18dfd7eea32722cf3f421d86d0030844fd6aef67"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/retry/zipball/bd1769bc93e726a912c0a1f434fcde91cf015047",
-                "reference": "bd1769bc93e726a912c0a1f434fcde91cf015047",
+                "url": "https://api.github.com/repos/keboola/retry/zipball/18dfd7eea32722cf3f421d86d0030844fd6aef67",
+                "reference": "18dfd7eea32722cf3f421d86d0030844fd6aef67",
                 "shasum": ""
             },
             "require": {
                 "php": ">=7.1",
                 "psr/log": "^1.1"
+            },
+            "conflict": {
+                "vkartaviy/retry": "*"
             },
             "require-dev": {
                 "keboola/coding-standard": "^7.0",
@@ -378,7 +381,7 @@
                 "repeat",
                 "retry"
             ],
-            "time": "2019-06-20T10:03:15+00:00"
+            "time": "2019-08-07T16:10:48+00:00"
         },
         {
             "name": "keboola/ssh-tunnel",
