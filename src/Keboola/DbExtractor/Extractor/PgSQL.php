@@ -673,8 +673,15 @@ EOT;
         try {
             $this->isAlive();
         } catch (DeadConnectionException $deadConnectionException) {
+            $reconnectionRetryProxy = new RetryProxy(
+                $this->logger,
+                self::DEFAULT_MAX_TRIES,
+                1000
+            );
             try {
-                $this->db = $this->createConnection($this->getDbParameters());
+                $this->db = $reconnectionRetryProxy->call(function () {
+                    return $this->createConnection($this->getDbParameters());
+                });
             } catch (\Throwable $reconnectException) {
                 throw new UserException(
                     "Unable to reconnect to the database: " . $reconnectException->getMessage(),
