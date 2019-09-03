@@ -789,7 +789,7 @@ class PgsqlTest extends BaseTest
 
     public function testThousandsOfTablesGetTables(): void
     {
-        // $this->markTestSkipped("No need to run this test every time.");
+        // $this->markTestSkipped('No need to run this test every time.');
         $testStartTime = time();
         $numberOfSchemas = 10;
         $numberOfTablesPerSchema = 100;
