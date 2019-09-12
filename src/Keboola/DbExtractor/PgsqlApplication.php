@@ -14,7 +14,7 @@ class PgsqlApplication extends Application
         $config['parameters']['data_dir'] = $dataDir;
         $config['parameters']['extractor_class'] = 'PgSQL';
 
-        parent::__construct($config, ($logger) ? $logger : new Logger("ex-db-pgsql"), $state);
+        parent::__construct($config, ($logger) ? $logger : new Logger('ex-db-pgsql'), $state);
 
         if (!isset($this['parameters']['tables']) && $this['action'] === 'run') {
             // use config definition that allows --forceFallback override

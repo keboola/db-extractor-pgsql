@@ -60,14 +60,14 @@ class PgSQL extends Extractor
         // check params
         foreach (['host', 'database', 'user', 'password'] as $r) {
             if (!isset($dbParams[$r])) {
-                throw new UserException(sprintf("Parameter %s is missing.", $r));
+                throw new UserException(sprintf('Parameter %s is missing.', $r));
             }
         }
 
         $port = isset($dbParams['port']) ? $dbParams['port'] : '5432';
 
         $dsn = sprintf(
-            "pgsql:host=%s;port=%s;dbname=%s",
+            'pgsql:host=%s;port=%s;dbname=%s',
             $dbParams['host'],
             $port,
             $dbParams['database']
@@ -91,7 +91,7 @@ class PgSQL extends Extractor
         $tableMetadata = $this->getTables([$table['table']]);
         if (count($tableMetadata) === 0) {
             throw new UserException(sprintf(
-                "Could not find the table: [%s].[%s]",
+                'Could not find the table: [%s].[%s]',
                 $table['table']['schema'],
                 $table['table']['tableName']
             ));
@@ -115,7 +115,7 @@ class PgSQL extends Extractor
     {
         $outputTable = $table['outputTable'];
 
-        $this->logger->info("Exporting to " . $outputTable);
+        $this->logger->info('Exporting to ' . $outputTable);
         $advancedQuery = true;
         $columnMetadata = [];
         if (!isset($table['query']) || $table['query'] === '') {
@@ -133,7 +133,7 @@ class PgSQL extends Extractor
 
         try {
             if (isset($table['forceFallback']) && $table['forceFallback'] === true) {
-                throw new \Exception("Forcing extractor to use PDO fallback fetching");
+                throw new \Exception('Forcing extractor to use PDO fallback fetching');
             }
             $result = $this->executeCopyQuery(
                 $query,
@@ -151,7 +151,7 @@ class PgSQL extends Extractor
                 if (isset($table['forceFallback']) && $table['forceFallback'] === true) {
                     $this->logger->warning($copyError->getMessage());
                 } else {
-                    $this->logger->warning("Unexpected exception executing \copy: " . $copyError->getMessage());
+                    $this->logger->warning('Unexpected exception executing \copy: ' . $copyError->getMessage());
                 }
             }
             try {
@@ -176,7 +176,7 @@ class PgSQL extends Extractor
             } catch (PDOException $pdoError) {
                 throw new UserException(
                     sprintf(
-                        "Error executing [%s]: %s",
+                        'Error executing [%s]: %s',
                         $table['outputTable'],
                         $pdoError->getMessage()
                     )
@@ -188,7 +188,7 @@ class PgSQL extends Extractor
         if ($csvCreated) {
             if ($this->createManifest($table) === false) {
                 throw new ApplicationException(
-                    "Unable to create manifest",
+                    'Unable to create manifest',
                     0,
                     null,
                     [
@@ -199,12 +199,12 @@ class PgSQL extends Extractor
         }
 
         $output = [
-            "outputTable"=> $outputTable,
-            "rows" => $result['rows'],
+            'outputTable'=> $outputTable,
+            'rows' => $result['rows'],
         ];
         // output state
         if (!empty($result['lastFetchedRow'])) {
-            $output["state"]['lastFetchedRow'] = $result['lastFetchedRow'];
+            $output['state']['lastFetchedRow'] = $result['lastFetchedRow'];
         }
         return $output;
     }
@@ -213,7 +213,7 @@ class PgSQL extends Extractor
     {
         $cursorName = 'exdbcursor' . intval(microtime(true));
         $curSql = "DECLARE $cursorName CURSOR FOR $query";
-        $this->logger->info("Executing query via PDO ...");
+        $this->logger->info('Executing query via PDO ...');
         try {
             $this->db->beginTransaction(); // cursors require a transaction.
             $stmt = $this->db->prepare($curSql);
@@ -223,7 +223,7 @@ class PgSQL extends Extractor
             // write header and first line
             $resultRow = $innerStatement->fetch(PDO::FETCH_ASSOC);
             if (!is_array($resultRow) || empty($resultRow)) {
-                $this->logger->warning("Query returned empty result. Nothing was imported");
+                $this->logger->warning('Query returned empty result. Nothing was imported');
                 // no rows found.  If incremental fetching is turned on, we need to preserve the last state
                 if ($this->incrementalFetching['column'] && isset($this->state['lastFetchedRow'])) {
                     $output['lastFetchedRow'] = $this->state['lastFetchedRow'];
@@ -240,7 +240,7 @@ class PgSQL extends Extractor
             $numRows = 1;
             $lastRow = $resultRow;
             // write the rest
-            $this->logger->info("Fetching data...");
+            $this->logger->info('Fetching data...');
             $innerStatement = $this->db->prepare("FETCH 10000 FROM $cursorName");
             while ($innerStatement->execute() && count($resultRows = $innerStatement->fetchAll(PDO::FETCH_ASSOC)) > 0) {
                 foreach ($resultRows as $resultRow) {
@@ -258,7 +258,7 @@ class PgSQL extends Extractor
                 if (!array_key_exists($this->incrementalFetching['column'], $lastRow)) {
                     throw new UserException(
                         sprintf(
-                            "The specified incremental fetching column %s not found in the table",
+                            'The specified incremental fetching column %s not found in the table',
                             $this->incrementalFetching['column']
                         )
                     );
@@ -309,8 +309,8 @@ class PgSQL extends Extractor
         $process->setTimeout(null);
         $process->run();
         if (!$process->isSuccessful()) {
-            $this->logger->info("Failed \copy command (will attempt via PDO): " . $process->getErrorOutput());
-            throw new ApplicationException("Error using copy command.", 42);
+            $this->logger->info('Failed \copy command (will attempt via PDO): ' . $process->getErrorOutput());
+            throw new ApplicationException('Error using copy command.', 42);
         }
         return $this->analyseOutput($csvFile);
     }
@@ -324,7 +324,7 @@ class PgSQL extends Extractor
         $colCount = $outputFile->getColumnsCount();
         while ($outputFile->valid()) {
             if (count($outputFile->current()) !== $colCount) {
-                throw new UserException("The \copy command produced an invalid csv.");
+                throw new UserException('The \copy command produced an invalid csv.');
             }
             $lastRow = $outputFile->current();
             $outputFile->next();
@@ -333,7 +333,7 @@ class PgSQL extends Extractor
             }
             $numRows++;
         }
-        $this->logger->info(sprintf("Successfully exported %d rows.", $numRows));
+        $this->logger->info(sprintf('Successfully exported %d rows.', $numRows));
         $output = ['rows' => $numRows];
         if ($lastFetchedRow && isset($this->incrementalFetching['column'])) {
             $output['lastFetchedRow'] = $lastFetchedRow;
@@ -350,7 +350,7 @@ class PgSQL extends Extractor
         }
         throw new UserException(
             sprintf(
-                "The specified incremental fetching column %s not found in the table",
+                'The specified incremental fetching column %s not found in the table',
                 $this->incrementalFetching['column']
             )
         );
@@ -359,7 +359,7 @@ class PgSQL extends Extractor
     public function testConnection(): void
     {
         // check PDO connection
-        $this->db->query("SELECT 1");
+        $this->db->query('SELECT 1');
 
         // check psql connection
         $command = sprintf(
@@ -373,7 +373,7 @@ class PgSQL extends Extractor
         $process = new Process($command);
         $process->run();
         if ($process->getExitCode() !== 0) {
-            throw new UserException("Failed psql connection: " . $process->getErrorOutput());
+            throw new UserException('Failed psql connection: ' . $process->getErrorOutput());
         }
     }
 
@@ -394,7 +394,7 @@ class PgSQL extends Extractor
 EOT;
         if ($tables) {
             $sql .= sprintf(
-                " AND c.relname IN (%s) AND ns.nspname IN (%s)",
+                ' AND c.relname IN (%s) AND ns.nspname IN (%s)',
                 implode(
                     ',',
                     array_map(
@@ -464,7 +464,7 @@ EOT;
 EOT;
         if (!is_null($tables) && count($tables) > 0) {
             $sql .= sprintf(
-                " AND c.relname IN (%s) AND ns.nspname IN (%s)",
+                ' AND c.relname IN (%s) AND ns.nspname IN (%s)',
                 implode(
                     ',',
                     array_map(
@@ -513,17 +513,17 @@ EOT;
 
             $default = $column['default_value'];
             if ($data_type === 'character varying' && $default !== null) {
-                $default = str_replace("'", "", explode("::", $column['default_value'])[0]);
+                $default = str_replace("'", '', explode('::', $column['default_value'])[0]);
             }
             $tableDefs[$curTable]['columns'][$column['ordinal_position'] - 1] = [
-                "name" => $column['column_name'],
-                "sanitizedName" => Utils\sanitizeColumnName($column['column_name']),
-                "type" => $data_type,
-                "primaryKey" => $column['primary_key'] ?: false,
-                "length" => $length,
-                "nullable" => $column['nullable'],
-                "default" => $default,
-                "ordinalPosition" => $column['ordinal_position'],
+                'name' => $column['column_name'],
+                'sanitizedName' => Utils\sanitizeColumnName($column['column_name']),
+                'type' => $data_type,
+                'primaryKey' => $column['primary_key'] ?: false,
+                'length' => $length,
+                'nullable' => $column['nullable'],
+                'default' => $default,
+                'ordinalPosition' => $column['ordinal_position'],
             ];
 
             // make sure columns are sorted by index which is ordinal_position - 1
@@ -539,21 +539,21 @@ EOT;
     {
         switch ($code) {
             case 'r':
-                return "table";
+                return 'table';
             case 'v':
-                return "view";
+                return 'view';
             case 'm':
-                return "materialized view";
+                return 'materialized view';
             case 'f':
-                return "foreign table";
+                return 'foreign table';
             case 'i':
-                return "index";
+                return 'index';
             case 'S':
-                return "sequence";
+                return 'sequence';
             case 'c':
-                return "composite type";
+                return 'composite type';
             case 't':
-                return "toast table";
+                return 'toast table';
             default:
                 return null;
         }
@@ -565,7 +565,7 @@ EOT;
 
         if (count($columns) > 0) {
             $query = sprintf(
-                "SELECT %s FROM %s.%s",
+                'SELECT %s FROM %s.%s',
                 implode(
                     ', ',
                     array_map(
@@ -580,7 +580,7 @@ EOT;
             );
         } else {
             $query = sprintf(
-                "SELECT * FROM %s.%s",
+                'SELECT * FROM %s.%s',
                 $this->quote($table['schema']),
                 $this->quote($table['tableName'])
             );
@@ -589,16 +589,16 @@ EOT;
         if ($this->incrementalFetching && isset($this->incrementalFetching['column'])) {
             if (isset($this->state['lastFetchedRow'])) {
                 $query .= sprintf(
-                    " WHERE %s >= %s",
+                    ' WHERE %s >= %s',
                     $this->quote($this->incrementalFetching['column']),
                     $this->db->quote((string) $this->state['lastFetchedRow'])
                 );
             }
-            $query .= sprintf(" ORDER BY %s", $this->quote($this->incrementalFetching['column']));
+            $query .= sprintf(' ORDER BY %s', $this->quote($this->incrementalFetching['column']));
 
             if (isset($this->incrementalFetching['limit'])) {
                 $query .= sprintf(
-                    " LIMIT %d",
+                    ' LIMIT %d',
                     $this->incrementalFetching['limit']
                 );
             }
@@ -684,7 +684,7 @@ EOT;
                 });
             } catch (\Throwable $reconnectException) {
                 throw new UserException(
-                    "Unable to reconnect to the database: " . $reconnectException->getMessage(),
+                    'Unable to reconnect to the database: ' . $reconnectException->getMessage(),
                     $reconnectException->getCode(),
                     $reconnectException
                 );

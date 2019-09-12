@@ -63,7 +63,6 @@ class PgsqlTest extends BaseTest
         $this->assertEquals('success', $result['status']);
         $this->assertTrue($outputCsvFile->isFile());
 
-
         $outputArr = iterator_to_array($outputCsvFile);
         $expectedArr = iterator_to_array($expectedCsvFile);
         for ($i = 1; $i < count($expectedArr); $i++) {
@@ -86,28 +85,28 @@ class PgsqlTest extends BaseTest
         $config = $this->getConfig();
         $config['action'] = 'testConnection';
 
-        $config['parameters']['db']['user'] = "fakeguy";
+        $config['parameters']['db']['user'] = 'fakeguy';
         $app = $this->createApplication($config);
 
         try {
             $result = $app->run();
-            $this->fail("Invalid credentials should throw exception");
+            $this->fail('Invalid credentials should throw exception');
         } catch (UserException $exception) {
-            $this->assertStringStartsWith("Connection failed", $exception->getMessage());
+            $this->assertStringStartsWith('Connection failed', $exception->getMessage());
         }
     }
 
     public function testInvalidCredentialsAppRun(): void
     {
         $config = $this->getConfig();
-        $config['parameters']['db']['#password'] = "fakepass";
+        $config['parameters']['db']['#password'] = 'fakepass';
 
         $app = $this->createApplication($config);
         try {
             $result = $app->run();
-            $this->fail("Invalid credentials should throw exception");
+            $this->fail('Invalid credentials should throw exception');
         } catch (UserException $exception) {
-            $this->assertStringStartsWith("Error connecting", $exception->getMessage());
+            $this->assertStringStartsWith('Error connecting', $exception->getMessage());
         }
     }
 
@@ -803,17 +802,17 @@ class PgsqlTest extends BaseTest
         }
 
         // gen columns
-        $columnsSql = "";
+        $columnsSql = '';
         for ($columnCount = 0; $columnCount < $numberOfColumnsPerTable; $columnCount++) {
             $columnsSql .= sprintf(', "col_%d" VARCHAR(50) NOT NULL DEFAULT \'\'', $columnCount);
         }
 
         for ($schemaCount = 0; $schemaCount < $numberOfSchemas; $schemaCount++) {
-            $processes[] = $this->createDbProcess(sprintf("CREATE SCHEMA testschema_%d", $schemaCount));
+            $processes[] = $this->createDbProcess(sprintf('CREATE SCHEMA testschema_%d', $schemaCount));
             for ($tableCount = 0; $tableCount < $numberOfTablesPerSchema; $tableCount++) {
                 $processes[] = $this->createDbProcess(
                     sprintf(
-                        "CREATE TABLE testschema_%d.testtable_%d (ID SERIAL%s, PRIMARY KEY (ID))",
+                        'CREATE TABLE testschema_%d.testtable_%d (ID SERIAL%s, PRIMARY KEY (ID))',
                         $schemaCount,
                         $tableCount,
                         $columnsSql
@@ -854,10 +853,10 @@ class PgsqlTest extends BaseTest
         unset($config['parameters']['tables'][1]);
         unset($config['parameters']['tables'][2]['columns']);
         unset($config['parameters']['tables'][2]['table']);
-        $config['parameters']['tables'][2]['query'] = "SELECT %s FROM types";
+        $config['parameters']['tables'][2]['query'] = 'SELECT %s FROM types';
 
         $this->expectException(UserException::class);
-        $this->expectExceptionMessageRegExp("/^Error executing \[in.c-main.types\]\: SQLSTATE\[42601\]\:.*/");
+        $this->expectExceptionMessageRegExp('/^Error executing \[in.c-main.types\]\: SQLSTATE\[42601\]\:.*/');
 
         $app = $this->createApplication($config);
         $app->run();

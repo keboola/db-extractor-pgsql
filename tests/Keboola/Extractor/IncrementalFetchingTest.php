@@ -491,8 +491,8 @@ class IncrementalFetchingTest extends BaseTest
         $logger->pushHandler($handler);
         $newResult = ($this->createApplication($config, $result['state'], $logger))->run();
 
-        $this->assertTrue($handler->hasWarningThatContains("Forcing extractor to use PDO fallback fetching"));
-        $this->assertTrue($handler->hasInfoThatContains("Executing query via PDO"));
+        $this->assertTrue($handler->hasWarningThatContains('Forcing extractor to use PDO fallback fetching'));
+        $this->assertTrue($handler->hasInfoThatContains('Executing query via PDO'));
         //check that output state contains expected information
         $this->assertArrayHasKey('state', $newResult);
         $this->assertArrayHasKey('lastFetchedRow', $newResult['state']);
@@ -512,7 +512,7 @@ class IncrementalFetchingTest extends BaseTest
             $this->fail('cannot use incremental fetching with advanced query, should fail.');
         } catch (UserException $e) {
             $this->assertStringContainsString(
-                "Incremental fetching is not supported for advanced queries",
+                'Incremental fetching is not supported for advanced queries',
                 $e->getMessage()
             );
         }
@@ -536,12 +536,12 @@ class IncrementalFetchingTest extends BaseTest
     {
         return [
             'column does not exist' => [
-                "fakeCol",
-                "Column [fakeCol] specified for incremental fetching was not found in the table",
+                'fakeCol',
+                'Column [fakeCol] specified for incremental fetching was not found in the table',
             ],
             'column exists but is not auto-increment nor updating timestamp so should fail' => [
-                "weird_name",
-                "Column [weird_name] specified for incremental fetching is not a numeric or timestamp type column",
+                'weird_name',
+                'Column [weird_name] specified for incremental fetching is not a numeric or timestamp type column',
             ],
         ];
     }

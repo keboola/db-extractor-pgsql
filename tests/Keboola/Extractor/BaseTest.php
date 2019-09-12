@@ -73,19 +73,19 @@ abstract class BaseTest extends ExtractorTest
         $processes = [];
         // create a duplicate table in a different schema
         $processes[] = $this->createDbProcess(
-            "CREATE SCHEMA IF NOT EXISTS testing;"
+            'CREATE SCHEMA IF NOT EXISTS testing;'
         );
         $processes[] = $this->createDbProcess(
-            "DROP TABLE IF EXISTS escaping;"
+            'DROP TABLE IF EXISTS escaping;'
         );
         $processes[] = $this->createDbProcess(
-            "DROP TABLE IF EXISTS testing.escaping;"
+            'DROP TABLE IF EXISTS testing.escaping;'
         );
         $processes[] = $this->createDbProcess(
-            "DROP TABLE IF EXISTS types_fk;"
+            'DROP TABLE IF EXISTS types_fk;'
         );
         $processes[] = $this->createDbProcess(
-            "DROP TABLE IF EXISTS types;"
+            'DROP TABLE IF EXISTS types;'
         );
         $processes[] = $this->createDbProcess(
             'DROP TABLE IF EXISTS auto_increment_timestamp'
@@ -97,10 +97,10 @@ abstract class BaseTest extends ExtractorTest
 
         // create test tables
         $processes[] = $this->createDbProcess(
-            "CREATE TABLE escaping (" .
+            'CREATE TABLE escaping (' .
             "\"_funnycol\" varchar(123) NOT NULL DEFAULT 'column 1', " .
             "\"_sadcol\" varchar(221) NOT NULL DEFAULT 'column 2', " .
-            "PRIMARY KEY (\"_funnycol\", \"_sadcol\"));"
+            'PRIMARY KEY (\"_funnycol\", \"_sadcol\"));'
         );
 
         $processes[] = $this->createDbProcess(
@@ -108,11 +108,11 @@ abstract class BaseTest extends ExtractorTest
         );
 
         $processes[] = $this->createDbProcess(
-            "CREATE TABLE types " .
-            "(character varchar(123) PRIMARY KEY, " .
-            "integer integer NOT NULL DEFAULT 42, " .
-            "decimal decimal(5,3) NOT NULL DEFAULT 1.2, " .
-            "date date DEFAULT NULL);"
+            'CREATE TABLE types ' .
+            '(character varchar(123) PRIMARY KEY, ' .
+            'integer integer NOT NULL DEFAULT 42, ' .
+            'decimal decimal(5,3) NOT NULL DEFAULT 1.2, ' .
+            'date date DEFAULT NULL);'
         );
 
         $processes[] = $this->createDbProcess(
@@ -120,11 +120,11 @@ abstract class BaseTest extends ExtractorTest
         );
 
         $processes[] = $this->createDbProcess(
-            "CREATE TABLE types_fk " .
-            "(character varchar(123) REFERENCES types (character), " .
-            "integer integer NOT NULL DEFAULT 42, " .
-            "decimal decimal(5,3) NOT NULL DEFAULT 1.2, " .
-            "date date DEFAULT NULL);"
+            'CREATE TABLE types_fk ' .
+            '(character varchar(123) REFERENCES types (character), ' .
+            'integer integer NOT NULL DEFAULT 42, ' .
+            'decimal decimal(5,3) NOT NULL DEFAULT 1.2, ' .
+            'date date DEFAULT NULL);'
         );
 
         $processes[] = $this->createDbProcess(
@@ -132,10 +132,10 @@ abstract class BaseTest extends ExtractorTest
         );
 
         $processes[] = $this->createDbProcess(
-            "CREATE TABLE testing.escaping (" .
+            'CREATE TABLE testing.escaping (' .
             "\"_funnycol\" varchar(123) NOT NULL DEFAULT 'column 1', " .
             "\"_sadcol\" varchar(221) NOT NULL DEFAULT 'column 2', " .
-            "PRIMARY KEY (\"_funnY$-col\", \"_sadcol\"));"
+            'PRIMARY KEY ("_funnY$-col", "_sadcol"));'
         );
         $processes[] = $this->createDbProcess(
             "\COPY testing.escaping FROM 'vendor/keboola/db-extractor-common/tests/data/escaping.csv' "

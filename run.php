@@ -10,27 +10,27 @@ use Symfony\Component\Serializer\Encoder\JsonDecode;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Yaml\Yaml;
 
-require_once(__DIR__ . "/vendor/autoload.php");
+require_once(__DIR__ . '/vendor/autoload.php');
 
 $logger = new Logger('ex-db-pgsql');
 
 $runAction = true;
 
 try {
-    $arguments = getopt("d::", ["data::"]);
-    if (!isset($arguments["data"])) {
+    $arguments = getopt('d::', ['data::']);
+    if (!isset($arguments['data'])) {
         throw new UserException('Data folder not set.');
     }
 
     $jsonDecode = new JsonDecode(true);
 
-    if (file_exists($arguments["data"] . "/config.yml")) {
+    if (file_exists($arguments['data'] . '/config.yml')) {
         $config = Yaml::parse(
-            file_get_contents($arguments["data"] . "/config.yml")
+            file_get_contents($arguments['data'] . '/config.yml')
         );
-    } else if (file_exists($arguments["data"] . "/config.json")) {
+    } else if (file_exists($arguments['data'] . '/config.json')) {
         $config = $jsonDecode->decode(
-            file_get_contents($arguments["data"] . '/config.json'),
+            file_get_contents($arguments['data'] . '/config.json'),
             JsonEncoder::FORMAT
         );
     } else {
@@ -68,7 +68,7 @@ try {
             file_put_contents($outputStateFile, $jsonEncode->encode($result['state'], JsonEncoder::FORMAT));
         }
     }
-    $app['logger']->log('info', "Extractor finished successfully.");
+    $app['logger']->log('info', 'Extractor finished successfully.');
     exit(0);
 } catch (UserException $e) {
     $logger->log('error', $e->getMessage());
