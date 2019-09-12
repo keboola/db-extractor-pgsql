@@ -4,3 +4,4 @@ composer.phar
 tests/data/
 .DS_Store
 .env
+.phpunit.result.cache

@@ -82,7 +82,7 @@ class ApplicationTest extends BaseTest
         $process->run();
 
         $this->assertFalse(strstr($process->getErrorOutput(), "PGPASSWORD"));
-        $this->assertContains($config['parameters']['tables'][0]['name'], $process->getErrorOutput());
+        $this->assertStringContainsString($config['parameters']['tables'][0]['name'], $process->getErrorOutput());
         $this->assertEquals(1, $process->getExitCode());
     }
 
@@ -112,7 +112,7 @@ class ApplicationTest extends BaseTest
         $process->mustRun();
 
         // valid query should not error
-        $this->assertContains('Failed \copy command', $process->getOutput());
+        $this->assertStringContainsString('Failed \copy command', $process->getOutput());
         // assert that PDO attempt succeeded
         $this->assertEquals(0, $process->getExitCode());
         $this->assertTrue($outputCsvFile->isFile());
