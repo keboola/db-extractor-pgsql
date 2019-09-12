@@ -129,8 +129,6 @@ class PgSQL extends Extractor
         $maxTries = isset($table['retries']) ? (int) $table['retries'] : self::DEFAULT_MAX_TRIES;
         $exception = null;
 
-        $csvCreated = false;
-
         try {
             if (isset($table['forceFallback']) && $table['forceFallback'] === true) {
                 throw new \Exception('Forcing extractor to use PDO fallback fetching');
@@ -144,7 +142,6 @@ class PgSQL extends Extractor
             if (!$advancedQuery && isset($result['lastFetchedRow'])) {
                 $result['lastFetchedRow'] = $this->getLastFetchedValue($columnMetadata, $result['lastFetchedRow']);
             }
-            $csvCreated = true;
         } catch (Throwable $copyError) {
             // There was an error, so let's try the old method
             if (!$copyError instanceof ApplicationException) {
@@ -172,7 +169,6 @@ class PgSQL extends Extractor
                         throw $queryError;
                     }
                 });
-                $csvCreated = true;
             } catch (PDOException $pdoError) {
                 throw new UserException(
                     sprintf(
@@ -185,17 +181,15 @@ class PgSQL extends Extractor
                 throw($generalError);
             }
         }
-        if ($csvCreated) {
-            if ($this->createManifest($table) === false) {
-                throw new ApplicationException(
-                    'Unable to create manifest',
-                    0,
-                    null,
-                    [
-                    'table' => $table,
-                    ]
-                );
-            }
+        if ($this->createManifest($table) === false) {
+            throw new ApplicationException(
+                'Unable to create manifest',
+                0,
+                null,
+                [
+                'table' => $table,
+                ]
+            );
         }
 
         $output = [
@@ -304,7 +298,7 @@ class PgSQL extends Extractor
             )
         );
 
-        $process = new Process($command);
+        $process = Process::fromShellCommandline($command);
         // allow it to run for as long as it needs
         $process->setTimeout(null);
         $process->run();
@@ -370,7 +364,7 @@ class PgSQL extends Extractor
             $this->dbConfig['user'],
             $this->dbConfig['database']
         );
-        $process = new Process($command);
+        $process = Process::fromShellCommandline($command);
         $process->run();
         if ($process->getExitCode() !== 0) {
             throw new UserException('Failed psql connection: ' . $process->getErrorOutput());
@@ -499,6 +493,7 @@ EOT;
                     'name' => $column['table_name'],
                     'schema' => $column['table_schema'] ?? null,
                     'type' => $this->tableTypeFromCode($column['table_type']),
+                    'columns' => [],
                 ];
             }
 

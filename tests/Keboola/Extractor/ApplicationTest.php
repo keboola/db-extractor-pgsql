@@ -71,7 +71,7 @@ class ApplicationTest extends BaseTest
      */
     public function testUserError(): void
     {
-        $config = Yaml::parse(file_get_contents($this->dataDir . '/pgsql/external_config.yml'));
+        $config = Yaml::parse((string) file_get_contents($this->dataDir . '/pgsql/external_config.yml'));
         $config['parameters']['db'] = $this->dbConfig;
         $config['parameters']['tables'][0]['query'] = 'SELECT something, fake';
         @unlink($this->dataDir . '/config.yml');
@@ -147,7 +147,10 @@ class ApplicationTest extends BaseTest
 
         $this->assertFileExists($outputStateFile);
         $this->assertFileExists($outputStateFile);
-        $this->assertEquals(['lastFetchedRow' => '32'], json_decode(file_get_contents($outputStateFile), true));
+        $this->assertEquals(['lastFetchedRow' => '32'], json_decode(
+            (string) file_get_contents($outputStateFile),
+            true
+        ));
 
         // add a couple rows
         $this->runProcesses([
@@ -163,7 +166,10 @@ class ApplicationTest extends BaseTest
         $process->mustRun();
 
         $this->assertEquals(0, $process->getExitCode());
-        $this->assertEquals(['lastFetchedRow' => '101'], json_decode(file_get_contents($outputStateFile), true));
+        $this->assertEquals(['lastFetchedRow' => '101'], json_decode(
+            (string) file_get_contents($outputStateFile),
+            true
+        ));
     }
 
     public function testGetTablesNonConfigRowConfig(): void

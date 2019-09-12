@@ -10,7 +10,6 @@ use Keboola\DbExtractor\Exception\UserException;
 class PgsqlTest extends BaseTest
 {
     /**
-     * @param $configType
      * @dataProvider configTypesProvider
      */
     public function testRunConfig(string $configFormat): void
@@ -24,7 +23,7 @@ class PgsqlTest extends BaseTest
         $this->assertEquals('success', $result['status']);
         $this->assertTrue($outputCsvFile->isFile());
         $this->assertFileExists($outputManifestFile);
-        $outputManifest = json_decode(file_get_contents($outputManifestFile), true);
+        $outputManifest = json_decode((string) file_get_contents($outputManifestFile), true);
 
         $this->assertEquals(['funnycol', 'sadcol'], $outputManifest['columns']);
         $this->assertEquals(['funnycol', 'sadcol'], $outputManifest['primary_key']);
@@ -56,7 +55,7 @@ class PgsqlTest extends BaseTest
         $outputManifestFile = $this->dataDir . '/out/tables/' . $result['imported'][0]['outputTable'] . '.csv.manifest';
         $this->assertFileExists($outputManifestFile);
 
-        $outputManifest = json_decode(file_get_contents($outputManifestFile), true);
+        $outputManifest = json_decode((string) file_get_contents($outputManifestFile), true);
         $this->assertEquals(['funnycol', 'sadcol'], $outputManifest['columns']);
         $this->assertEquals(['funnycol', 'sadcol'], $outputManifest['primary_key']);
 
@@ -700,8 +699,9 @@ class PgsqlTest extends BaseTest
         );
 
         foreach ($result['imported'] as $i => $outputArray) {
+            $filenameManifest = $this->dataDir . '/out/tables/' . $outputArray['outputTable'] . '.csv.manifest';
             $outputManifest = json_decode(
-                file_get_contents($this->dataDir . '/out/tables/' . $outputArray['outputTable'] . '.csv.manifest'),
+                (string) file_get_contents($filenameManifest),
                 true
             );
             $this->assertManifestMetadata($outputManifest, $expectedTableMetadata[$i], $expectedColumnMetadata[$i]);
@@ -742,7 +742,7 @@ class PgsqlTest extends BaseTest
         $this->assertTrue($outputCsvFile->isFile());
         $this->assertFileExists($outputManifestFile);
 
-        $outputManifest = json_decode(file_get_contents($outputManifestFile), true);
+        $outputManifest = json_decode((string) file_get_contents($outputManifestFile), true);
         $this->assertEquals(['character', 'integer', 'decimal', 'date'], $outputManifest['columns']);
         $this->assertEquals(['character'], $outputManifest['primary_key']);
 
@@ -770,7 +770,7 @@ class PgsqlTest extends BaseTest
         $expectedCsvFile = new CsvFile($this->dataDir . '/pgsql/types.csv');
         $outputCsvFile = new CsvFile($this->dataDir . '/out/tables/' . $result['imported'][0]['outputTable'] . '.csv');
         $outputManifestFile = $this->dataDir . '/out/tables/' . $result['imported'][0]['outputTable'] . '.csv.manifest';
-        $outputManifest = json_decode(file_get_contents($outputManifestFile), true);
+        $outputManifest = json_decode((string) file_get_contents($outputManifestFile), true);
         // check that the manifest has the correct column ordering
         $this->assertEquals(['character', 'integer', 'decimal', 'date'], $outputManifest['columns']);
 
@@ -872,11 +872,11 @@ class PgsqlTest extends BaseTest
 
     public function getPrivateKey(): string
     {
-        return file_get_contents('/root/.ssh/id_rsa');
+        return (string) file_get_contents('/root/.ssh/id_rsa');
     }
 
     public function getPublicKey(): string
     {
-        return file_get_contents('/root/.ssh/id_rsa.pub');
+        return (string) file_get_contents('/root/.ssh/id_rsa.pub');
     }
 }

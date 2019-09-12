@@ -30,7 +30,7 @@ abstract class BaseTest extends ExtractorTest
 
     protected function createDbProcess(string $query): Process
     {
-        return new Process(
+        return Process::fromShellCommandline(
             sprintf(
                 "PGPASSWORD='%s' psql -h %s -p %s -U %s -d %s -w -c \"$query\"",
                 $this->dbConfig['#password'],

@@ -14,7 +14,7 @@
     },
     "require-dev": {
         "keboola/coding-standard": "^8.0",
-        "phpstan/phpstan": "^0.8",
+        "phpstan/phpstan-shim": "^0.11.15",
         "phpunit/phpunit": "^8.3"
     },
     "autoload": {
@@ -29,7 +29,7 @@
     },
     "scripts": {
         "tests": "./wait-for-it.sh pgsql:5432 -t 30 -- ./vendor/bin/phpunit",
-        "phpstan": "phpstan analyse --no-progress --level=max ./src ./tests",
+        "phpstan": "phpstan analyse --no-progress --level=max ./src ./tests -c phpstan.neon",
         "phpcs": "phpcs -n --ignore=vendor --extensions=php .",
         "phpcbf": "phpcbf -n --ignore=vendor --extensions=php .",
         "build": [
