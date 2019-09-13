@@ -6,11 +6,11 @@ namespace Keboola\DbExtractor\Extractor;
 
 use Keboola\Csv\CsvFile;
 use Keboola\Datatype\Definition\GenericStorage;
+use Keboola\DbExtractor\DbRetryProxy;
 use Keboola\DbExtractor\Exception\ApplicationException;
 use Keboola\DbExtractor\Exception\DeadConnectionException;
 use Keboola\DbExtractor\Exception\UserException;
-use Keboola\DbExtractor\Logger;
-use Keboola\DbExtractor\RetryProxy;
+use Keboola\DbExtractorLogger\Logger;
 use Keboola\Utils;
 use Symfony\Component\Process\Process;
 use PDO;
@@ -36,6 +36,7 @@ class PgSQL extends Extractor
 
     public function __construct(array $parameters, array $state = [], ?Logger $logger = null)
     {
+        $parameters['db']['ssh']['compression'] = true;
         parent::__construct($parameters, $state, $logger);
         if (!empty($parameters['tableListFilter'])) {
             if (!empty($parameters['tableListFilter']['tablesToList'])) {
@@ -58,7 +59,7 @@ class PgSQL extends Extractor
         ];
 
         // check params
-        foreach (['host', 'database', 'user', 'password'] as $r) {
+        foreach (['host', 'database', 'user', '#password'] as $r) {
             if (!isset($dbParams[$r])) {
                 throw new UserException(sprintf('Parameter %s is missing.', $r));
             }
@@ -73,16 +74,10 @@ class PgSQL extends Extractor
             $dbParams['database']
         );
 
-        $pdo = new PDO($dsn, $dbParams['user'], $dbParams['password'], $options);
+        $pdo = new PDO($dsn, $dbParams['user'], $dbParams['#password'], $options);
         $pdo->exec("SET NAMES 'UTF8';");
 
         return $pdo;
-    }
-
-    public function createSshTunnel(array $dbConfig): array
-    {
-        $dbConfig['ssh']['compression'] = true;
-        return parent::createSshTunnel($dbConfig);
     }
 
     private function getColumnMetadataFromTable(array $table): array
@@ -156,7 +151,7 @@ class PgSQL extends Extractor
                 $this->tryReconnect();
             } catch (Throwable $connectionError) {
             };
-            $proxy = new RetryProxy($this->logger, $maxTries);
+            $proxy = new DbRetryProxy($this->logger, $maxTries);
             try {
                 $result = $proxy->call(function () use ($query, $outputTable, $advancedQuery) {
                     try {
@@ -284,7 +279,7 @@ class PgSQL extends Extractor
 
         $command = sprintf(
             "PGPASSWORD='%s' psql -h %s -p %s -U %s -d %s -w -c %s",
-            $this->dbConfig['password'],
+            $this->dbConfig['#password'],
             $this->dbConfig['host'],
             $this->dbConfig['port'],
             $this->dbConfig['user'],
@@ -358,7 +353,7 @@ class PgSQL extends Extractor
         // check psql connection
         $command = sprintf(
             "PGPASSWORD='%s' psql -h %s -p %s -U %s -d %s -w -c \"SELECT 1;\"",
-            $this->dbConfig['password'],
+            $this->dbConfig['#password'],
             $this->dbConfig['host'],
             $this->dbConfig['port'],
             $this->dbConfig['user'],
@@ -650,7 +645,7 @@ EOT;
 
     private function runRetriableQuery(string $query, array $values = []): array
     {
-        $retryProxy = new RetryProxy($this->logger);
+        $retryProxy = new DbRetryProxy($this->logger);
         return $retryProxy->call(function () use ($query, $values): array {
             try {
                 $stmt = $this->db->prepare($query);
@@ -668,9 +663,10 @@ EOT;
         try {
             $this->isAlive();
         } catch (DeadConnectionException $deadConnectionException) {
-            $reconnectionRetryProxy = new RetryProxy(
+            $reconnectionRetryProxy = new DbRetryProxy(
                 $this->logger,
                 self::DEFAULT_MAX_TRIES,
+                null,
                 1000
             );
             try {

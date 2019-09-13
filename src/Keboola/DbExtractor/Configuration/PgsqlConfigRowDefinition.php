@@ -4,17 +4,31 @@ declare(strict_types=1);
 
 namespace Keboola\DbExtractor\Configuration;
 
+use Keboola\DbExtractorConfig\Configuration\ConfigRowDefinition;
+use Keboola\DbExtractorConfig\Configuration\NodeDefinition\DbNode;
+use Keboola\DbExtractorConfig\Configuration\NodeDefinition\SshNode;
+use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 
 class PgsqlConfigRowDefinition extends ConfigRowDefinition
 {
-    public function getConfigTreeBuilder(): TreeBuilder
+    public function __construct(
+        ?DbNode $dbNode = null,
+        ?SshNode $sshNode = null
+    ) {
+        parent::__construct($dbNode, $sshNode);
+    }
+
+    protected function getParametersDefinition(): ArrayNodeDefinition
     {
         $treeBuilder = new TreeBuilder();
-        $rootNode = $treeBuilder->root('parameters');
+
+        /** @var ArrayNodeDefinition $parametersNode */
+        $parametersNode = $treeBuilder->root('parameters');
+        $this->addValidation($parametersNode);
 
         // @formatter:off
-        $rootNode
+        $parametersNode
             ->children()
                 ->scalarNode('data_dir')
                     ->isRequired()
@@ -24,23 +38,7 @@ class PgsqlConfigRowDefinition extends ConfigRowDefinition
                     ->isRequired()
                     ->cannotBeEmpty()
                 ->end()
-                ->arrayNode('db')
-                    ->children()
-                        ->scalarNode('driver')->end()
-                        ->scalarNode('host')->end()
-                        ->scalarNode('port')->end()
-                        ->scalarNode('database')
-                            ->isRequired()
-                            ->cannotBeEmpty()
-                        ->end()
-                        ->scalarNode('user')
-                            ->isRequired()
-                        ->end()
-                        ->scalarNode('password')->end()
-                        ->scalarNode('#password')->end()
-                        ->append($this->addSshNode())
-                    ->end()
-                ->end()
+                ->append($this->dbNodeDefinition)
                 ->integerNode('id')
                     ->min(0)
                 ->end()
@@ -50,8 +48,8 @@ class PgsqlConfigRowDefinition extends ConfigRowDefinition
                 ->scalarNode('query')->end()
                 ->arrayNode('table')
                     ->children()
-                        ->scalarNode('schema')->end()
-                        ->scalarNode('tableName')->end()
+                        ->scalarNode('schema')->isRequired()->end()
+                        ->scalarNode('tableName')->isRequired()->end()
                     ->end()
                 ->end()
                 ->arrayNode('columns')
@@ -75,10 +73,12 @@ class PgsqlConfigRowDefinition extends ConfigRowDefinition
                 ->integerNode('retries')
                     ->min(0)
                 ->end()
-                ->booleanNode('forceFallback')->defaultFalse()->end()
+                ->booleanNode('forceFallback')
+                    ->defaultFalse()
+                ->end()
             ->end();
         // @formatter:on
 
-        return $treeBuilder;
+        return $parametersNode;
     }
 }

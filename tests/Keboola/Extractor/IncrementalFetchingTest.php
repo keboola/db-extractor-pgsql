@@ -6,7 +6,7 @@ namespace Keboola\DbExtractor\Tests;
 
 use Keboola\DbExtractor\Exception\UserException;
 use Keboola\Csv\CsvFile;
-use Keboola\DbExtractor\Logger;
+use Keboola\DbExtractorLogger\Logger;
 use Monolog\Handler\TestHandler;
 
 class IncrementalFetchingTest extends BaseTest
