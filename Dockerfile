@@ -1,5 +1,5 @@
 FROM db-ex-pgsql-sshproxy AS sshproxy
-FROM php:7.2
+FROM php:7.3-cli-stretch
 MAINTAINER Miro Cillik <miro@keboola.com>
 
 ENV DEBIAN_FRONTEND noninteractive

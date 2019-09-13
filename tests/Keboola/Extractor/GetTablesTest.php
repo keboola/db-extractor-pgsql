@@ -38,7 +38,7 @@ class GetTablesTest extends BaseTest
         self::assertCount(4, $data['tables']);
         self::assertArrayHasKey('columns', $data['tables'][0]);
         self::assertEquals(0, $process->getExitCode());
-        self::assertEquals("", $process->getErrorOutput());
+        self::assertEquals('', $process->getErrorOutput());
     }
 
     public function testGetTablesNoColumns(): void
@@ -59,7 +59,7 @@ class GetTablesTest extends BaseTest
         self::assertCount(4, $data['tables']);
         self::assertArrayNotHasKey('columns', $data['tables'][0]);
         self::assertEquals(0, $process->getExitCode());
-        self::assertEquals("", $process->getErrorOutput());
+        self::assertEquals('', $process->getErrorOutput());
     }
 
     public function testGetTablesOneTable(): void
@@ -84,7 +84,7 @@ class GetTablesTest extends BaseTest
         self::assertEquals('types_fk', $data['tables'][0]['name']);
         self::assertArrayHasKey('columns', $data['tables'][0]);
         $this->assertEquals(0, $process->getExitCode());
-        $this->assertEquals("", $process->getErrorOutput());
+        $this->assertEquals('', $process->getErrorOutput());
     }
 
     public function testGetTablesOneTableNoColumns(): void
@@ -110,6 +110,6 @@ class GetTablesTest extends BaseTest
         self::assertEquals('types_fk', $data['tables'][0]['name']);
         self::assertArrayNotHasKey('columns', $data['tables'][0]);
         $this->assertEquals(0, $process->getExitCode());
-        $this->assertEquals("", $process->getErrorOutput());
+        $this->assertEquals('', $process->getErrorOutput());
     }
 }

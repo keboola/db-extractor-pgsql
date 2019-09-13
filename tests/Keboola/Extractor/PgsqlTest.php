@@ -10,7 +10,6 @@ use Keboola\DbExtractor\Exception\UserException;
 class PgsqlTest extends BaseTest
 {
     /**
-     * @param $configType
      * @dataProvider configTypesProvider
      */
     public function testRunConfig(string $configFormat): void
@@ -24,7 +23,7 @@ class PgsqlTest extends BaseTest
         $this->assertEquals('success', $result['status']);
         $this->assertTrue($outputCsvFile->isFile());
         $this->assertFileExists($outputManifestFile);
-        $outputManifest = json_decode(file_get_contents($outputManifestFile), true);
+        $outputManifest = json_decode((string) file_get_contents($outputManifestFile), true);
 
         $this->assertEquals(['funnycol', 'sadcol'], $outputManifest['columns']);
         $this->assertEquals(['funnycol', 'sadcol'], $outputManifest['primary_key']);
@@ -56,13 +55,12 @@ class PgsqlTest extends BaseTest
         $outputManifestFile = $this->dataDir . '/out/tables/' . $result['imported'][0]['outputTable'] . '.csv.manifest';
         $this->assertFileExists($outputManifestFile);
 
-        $outputManifest = json_decode(file_get_contents($outputManifestFile), true);
+        $outputManifest = json_decode((string) file_get_contents($outputManifestFile), true);
         $this->assertEquals(['funnycol', 'sadcol'], $outputManifest['columns']);
         $this->assertEquals(['funnycol', 'sadcol'], $outputManifest['primary_key']);
 
         $this->assertEquals('success', $result['status']);
         $this->assertTrue($outputCsvFile->isFile());
-
 
         $outputArr = iterator_to_array($outputCsvFile);
         $expectedArr = iterator_to_array($expectedCsvFile);
@@ -86,28 +84,28 @@ class PgsqlTest extends BaseTest
         $config = $this->getConfig();
         $config['action'] = 'testConnection';
 
-        $config['parameters']['db']['user'] = "fakeguy";
+        $config['parameters']['db']['user'] = 'fakeguy';
         $app = $this->createApplication($config);
 
         try {
             $result = $app->run();
-            $this->fail("Invalid credentials should throw exception");
+            $this->fail('Invalid credentials should throw exception');
         } catch (UserException $exception) {
-            $this->assertStringStartsWith("Connection failed", $exception->getMessage());
+            $this->assertStringStartsWith('Connection failed', $exception->getMessage());
         }
     }
 
     public function testInvalidCredentialsAppRun(): void
     {
         $config = $this->getConfig();
-        $config['parameters']['db']['#password'] = "fakepass";
+        $config['parameters']['db']['#password'] = 'fakepass';
 
         $app = $this->createApplication($config);
         try {
             $result = $app->run();
-            $this->fail("Invalid credentials should throw exception");
+            $this->fail('Invalid credentials should throw exception');
         } catch (UserException $exception) {
-            $this->assertStringStartsWith("Error connecting", $exception->getMessage());
+            $this->assertStringStartsWith('Error connecting', $exception->getMessage());
         }
     }
 
@@ -701,8 +699,9 @@ class PgsqlTest extends BaseTest
         );
 
         foreach ($result['imported'] as $i => $outputArray) {
+            $filenameManifest = $this->dataDir . '/out/tables/' . $outputArray['outputTable'] . '.csv.manifest';
             $outputManifest = json_decode(
-                file_get_contents($this->dataDir . '/out/tables/' . $outputArray['outputTable'] . '.csv.manifest'),
+                (string) file_get_contents($filenameManifest),
                 true
             );
             $this->assertManifestMetadata($outputManifest, $expectedTableMetadata[$i], $expectedColumnMetadata[$i]);
@@ -743,7 +742,7 @@ class PgsqlTest extends BaseTest
         $this->assertTrue($outputCsvFile->isFile());
         $this->assertFileExists($outputManifestFile);
 
-        $outputManifest = json_decode(file_get_contents($outputManifestFile), true);
+        $outputManifest = json_decode((string) file_get_contents($outputManifestFile), true);
         $this->assertEquals(['character', 'integer', 'decimal', 'date'], $outputManifest['columns']);
         $this->assertEquals(['character'], $outputManifest['primary_key']);
 
@@ -771,7 +770,7 @@ class PgsqlTest extends BaseTest
         $expectedCsvFile = new CsvFile($this->dataDir . '/pgsql/types.csv');
         $outputCsvFile = new CsvFile($this->dataDir . '/out/tables/' . $result['imported'][0]['outputTable'] . '.csv');
         $outputManifestFile = $this->dataDir . '/out/tables/' . $result['imported'][0]['outputTable'] . '.csv.manifest';
-        $outputManifest = json_decode(file_get_contents($outputManifestFile), true);
+        $outputManifest = json_decode((string) file_get_contents($outputManifestFile), true);
         // check that the manifest has the correct column ordering
         $this->assertEquals(['character', 'integer', 'decimal', 'date'], $outputManifest['columns']);
 
@@ -803,17 +802,17 @@ class PgsqlTest extends BaseTest
         }
 
         // gen columns
-        $columnsSql = "";
+        $columnsSql = '';
         for ($columnCount = 0; $columnCount < $numberOfColumnsPerTable; $columnCount++) {
             $columnsSql .= sprintf(', "col_%d" VARCHAR(50) NOT NULL DEFAULT \'\'', $columnCount);
         }
 
         for ($schemaCount = 0; $schemaCount < $numberOfSchemas; $schemaCount++) {
-            $processes[] = $this->createDbProcess(sprintf("CREATE SCHEMA testschema_%d", $schemaCount));
+            $processes[] = $this->createDbProcess(sprintf('CREATE SCHEMA testschema_%d', $schemaCount));
             for ($tableCount = 0; $tableCount < $numberOfTablesPerSchema; $tableCount++) {
                 $processes[] = $this->createDbProcess(
                     sprintf(
-                        "CREATE TABLE testschema_%d.testtable_%d (ID SERIAL%s, PRIMARY KEY (ID))",
+                        'CREATE TABLE testschema_%d.testtable_%d (ID SERIAL%s, PRIMARY KEY (ID))',
                         $schemaCount,
                         $tableCount,
                         $columnsSql
@@ -854,10 +853,10 @@ class PgsqlTest extends BaseTest
         unset($config['parameters']['tables'][1]);
         unset($config['parameters']['tables'][2]['columns']);
         unset($config['parameters']['tables'][2]['table']);
-        $config['parameters']['tables'][2]['query'] = "SELECT %s FROM types";
+        $config['parameters']['tables'][2]['query'] = 'SELECT %s FROM types';
 
         $this->expectException(UserException::class);
-        $this->expectExceptionMessageRegExp("/^Error executing \[in.c-main.types\]\: SQLSTATE\[42601\]\:.*/");
+        $this->expectExceptionMessageRegExp('/^Error executing \[in.c-main.types\]\: SQLSTATE\[42601\]\:.*/');
 
         $app = $this->createApplication($config);
         $app->run();
@@ -873,11 +872,11 @@ class PgsqlTest extends BaseTest
 
     public function getPrivateKey(): string
     {
-        return file_get_contents('/root/.ssh/id_rsa');
+        return (string) file_get_contents('/root/.ssh/id_rsa');
     }
 
     public function getPublicKey(): string
     {
-        return file_get_contents('/root/.ssh/id_rsa.pub');
+        return (string) file_get_contents('/root/.ssh/id_rsa.pub');
     }
 }

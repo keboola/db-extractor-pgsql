@@ -36,7 +36,7 @@ class ApplicationTest extends BaseTest
         $process->mustRun();
 
         $this->assertEquals(0, $process->getExitCode());
-        $this->assertEquals("", $process->getErrorOutput());
+        $this->assertEquals('', $process->getErrorOutput());
     }
 
     public function testTestConnectionAction(): void
@@ -50,20 +50,20 @@ class ApplicationTest extends BaseTest
         $process->mustRun();
         $this->assertJson($process->getOutput());
         $this->assertEquals(0, $process->getExitCode());
-        $this->assertEquals("", $process->getErrorOutput());
+        $this->assertEquals('', $process->getErrorOutput());
     }
 
     public function testTrailingSemicolonQuery(): void
     {
         $config = $this->getConfig();
         unset($config['parameters']['tables'][0]['table']);
-        $config['parameters']['tables'][0]['query'] = "SELECT * FROM escaping;";
+        $config['parameters']['tables'][0]['query'] = 'SELECT * FROM escaping;';
         $this->replaceConfig($config, self::CONFIG_FORMAT_JSON);
         $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
         $process->mustRun();
         $this->assertEquals(0, $process->getExitCode());
-        $this->assertEquals("", $process->getErrorOutput());
+        $this->assertEquals('', $process->getErrorOutput());
     }
 
     /**
@@ -71,9 +71,9 @@ class ApplicationTest extends BaseTest
      */
     public function testUserError(): void
     {
-        $config = Yaml::parse(file_get_contents($this->dataDir . '/pgsql/external_config.yml'));
+        $config = Yaml::parse((string) file_get_contents($this->dataDir . '/pgsql/external_config.yml'));
         $config['parameters']['db'] = $this->dbConfig;
-        $config['parameters']['tables'][0]['query'] = "SELECT something, fake";
+        $config['parameters']['tables'][0]['query'] = 'SELECT something, fake';
         @unlink($this->dataDir . '/config.yml');
         file_put_contents($this->dataDir . '/config.yml', Yaml::dump($config));
 
@@ -81,8 +81,8 @@ class ApplicationTest extends BaseTest
         $process->setTimeout(300);
         $process->run();
 
-        $this->assertFalse(strstr($process->getErrorOutput(), "PGPASSWORD"));
-        $this->assertContains($config['parameters']['tables'][0]['name'], $process->getErrorOutput());
+        $this->assertFalse(strstr($process->getErrorOutput(), 'PGPASSWORD'));
+        $this->assertStringContainsString($config['parameters']['tables'][0]['name'], $process->getErrorOutput());
         $this->assertEquals(1, $process->getExitCode());
     }
 
@@ -98,12 +98,12 @@ class ApplicationTest extends BaseTest
         // queries with comments will break the () in the \copy command.
         // Failed \copy commands should fallback to using the old PDO method
         unset($config['parameters']['table']);
-        $config['parameters']['query'] = "
+        $config['parameters']['query'] = '
             select * from information_schema.TABLES as tables JOIN (
                 -- this is a comment --
                 select * from information_schema.columns
             ) as columns ON tables.table_schema = columns.table_schema AND tables.table_name = columns.table_name;
-        ";
+        ';
         $config['parameters']['outputTable'] = 'in.c-main.info_schema';
         $this->replaceConfig($config, self::CONFIG_FORMAT_JSON);
 
@@ -112,7 +112,7 @@ class ApplicationTest extends BaseTest
         $process->mustRun();
 
         // valid query should not error
-        $this->assertContains('Failed \copy command', $process->getOutput());
+        $this->assertStringContainsString('Failed \copy command', $process->getOutput());
         // assert that PDO attempt succeeded
         $this->assertEquals(0, $process->getExitCode());
         $this->assertTrue($outputCsvFile->isFile());
@@ -147,7 +147,10 @@ class ApplicationTest extends BaseTest
 
         $this->assertFileExists($outputStateFile);
         $this->assertFileExists($outputStateFile);
-        $this->assertEquals(['lastFetchedRow' => '32'], json_decode(file_get_contents($outputStateFile), true));
+        $this->assertEquals(['lastFetchedRow' => '32'], json_decode(
+            (string) file_get_contents($outputStateFile),
+            true
+        ));
 
         // add a couple rows
         $this->runProcesses([
@@ -163,7 +166,10 @@ class ApplicationTest extends BaseTest
         $process->mustRun();
 
         $this->assertEquals(0, $process->getExitCode());
-        $this->assertEquals(['lastFetchedRow' => '101'], json_decode(file_get_contents($outputStateFile), true));
+        $this->assertEquals(['lastFetchedRow' => '101'], json_decode(
+            (string) file_get_contents($outputStateFile),
+            true
+        ));
     }
 
     public function testGetTablesNonConfigRowConfig(): void
