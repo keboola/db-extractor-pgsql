@@ -22,7 +22,7 @@ class PgsqlTablesNode extends TablesNode
     {
         // @formatter:off
         $this
-            ->prototype('array')
+            ->ignoreExtraKeys(true)
             ->children()
                 ->booleanNode('listColumns')->end()
                 ->arrayNode('tablesToList')
