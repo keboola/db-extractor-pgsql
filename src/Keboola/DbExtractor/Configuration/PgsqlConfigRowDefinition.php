@@ -5,19 +5,11 @@ declare(strict_types=1);
 namespace Keboola\DbExtractor\Configuration;
 
 use Keboola\DbExtractorConfig\Configuration\ConfigRowDefinition;
-use Keboola\DbExtractorConfig\Configuration\NodeDefinition\DbNode;
-use Keboola\DbExtractorConfig\Configuration\NodeDefinition\SshNode;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 
 class PgsqlConfigRowDefinition extends ConfigRowDefinition
 {
-    public function __construct(
-        ?DbNode $dbNode = null,
-        ?SshNode $sshNode = null
-    ) {
-        parent::__construct($dbNode, $sshNode);
-    }
 
     protected function getParametersDefinition(): ArrayNodeDefinition
     {
