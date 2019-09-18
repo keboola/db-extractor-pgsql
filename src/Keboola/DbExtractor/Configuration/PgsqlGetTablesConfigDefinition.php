@@ -30,11 +30,11 @@ class PgsqlGetTablesConfigDefinition extends BaseConfigDefinition
     {
         $treeBuilder = new TreeBuilder('parameters');
 
-        /** @var ArrayNodeDefinition $parametersNode */
-        $parametersNode = $treeBuilder->root('parameters');
+        /** @var ArrayNodeDefinition $rootNode */
+        $rootNode = $treeBuilder->getRootNode();
 
         // @formatter:off
-        $parametersNode
+        $rootNode
             ->ignoreExtraKeys(true)
             ->children()
                 ->scalarNode('data_dir')
@@ -62,6 +62,6 @@ class PgsqlGetTablesConfigDefinition extends BaseConfigDefinition
             ->end();
         // @formatter:on
 
-        return $parametersNode;
+        return $rootNode;
     }
 }
