@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\DbExtractor;
 
-use Keboola\DbExtractor\Configuration\NodeDefinition\PgsqlTablesNode;
-use Keboola\DbExtractor\Configuration\PgsqlConfigDefinition;
+use Keboola\DbExtractor\Configuration\PgsqlGetTablesConfigDefinition;
 use Keboola\DbExtractor\Configuration\PgsqlConfigRowDefinition;
 use Keboola\DbExtractorConfig\Config;
 use Keboola\DbExtractorLogger\Logger;
@@ -30,7 +29,7 @@ class PgsqlApplication extends Application
         } else if ($this['action'] === 'getTables') {
             $this->config = new Config(
                 $config,
-                new PgsqlConfigDefinition(null, null, new PgsqlTablesNode())
+                new PgsqlGetTablesConfigDefinition(null, null)
             );
         } else {
             parent::buildConfig($config);
