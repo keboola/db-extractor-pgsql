@@ -10,8 +10,17 @@
         }
     ],
     "require": {
+        "php": "^7.3",
+        "ext-PDO": "*",
+        "keboola/csv": "^1.1",
         "keboola/db-extractor-common": "^10.0",
-        "keboola/db-extractor-config": "^1.0"
+        "keboola/db-extractor-config": "^1.0",
+        "keboola/db-extractor-logger": "^1.0",
+        "keboola/php-component": "^7.0",
+        "keboola/php-datatypes": "^4.2",
+        "keboola/php-utils": "^4.0",
+        "symfony/config": "^4.3",
+        "symfony/process": "^4.3"
     },
     "require-dev": {
         "keboola/coding-standard": "^8.0",
