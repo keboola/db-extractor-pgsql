@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Keboola\DbExtractor;
 
+use Keboola\DbExtractor\Configuration\PgsqlGetTablesConfigDefinition;
 use Keboola\DbExtractor\Configuration\PgsqlConfigRowDefinition;
-use Keboola\DbExtractor\Configuration\PgsqlGetTablesDefinition;
+use Keboola\DbExtractorConfig\Config;
+use Keboola\DbExtractorLogger\Logger;
 
 class PgsqlApplication extends Application
 {
@@ -15,12 +17,22 @@ class PgsqlApplication extends Application
         $config['parameters']['extractor_class'] = 'PgSQL';
 
         parent::__construct($config, ($logger) ? $logger : new Logger('ex-db-pgsql'), $state);
+    }
 
+    public function buildConfig(array $config): void
+    {
         if (!isset($this['parameters']['tables']) && $this['action'] === 'run') {
-            // use config definition that allows --forceFallback override
-            $this->setConfigDefinition(new PgsqlConfigRowDefinition());
+            $this->config = new Config(
+                $config,
+                new PgsqlConfigRowDefinition()
+            );
         } else if ($this['action'] === 'getTables') {
-            $this->setConfigDefinition(new PgsqlGetTablesDefinition());
+            $this->config = new Config(
+                $config,
+                new PgsqlGetTablesConfigDefinition(null, null)
+            );
+        } else {
+            parent::buildConfig($config);
         }
     }
 }
