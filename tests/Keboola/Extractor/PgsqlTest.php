@@ -9,12 +9,9 @@ use Keboola\DbExtractor\Exception\UserException;
 
 class PgsqlTest extends BaseTest
 {
-    /**
-     * @dataProvider configTypesProvider
-     */
-    public function testRunConfig(string $configFormat): void
+    public function testRunConfig(): void
     {
-        $config = $this->getConfig('pgsql', $configFormat);
+        $config = $this->getConfig('pgsql');
         $result = $this->createApplication($config)->run();
         $expectedCsvFile = new CsvFile($this->dataDir . '/pgsql/escaping.csv');
         $outputCsvFile = new CsvFile($this->dataDir . '/out/tables/' . $result['imported'][0]['outputTable'] . '.csv');
@@ -860,14 +857,6 @@ class PgsqlTest extends BaseTest
 
         $app = $this->createApplication($config);
         $app->run();
-    }
-
-    public function configTypesProvider(): array
-    {
-        return [
-            [self::CONFIG_FORMAT_YAML],
-            [self::CONFIG_FORMAT_JSON],
-        ];
     }
 
     public function getPrivateKey(): string

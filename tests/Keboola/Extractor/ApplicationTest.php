@@ -7,30 +7,22 @@ namespace Keboola\DbExtractor\Tests;
 use Keboola\Csv\CsvFile;
 use Symfony\Component\Filesystem;
 use Symfony\Component\Process\Process;
-use Symfony\Component\Yaml\Yaml;
 use Keboola\DbExtractor\Exception\UserException;
 
 class ApplicationTest extends BaseTest
 {
-    private function replaceConfig(array $config, string $format): void
+    private function replaceConfig(array $config): void
     {
         @unlink($this->dataDir . '/config.json');
-        @unlink($this->dataDir . '/config.yml');
-        if ($format === self::CONFIG_FORMAT_JSON) {
-            file_put_contents($this->dataDir . '/config.json', json_encode($config));
-        } else if ($format === self::CONFIG_FORMAT_YAML) {
-            file_put_contents($this->dataDir . '/config.yml', Yaml::dump($config));
-        } else {
-            throw new UserException("Invalid config format type [{$format}]");
-        }
+        file_put_contents($this->dataDir . '/config.json', json_encode($config));
     }
 
     /**
      * @dataProvider configProvider
      */
-    public function testRunAction(array $config, string $format): void
+    public function testRunAction(array $config): void
     {
-        $this->replaceConfig($config, $format);
+        $this->replaceConfig($config);
         $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
         $process->mustRun();
@@ -43,7 +35,7 @@ class ApplicationTest extends BaseTest
     {
         $config['action'] = 'testConnection';
         $config['parameters']['db'] = $this->getConfigRow(self::DRIVER)['parameters']['db'];
-        $this->replaceConfig($config, self::CONFIG_FORMAT_JSON);
+        $this->replaceConfig($config);
 
         $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
@@ -58,7 +50,7 @@ class ApplicationTest extends BaseTest
         $config = $this->getConfig();
         unset($config['parameters']['tables'][0]['table']);
         $config['parameters']['tables'][0]['query'] = 'SELECT * FROM escaping;';
-        $this->replaceConfig($config, self::CONFIG_FORMAT_JSON);
+        $this->replaceConfig($config);
         $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
         $process->mustRun();
@@ -66,16 +58,12 @@ class ApplicationTest extends BaseTest
         $this->assertEquals('', $process->getErrorOutput());
     }
 
-    /**
-     * @dataProvider configProvider
-     */
     public function testUserError(): void
     {
-        $config = Yaml::parse((string) file_get_contents($this->dataDir . '/pgsql/external_config.yml'));
+        $config = json_decode((string) file_get_contents($this->dataDir . '/pgsql/external_config.json'), true);
         $config['parameters']['db'] = $this->dbConfig;
         $config['parameters']['tables'][0]['query'] = 'SELECT something, fake';
-        @unlink($this->dataDir . '/config.yml');
-        file_put_contents($this->dataDir . '/config.yml', Yaml::dump($config));
+        $this->replaceConfig($config);
 
         $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
@@ -105,7 +93,7 @@ class ApplicationTest extends BaseTest
             ) as columns ON tables.table_schema = columns.table_schema AND tables.table_name = columns.table_name;
         ';
         $config['parameters']['outputTable'] = 'in.c-main.info_schema';
-        $this->replaceConfig($config, self::CONFIG_FORMAT_JSON);
+        $this->replaceConfig($config);
 
         $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
@@ -139,7 +127,7 @@ class ApplicationTest extends BaseTest
         $config['parameters']['incrementalFetchingColumn'] = 'integer';
         $config['parameters']['outputTable'] = 'in.c-main.types';
 
-        $this->replaceConfig($config, self::CONFIG_FORMAT_JSON);
+        $this->replaceConfig($config);
 
         $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
@@ -174,9 +162,9 @@ class ApplicationTest extends BaseTest
 
     public function testGetTablesNonConfigRowConfig(): void
     {
-        $config = $this->getConfig(self::DRIVER, self::CONFIG_FORMAT_JSON);
+        $config = $this->getConfig(self::DRIVER);
         $config['action'] = 'getTables';
-        $this->replaceConfig($config, self::CONFIG_FORMAT_JSON);
+        $this->replaceConfig($config);
 
         $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
