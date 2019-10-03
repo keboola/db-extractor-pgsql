@@ -73,7 +73,7 @@ class PgSQL extends Extractor
             $port,
             $dbParams['database']
         );
-
+        $this->logger->info(sprintf('Connecting to %s', $dsn));
         $pdo = new PDO($dsn, $dbParams['user'], $dbParams['#password'], $options);
         $pdo->exec("SET NAMES 'UTF8';");
 

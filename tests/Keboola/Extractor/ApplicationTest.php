@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Keboola\DbExtractor\Tests;
 
 use Keboola\Csv\CsvFile;
+use Keboola\DbExtractor\Test\ExtractorTest;
 use Symfony\Component\Filesystem;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Yaml\Yaml;
@@ -37,6 +38,34 @@ class ApplicationTest extends BaseTest
 
         $this->assertEquals(0, $process->getExitCode());
         $this->assertEquals('', $process->getErrorOutput());
+    }
+
+    public function testRunActionSshTunnel(): void
+    {
+        $config = $this->getConfig(self::DRIVER);
+        $config['parameters']['db']['ssh'] = [
+            'enabled' => true,
+            'keys' => [
+                '#private' => $this->getPrivateKey(),
+                'public' => $this->getPublicKey(),
+            ],
+            'user' => 'root',
+            'sshHost' => 'sshproxy',
+            'remoteHost' => self::DRIVER,
+            'remotePort' => '1433',
+            'localPort' => '1234',
+        ];
+        $this->replaceConfig($config, ExtractorTest::CONFIG_FORMAT_JSON);
+
+        $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
+        $process->mustRun();
+
+        $this->assertEquals(0, $process->getExitCode());
+        $this->assertStringContainsString(
+            'Creating SSH tunnel to \'sshproxy\' on local port \'1234\'',
+            $process->getOutput()
+        );
+        $this->assertStringContainsString('host=127.0.0.1;port=1234', $process->getOutput());
     }
 
     public function testTestConnectionAction(): void
