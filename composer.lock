@@ -187,16 +187,16 @@
         },
         {
             "name": "keboola/db-extractor-ssh-tunnel",
-            "version": "1.1",
+            "version": "1.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/db-extractor-ssh-tunnel.git",
-                "reference": "98b6c296f2dc4c71f38dccc090f70ad378c52684"
+                "reference": "741dabdf3be5aa7dfc0cf87b1e17d70d5cfd6e88"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/db-extractor-ssh-tunnel/zipball/98b6c296f2dc4c71f38dccc090f70ad378c52684",
-                "reference": "98b6c296f2dc4c71f38dccc090f70ad378c52684",
+                "url": "https://api.github.com/repos/keboola/db-extractor-ssh-tunnel/zipball/741dabdf3be5aa7dfc0cf87b1e17d70d5cfd6e88",
+                "reference": "741dabdf3be5aa7dfc0cf87b1e17d70d5cfd6e88",
                 "shasum": ""
             },
             "require": {
@@ -221,7 +221,7 @@
                 "MIT"
             ],
             "description": "Create SSH tunnel for DB Extractors",
-            "time": "2019-08-08T10:28:43+00:00"
+            "time": "2019-10-03T14:15:53+00:00"
         },
         {
             "name": "keboola/php-component",
