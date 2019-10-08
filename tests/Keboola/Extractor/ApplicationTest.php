@@ -47,7 +47,7 @@ class ApplicationTest extends BaseTest
             'remotePort' => '1433',
             'localPort' => '1234',
         ];
-        $this->replaceConfig($config, ExtractorTest::CONFIG_FORMAT_JSON);
+        $this->replaceConfig($config);
 
         $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
         $process->mustRun();
