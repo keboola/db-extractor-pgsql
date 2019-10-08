@@ -5,22 +5,14 @@ declare(strict_types=1);
 namespace Keboola\DbExtractor\Tests;
 
 use Symfony\Component\Process\Process;
-use Symfony\Component\Yaml\Yaml;
 use Keboola\DbExtractor\Exception\UserException;
 
 class GetTablesTest extends BaseTest
 {
-    private function replaceConfig(array $config, string $format): void
+    private function replaceConfig(array $config): void
     {
         @unlink($this->dataDir . '/config.json');
-        @unlink($this->dataDir . '/config.yml');
-        if ($format === self::CONFIG_FORMAT_JSON) {
-            file_put_contents($this->dataDir . '/config.json', json_encode($config));
-        } else if ($format === self::CONFIG_FORMAT_YAML) {
-            file_put_contents($this->dataDir . '/config.yml', Yaml::dump($config));
-        } else {
-            throw new UserException("Invalid config format type [{$format}]");
-        }
+        file_put_contents($this->dataDir . '/config.json', json_encode($config));
     }
 
     public function testGetTables(): void
@@ -29,7 +21,7 @@ class GetTablesTest extends BaseTest
 
         unset($config['parameters']['tables']);
         $config['action'] = 'getTables';
-        $this->replaceConfig($config, self::CONFIG_FORMAT_JSON);
+        $this->replaceConfig($config);
 
         $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
@@ -50,7 +42,7 @@ class GetTablesTest extends BaseTest
         $config['parameters']['tableListFilter'] = [
             'listColumns' => false,
         ];
-        $this->replaceConfig($config, self::CONFIG_FORMAT_JSON);
+        $this->replaceConfig($config);
 
         $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
@@ -74,7 +66,7 @@ class GetTablesTest extends BaseTest
                 'schema' => 'public',
             ]],
         ];
-        $this->replaceConfig($config, self::CONFIG_FORMAT_JSON);
+        $this->replaceConfig($config);
 
         $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
@@ -100,7 +92,7 @@ class GetTablesTest extends BaseTest
                 'schema' => 'public',
             ]],
         ];
-        $this->replaceConfig($config, self::CONFIG_FORMAT_JSON);
+        $this->replaceConfig($config);
 
         $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);

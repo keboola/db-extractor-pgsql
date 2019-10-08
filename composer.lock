@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "cf71ff6536a7e4bf3221ae1b22ae9237",
+    "content-hash": "bfeb3a3f158ac025dff5616ec7e8f96a",
     "packages": [
         {
             "name": "keboola/csv",
@@ -54,23 +54,23 @@
         },
         {
             "name": "keboola/db-extractor-common",
-            "version": "10.0.1",
+            "version": "11.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/db-extractor-common.git",
-                "reference": "885cddf34a1cd8f4255ab4aeef69ca67119fa823"
+                "reference": "bcf61dfcb62281aa8ab5ba1ba6bfbbe08f375267"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/db-extractor-common/zipball/885cddf34a1cd8f4255ab4aeef69ca67119fa823",
-                "reference": "885cddf34a1cd8f4255ab4aeef69ca67119fa823",
+                "url": "https://api.github.com/repos/keboola/db-extractor-common/zipball/bcf61dfcb62281aa8ab5ba1ba6bfbbe08f375267",
+                "reference": "bcf61dfcb62281aa8ab5ba1ba6bfbbe08f375267",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
                 "ext-pdo": "*",
                 "keboola/csv": "^1.1",
-                "keboola/db-extractor-config": "^1.0",
+                "keboola/db-extractor-config": "^1.1",
                 "keboola/db-extractor-logger": "^1.0",
                 "keboola/db-extractor-ssh-tunnel": "^1.1",
                 "keboola/php-datatypes": "^4.0",
@@ -80,8 +80,7 @@
                 "php": ">=7.1",
                 "pimple/pimple": "^3.0",
                 "symfony/config": "^3.0||^4.3",
-                "symfony/serializer": "^3.1||^4.3",
-                "symfony/yaml": "^3.0||^4.3"
+                "symfony/serializer": "^3.1||^4.3"
             },
             "require-dev": {
                 "aws/aws-sdk-php": "^3.107",
@@ -110,26 +109,25 @@
                 }
             ],
             "description": "Common library from Keboola Database Extractors",
-            "time": "2019-09-19T13:14:26+00:00"
+            "time": "2019-10-01T06:01:44+00:00"
         },
         {
             "name": "keboola/db-extractor-config",
-            "version": "1.0.0",
+            "version": "1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/db-extractor-config.git",
-                "reference": "041742b0c9f57a4fcd05305f5d0d6f3d12f8e9fb"
+                "reference": "58ecc96e387ede75b31bf90ce7c0abcd5f49e610"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/db-extractor-config/zipball/041742b0c9f57a4fcd05305f5d0d6f3d12f8e9fb",
-                "reference": "041742b0c9f57a4fcd05305f5d0d6f3d12f8e9fb",
+                "url": "https://api.github.com/repos/keboola/db-extractor-config/zipball/58ecc96e387ede75b31bf90ce7c0abcd5f49e610",
+                "reference": "58ecc96e387ede75b31bf90ce7c0abcd5f49e610",
                 "shasum": ""
             },
             "require": {
                 "keboola/php-component": "^7.0",
-                "symfony/config": "^4.2",
-                "symfony/yaml": "^4.2"
+                "symfony/config": "^4.2"
             },
             "require-dev": {
                 "keboola/coding-standard": "^8.0",
@@ -147,7 +145,7 @@
                 "MIT"
             ],
             "description": "Config definition for database extractor",
-            "time": "2019-08-30T14:12:37+00:00"
+            "time": "2019-09-20T12:49:58+00:00"
         },
         {
             "name": "keboola/db-extractor-logger",
@@ -1216,65 +1214,6 @@
             "description": "Symfony Serializer Component",
             "homepage": "https://symfony.com",
             "time": "2019-08-26T08:55:16+00:00"
-        },
-        {
-            "name": "symfony/yaml",
-            "version": "v4.3.4",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/symfony/yaml.git",
-                "reference": "5a0b7c32dc3ec56fd4abae8a4a71b0cf05013686"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/symfony/yaml/zipball/5a0b7c32dc3ec56fd4abae8a4a71b0cf05013686",
-                "reference": "5a0b7c32dc3ec56fd4abae8a4a71b0cf05013686",
-                "shasum": ""
-            },
-            "require": {
-                "php": "^7.1.3",
-                "symfony/polyfill-ctype": "~1.8"
-            },
-            "conflict": {
-                "symfony/console": "<3.4"
-            },
-            "require-dev": {
-                "symfony/console": "~3.4|~4.0"
-            },
-            "suggest": {
-                "symfony/console": "For validating YAML files using the lint command"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "4.3-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Symfony\\Component\\Yaml\\": ""
-                },
-                "exclude-from-classmap": [
-                    "/Tests/"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Fabien Potencier",
-                    "email": "fabien@symfony.com"
-                },
-                {
-                    "name": "Symfony Community",
-                    "homepage": "https://symfony.com/contributors"
-                }
-            ],
-            "description": "Symfony Yaml Component",
-            "homepage": "https://symfony.com",
-            "time": "2019-08-20T14:27:59+00:00"
         }
     ],
     "packages-dev": [

@@ -9,7 +9,6 @@ use Keboola\DbExtractorLogger\Logger;
 use Monolog\Handler\NullHandler;
 use Symfony\Component\Serializer\Encoder\JsonDecode;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
-use Symfony\Component\Yaml\Yaml;
 
 require_once(__DIR__ . '/vendor/autoload.php');
 
@@ -25,11 +24,7 @@ try {
 
     $jsonDecode = new JsonDecode(true);
 
-    if (file_exists($arguments['data'] . '/config.yml')) {
-        $config = Yaml::parse(
-            file_get_contents($arguments['data'] . '/config.yml')
-        );
-    } else if (file_exists($arguments['data'] . '/config.json')) {
+    if (file_exists($arguments['data'] . '/config.json')) {
         $config = $jsonDecode->decode(
             file_get_contents($arguments['data'] . '/config.json'),
             JsonEncoder::FORMAT

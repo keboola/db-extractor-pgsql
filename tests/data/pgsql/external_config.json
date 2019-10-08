@@ -1,0 +1,15 @@
+{
+  "parameters": {
+    "tables": [
+        {
+            "id": 0,
+            "name": "info_schema",
+            "query": "SELECT * FROM information_schema.tables limit 1",
+            "outputTable": "in.c-main.info_schema",
+            "incremental": false,
+            "primaryKey": [],
+            "enabled": true
+        }
+    ]
+  }
+}

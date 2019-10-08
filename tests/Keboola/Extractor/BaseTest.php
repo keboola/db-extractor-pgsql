@@ -152,9 +152,9 @@ abstract class BaseTest extends ExtractorTest
         return $config;
     }
 
-    public function getConfig(string $driver = self::DRIVER, string $format = parent::CONFIG_FORMAT_YAML): array
+    public function getConfig(string $driver = self::DRIVER): array
     {
-        $config = parent::getConfig($driver, $format);
+        $config = parent::getConfig($driver);
         $config['parameters']['extractor_class'] = 'PgSQL';
         return $config;
     }
@@ -173,18 +173,8 @@ abstract class BaseTest extends ExtractorTest
     {
         $this->dataDir = __DIR__ . '/../../data';
         return [
-            [
-                $this->getConfig(self::DRIVER, ExtractorTest::CONFIG_FORMAT_YAML),
-                ExtractorTest::CONFIG_FORMAT_YAML,
-            ],
-            [
-                $this->getConfig(self::DRIVER, ExtractorTest::CONFIG_FORMAT_JSON),
-                ExtractorTest::CONFIG_FORMAT_JSON,
-            ],
-            [
-                $this->getConfigRow(self::DRIVER),
-                ExtractorTest::CONFIG_FORMAT_JSON,
-            ],
+            [$this->getConfig(self::DRIVER)],
+            [$this->getConfigRow(self::DRIVER)],
         ];
     }
 }
