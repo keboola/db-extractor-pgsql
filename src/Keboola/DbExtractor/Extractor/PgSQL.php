@@ -437,7 +437,7 @@ EOT;
       NOT a.attnotnull AS nullable,
       i.indisprimary AS primary_key,
       a.attnum AS ordinal_position,
-      d.adsrc AS default_value
+      pg_get_expr(d.adbin::pg_node_tree, d.adrelid) AS default_value
     FROM pg_attribute a
     JOIN pg_class c ON a.attrelid = c.oid AND c.reltype != 0 --indexes have 0 reltype, we don't want them here
     INNER JOIN pg_namespace ns ON ns.oid = c.relnamespace --schemas
