@@ -1,7 +1,7 @@
 {
     "name": "keboola/db-extractor-pgsql",
     "license": "MIT",
-    "type": "Application",
+    "type": "project",
     "description": "Reads data from Postgres databases for keboola connection",
     "authors": [
         {
