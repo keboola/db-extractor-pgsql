@@ -40,7 +40,7 @@ services:
       - sshproxy
 
   pgsql:
-    image: postgres:11.5
+    image: postgres:latest
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=some password
