@@ -427,6 +427,12 @@ EOT;
             $tables = $this->tablesToList;
         }
 
+        $version = $this->getDbServerVersion();
+        $defaultValueStatement = 'pg_get_expr(d.adbin::pg_node_tree, d.adrelid)';
+        if ($version < 120000) {
+            $defaultValueStatement = 'd.adsrc';
+        }
+
         $sql = <<<EOT
     SELECT 
       ns.nspname AS table_schema,
@@ -437,7 +443,7 @@ EOT;
       NOT a.attnotnull AS nullable,
       i.indisprimary AS primary_key,
       a.attnum AS ordinal_position,
-      pg_get_expr(d.adbin::pg_node_tree, d.adrelid) AS default_value
+      $defaultValueStatement AS default_value
     FROM pg_attribute a
     JOIN pg_class c ON a.attrelid = c.oid AND c.reltype != 0 --indexes have 0 reltype, we don't want them here
     INNER JOIN pg_namespace ns ON ns.oid = c.relnamespace --schemas
@@ -451,6 +457,7 @@ EOT;
       AND ns.nspname NOT LIKE 'pg_toast%'
       AND ns.nspname NOT LIKE 'pg_temp%'
 EOT;
+
         if (!is_null($tables) && count($tables) > 0) {
             $sql .= sprintf(
                 ' AND c.relname IN (%s) AND ns.nspname IN (%s)',
@@ -525,6 +532,17 @@ EOT;
         ksort($tableDefs);
         return array_values($tableDefs);
     }
+
+    private function getDbServerVersion(): int
+    {
+        $sqlGetVersion = 'SHOW server_version_num;';
+        $version = $this->runRetriableQuery($sqlGetVersion);
+        $this->logger->info(
+            sprintf('Found database server version: %s', $version[0]['server_version_num'])
+        );
+        return (int) $version[0]['server_version_num'];
+    }
+
     private function tableTypeFromCode(string $code): ?string
     {
         switch ($code) {
