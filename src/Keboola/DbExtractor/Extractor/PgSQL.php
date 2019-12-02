@@ -427,9 +427,7 @@ EOT;
             $tables = $this->tablesToList;
         }
 
-        $sqlGetVersion = 'SHOW server_version_num;';
-        $version = $this->runRetriableQuery($sqlGetVersion);
-        $version = $version[0]['server_version_num'];
+        $version = $this->getDbServerVersion();
         $defaultValueStatement = 'pg_get_expr(d.adbin::pg_node_tree, d.adrelid)';
         if ($version < 120000) {
             $defaultValueStatement = 'd.adsrc';
@@ -534,6 +532,17 @@ EOT;
         ksort($tableDefs);
         return array_values($tableDefs);
     }
+
+    private function getDbServerVersion(): int
+    {
+        $sqlGetVersion = 'SHOW server_version_num;';
+        $version = $this->runRetriableQuery($sqlGetVersion);
+        $this->logger->info(
+            sprintf('Found database server version: %s', $version[0]['server_version_num'])
+        );
+        return $version[0]['server_version_num'];
+    }
+
     private function tableTypeFromCode(string $code): ?string
     {
         switch ($code) {
