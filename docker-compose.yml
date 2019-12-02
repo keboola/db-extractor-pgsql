@@ -19,6 +19,63 @@ services:
       - pgsql
       - sshproxy
 
+  app9:
+    build: .
+    image: keboola/ex-db-pgsql9
+    command: composer ci
+    environment:
+      - EXTERNAL_PG_HOST
+      - EXTERNAL_PG_PORT
+      - EXTERNAL_PG_DATABASE
+      - EXTERNAL_PG_USER
+      - EXTERNAL_PG_PASSWORD
+      - PGSQL_DB_HOST=pgsql9
+      - PGSQL_DB_PORT=5432
+      - PGSQL_DB_DATABASE=postgres
+      - PGSQL_DB_USER=postgres
+      - PGSQL_DB_PASSWORD=some password
+    links:
+      - pgsql9
+      - sshproxy
+
+  app10:
+    build: .
+    image: keboola/ex-db-pgsql10
+    command: composer ci
+    environment:
+      - EXTERNAL_PG_HOST
+      - EXTERNAL_PG_PORT
+      - EXTERNAL_PG_DATABASE
+      - EXTERNAL_PG_USER
+      - EXTERNAL_PG_PASSWORD
+      - PGSQL_DB_HOST=pgsql10
+      - PGSQL_DB_PORT=5432
+      - PGSQL_DB_DATABASE=postgres
+      - PGSQL_DB_USER=postgres
+      - PGSQL_DB_PASSWORD=some password
+    links:
+      - pgsql10
+      - sshproxy
+
+  app11:
+    build: .
+    image: keboola/ex-db-pgsql11
+    command: composer ci
+    environment:
+      - EXTERNAL_PG_HOST
+      - EXTERNAL_PG_PORT
+      - EXTERNAL_PG_DATABASE
+      - EXTERNAL_PG_USER
+      - EXTERNAL_PG_PASSWORD
+      - PGSQL_DB_HOST=pgsql11
+      - PGSQL_DB_PORT=5432
+      - PGSQL_DB_DATABASE=postgres
+      - PGSQL_DB_USER=postgres
+      - PGSQL_DB_PASSWORD=some password
+    links:
+      - pgsql11
+      - sshproxy
+
   dev:
     image: keboola/ex-db-pgsql
     volumes:
@@ -39,11 +96,23 @@ services:
       - pgsql
       - sshproxy
 
-  pgsql:
+  pgsql: &mainPgsql
     image: postgres:latest
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=some password
+
+  pgsql9:
+    <<: *mainPgsql
+    image: postgres:9
+
+  pgsql10:
+    <<: *mainPgsql
+    image: postgres:10
+
+  pgsql11:
+    <<: *mainPgsql
+    image: postgres:11
 
   sshproxy:
     image: db-ex-pgsql-sshproxy

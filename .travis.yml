@@ -9,6 +9,9 @@ install:
   - docker-compose -v
   - docker-compose build
   - docker-compose run --rm app
+  - docker-compose run --rm app9
+  - docker-compose run --rm app10
+  - docker-compose run --rm app11
 
 script:
   - docker pull quay.io/keboola/developer-portal-cli-v2:latest
