@@ -540,7 +540,7 @@ EOT;
         $this->logger->info(
             sprintf('Found database server version: %s', $version[0]['server_version_num'])
         );
-        return $version[0]['server_version_num'];
+        return (int) $version[0]['server_version_num'];
     }
 
     private function tableTypeFromCode(string $code): ?string
