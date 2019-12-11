@@ -7,6 +7,8 @@ namespace Keboola\DbExtractor;
 use Keboola\DbExtractor\Configuration\PgsqlGetTablesConfigDefinition;
 use Keboola\DbExtractor\Configuration\PgsqlConfigRowDefinition;
 use Keboola\DbExtractorConfig\Config;
+use Keboola\DbExtractorConfig\Configuration\ActionConfigRowDefinition;
+use Keboola\DbExtractorConfig\Configuration\ConfigDefinition;
 use Keboola\DbExtractorLogger\Logger;
 
 class PgsqlApplication extends Application
@@ -21,18 +23,16 @@ class PgsqlApplication extends Application
 
     public function buildConfig(array $config): void
     {
-        if (!isset($this['parameters']['tables']) && $this['action'] === 'run') {
-            $this->config = new Config(
-                $config,
-                new PgsqlConfigRowDefinition()
-            );
-        } else if ($this['action'] === 'getTables') {
-            $this->config = new Config(
-                $config,
-                new PgsqlGetTablesConfigDefinition(null, null)
-            );
+        if ($this['action'] === 'getTables') {
+            $this->config = new Config($config, new PgsqlGetTablesConfigDefinition());
+        } elseif ($this->isRowConfiguration($config)) {
+            if ($this['action'] === 'run') {
+                $this->config = new Config($config, new PgsqlConfigRowDefinition());
+            } else {
+                $this->config = new Config($config, new ActionConfigRowDefinition());
+            }
         } else {
-            parent::buildConfig($config);
+            $this->config = new Config($config, new ConfigDefinition());
         }
     }
 }
