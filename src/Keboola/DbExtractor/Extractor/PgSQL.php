@@ -661,6 +661,23 @@ EOT;
         }
     }
 
+    public function getMaxOfIncrementalFetchingColumn(array $table): ?string
+    {
+        $sql = 'SELECT MAX(%s) as %s FROM %s.%s';
+        $fullsql = sprintf(
+            $sql,
+            $this->quote($this->incrementalFetching['column']),
+            $this->quote($this->incrementalFetching['column']),
+            $this->quote($table['schema']),
+            $this->quote($table['tableName'])
+        );
+        $result = $this->runRetriableQuery($fullsql);
+        if (count($result) > 0) {
+            return $result[0][$this->incrementalFetching['column']];
+        }
+        return null;
+    }
+
     private function runRetriableQuery(string $query, array $values = []): array
     {
         $retryProxy = new DbRetryProxy($this->logger);
