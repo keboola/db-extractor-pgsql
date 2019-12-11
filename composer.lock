@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "bfeb3a3f158ac025dff5616ec7e8f96a",
+    "content-hash": "a1842dfb7cacdd4e2c1f6e1b53a55425",
     "packages": [
         {
             "name": "keboola/csv",
@@ -54,16 +54,16 @@
         },
         {
             "name": "keboola/db-extractor-common",
-            "version": "11.0.0",
+            "version": "12.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/db-extractor-common.git",
-                "reference": "bcf61dfcb62281aa8ab5ba1ba6bfbbe08f375267"
+                "reference": "2075e277c068f79412b28d2977229b57585f4592"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/db-extractor-common/zipball/bcf61dfcb62281aa8ab5ba1ba6bfbbe08f375267",
-                "reference": "bcf61dfcb62281aa8ab5ba1ba6bfbbe08f375267",
+                "url": "https://api.github.com/repos/keboola/db-extractor-common/zipball/2075e277c068f79412b28d2977229b57585f4592",
+                "reference": "2075e277c068f79412b28d2977229b57585f4592",
                 "shasum": ""
             },
             "require": {
@@ -109,7 +109,7 @@
                 }
             ],
             "description": "Common library from Keboola Database Extractors",
-            "time": "2019-10-01T06:01:44+00:00"
+            "time": "2019-12-10T14:27:51+00:00"
         },
         {
             "name": "keboola/db-extractor-config",
@@ -1704,6 +1704,7 @@
                 "MIT"
             ],
             "description": "PHPStan Phar distribution",
+            "abandoned": "phpstan/phpstan",
             "time": "2019-09-17T11:49:39+00:00"
         },
         {
