@@ -16,17 +16,14 @@ abstract class BaseTest extends ExtractorTest
 {
     public const DRIVER = 'pgsql';
 
-    /** @var Application */
-    protected $app;
+    protected Application $app;
 
-    /** @var  string */
-    protected $rootPath;
+    protected string $rootPath;
 
     /** @var string  */
     protected $dataDir = __DIR__ . '/../../data';
 
-    /** @var  array */
-    protected $dbConfig;
+    protected array $dbConfig;
 
     protected function createDbProcess(string $query): Process
     {

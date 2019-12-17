@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "14ff926c3ce88b0248592f19acf52080",
+    "content-hash": "2f869a1c4e795647781e2ffa244d4743",
     "packages": [
         {
             "name": "keboola/csv",
@@ -2844,7 +2844,7 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": "^7.3",
+        "php": "^7.4",
         "ext-pdo": "*"
     },
     "platform-dev": []
