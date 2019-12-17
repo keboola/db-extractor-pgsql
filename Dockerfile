@@ -1,4 +1,4 @@
-FROM db-ex-pgsql-sshproxy AS sshproxy
+FROM keboola/db-component-ssh-proxy:latest AS sshproxy
 FROM php:7.4-cli
 
 ENV DEBIAN_FRONTEND noninteractive
