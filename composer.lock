@@ -4,8 +4,45 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2f869a1c4e795647781e2ffa244d4743",
+    "content-hash": "286a26c27b340800f6e0717bea25c595",
     "packages": [
+        {
+            "name": "keboola/common-exceptions",
+            "version": "1.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/keboola/common-exceptions.git",
+                "reference": "44bff6e6d1f8edfb81af7662bc231566dcecb241"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/keboola/common-exceptions/zipball/44bff6e6d1f8edfb81af7662bc231566dcecb241",
+                "reference": "44bff6e6d1f8edfb81af7662bc231566dcecb241",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.1"
+            },
+            "require-dev": {
+                "jakub-onderka/php-parallel-lint": "^1.0",
+                "keboola/coding-standard": ">=7.0.2",
+                "keboola/php-temp": "^1.0",
+                "phpstan/phpstan-shim": "^0.10.6",
+                "phpunit/phpunit": "^7.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Keboola\\CommonExceptions\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Common exceptions shared between different applications",
+            "time": "2019-11-21T11:09:10+00:00"
+        },
         {
             "name": "keboola/csv",
             "version": "1.4.2",
@@ -222,6 +259,48 @@
             "time": "2019-10-03T14:15:53+00:00"
         },
         {
+            "name": "keboola/db-extractor-table-format",
+            "version": "1.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/keboola/db-extractor-table-format.git",
+                "reference": "a6d51af4261867233e8109691a5c14b37d461a3f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/keboola/db-extractor-table-format/zipball/a6d51af4261867233e8109691a5c14b37d461a3f",
+                "reference": "a6d51af4261867233e8109691a5c14b37d461a3f",
+                "shasum": ""
+            },
+            "require": {
+                "keboola/common-exceptions": "^1.0",
+                "keboola/php-utils": "^4.1"
+            },
+            "require-dev": {
+                "keboola/coding-standard": "^9.0",
+                "phpstan/phpstan": "^0.12.2",
+                "phpunit/phpunit": "^8.5"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Keboola\\": "src/Keboola/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Keboola",
+                    "email": "devel@keboola.com"
+                }
+            ],
+            "description": "PHP class for formating table result",
+            "time": "2019-12-17T09:57:25+00:00"
+        },
+        {
             "name": "keboola/php-component",
             "version": "7.0.2",
             "source": {
@@ -313,16 +392,16 @@
         },
         {
             "name": "keboola/php-utils",
-            "version": "4.0",
+            "version": "4.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/php-utils.git",
-                "reference": "59b15ad7ec5a9a774ab31bef7939eddad016c3aa"
+                "reference": "f5be83a50b5c4858f5698747e8a795048a89c382"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/php-utils/zipball/59b15ad7ec5a9a774ab31bef7939eddad016c3aa",
-                "reference": "59b15ad7ec5a9a774ab31bef7939eddad016c3aa",
+                "url": "https://api.github.com/repos/keboola/php-utils/zipball/f5be83a50b5c4858f5698747e8a795048a89c382",
+                "reference": "f5be83a50b5c4858f5698747e8a795048a89c382",
                 "shasum": ""
             },
             "require": {
@@ -355,7 +434,8 @@
                     "src/Keboola/Utils/isEmptyObject.php",
                     "src/Keboola/Utils/stripInvalidUtf16.php",
                     "src/Keboola/Utils/toAscii.php",
-                    "src/Keboola/Utils/sanitizeColumnName.php"
+                    "src/Keboola/Utils/sanitizeColumnName.php",
+                    "src/Keboola/Utils/formatBytes.php"
                 ],
                 "psr-0": {
                     "Keboola\\Utils": "src/"
@@ -375,7 +455,7 @@
             "keywords": [
                 "utility"
             ],
-            "time": "2019-09-02T10:42:41+00:00"
+            "time": "2019-10-04T20:55:45+00:00"
         },
         {
             "name": "keboola/retry",
