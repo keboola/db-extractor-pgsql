@@ -115,11 +115,7 @@ services:
     image: postgres:11
 
   sshproxy:
-    image: db-ex-pgsql-sshproxy
-    build: ./tests/env/sshproxy
-    volumes:
-        - ./tests/env/sshproxy:/code
-    working_dir: /code
+    image: keboola/db-component-ssh-proxy:latest
     ports:
       - "2222:22"
     links:
