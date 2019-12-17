@@ -10,8 +10,9 @@ use Keboola\DbExtractor\DbRetryProxy;
 use Keboola\DbExtractor\Exception\ApplicationException;
 use Keboola\DbExtractor\Exception\DeadConnectionException;
 use Keboola\DbExtractor\Exception\UserException;
+use Keboola\DbExtractor\TableResultFormat\Table;
+use Keboola\DbExtractor\TableResultFormat\TableColumn;
 use Keboola\DbExtractorLogger\Logger;
-use Keboola\Utils;
 use Symfony\Component\Process\Process;
 use PDO;
 use PDOException;
@@ -491,42 +492,53 @@ EOT;
         foreach ($resultArray as $column) {
             $curTable = $column['table_schema'] . '.' . $column['table_name'];
             if (!array_key_exists($curTable, $tableDefs)) {
-                $tableDefs[$curTable] = [
-                    'name' => $column['table_name'],
-                    'schema' => $column['table_schema'] ?? null,
-                    'type' => $this->tableTypeFromCode($column['table_type']),
-                    'columns' => [],
-                ];
+                $table = new Table();
+                $table
+                    ->setName((string) $column['table_name'])
+                    ->setSchema($column['table_schema'] ?? '')
+                    ->setType((string) $this->tableTypeFromCode($column['table_type']));
+
+                $tableDefs[$curTable] = $table;
+            } else {
+                $table = $tableDefs[$curTable];
             }
 
-            $ret = preg_match('/(.*)\((\d+|\d+,\d+)\)/', $column['data_type_with_length'], $parsedType);
-
-            $data_type = $column['data_type_with_length'];
+            $dataType = $column['data_type_with_length'];
+            $ret = preg_match('/(.*)\((\d+|\d+,\d+)\)/', $dataType, $parsedType);
             $length = null;
             if ($ret === 1) {
-                $data_type = isset($parsedType[1]) ? $parsedType[1] : null;
+                $dataType = isset($parsedType[1]) ? $parsedType[1] : null;
                 $length = isset($parsedType[2]) ? $parsedType[2] : null;
             }
 
             $default = $column['default_value'];
-            if ($data_type === 'character varying' && $default !== null) {
+            if ($dataType === 'character varying' && $default !== null) {
                 $default = str_replace("'", '', explode('::', $column['default_value'])[0]);
             }
-            $tableDefs[$curTable]['columns'][$column['ordinal_position'] - 1] = [
-                'name' => $column['column_name'],
-                'sanitizedName' => Utils\sanitizeColumnName($column['column_name']),
-                'type' => $data_type,
-                'primaryKey' => $column['primary_key'] ?: false,
-                'length' => $length,
-                'nullable' => $column['nullable'],
-                'default' => $default,
-                'ordinalPosition' => $column['ordinal_position'],
-            ];
+            $tableColumn = new TableColumn();
+            $tableColumn
+                ->setName($column['column_name'])
+                ->setType($dataType)
+                ->setPrimaryKey($column['primary_key'] ?: false)
+                ->setLength($length)
+                ->setNullable($column['nullable'])
+                ->setDefault($default)
+                ->setOrdinalPosition($column['ordinal_position']);
 
-            // make sure columns are sorted by index which is ordinal_position - 1
-            ksort($tableDefs[$curTable]['columns']);
+            $table->addColumn($tableColumn);
         }
+        array_walk($tableDefs, function (Table &$item): void {
+            $item = $item->getOutput();
+        });
         foreach ($tableDefs as $tableId => $tableData) {
+            /**
+             * @var mixed $a
+             * @var mixed $b
+             * @return int
+             */
+            usort($tableData['columns'], function ($a, $b) {
+                return (int) ($a['ordinalPosition'] > $b['ordinalPosition']);
+            });
             $tableDefs[$tableId]['columns'] = array_values($tableData['columns']);
         }
         ksort($tableDefs);
