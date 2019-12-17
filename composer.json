@@ -10,7 +10,7 @@
         }
     ],
     "require": {
-        "php": "^7.3",
+        "php": "^7.4",
         "ext-PDO": "*",
         "keboola/csv": "^1.1",
         "keboola/db-extractor-common": "^12.1",
