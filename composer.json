@@ -19,7 +19,6 @@
         "keboola/db-extractor-table-format": "^1.2",
         "keboola/php-component": "^7.0",
         "keboola/php-datatypes": "^4.2",
-        "keboola/php-utils": "^4.0",
         "symfony/config": "^4.3",
         "symfony/process": "^4.3"
     },
