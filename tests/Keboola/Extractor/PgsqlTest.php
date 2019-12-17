@@ -413,6 +413,11 @@ class PgsqlTest extends BaseTest
                         ),
                     7 =>
                         array (
+                            'key' => 'KBC.uniqueKey',
+                            'value' => false,
+                        ),
+                    8 =>
+                        array (
                             'key' => 'KBC.ordinalPosition',
                             'value' => 1,
                         ),
@@ -455,6 +460,11 @@ class PgsqlTest extends BaseTest
                             'value' => false,
                         ),
                     7 =>
+                        array (
+                            'key' => 'KBC.uniqueKey',
+                            'value' => false,
+                        ),
+                    8 =>
                         array (
                             'key' => 'KBC.ordinalPosition',
                             'value' => 2,
@@ -504,6 +514,11 @@ class PgsqlTest extends BaseTest
                         ),
                     8 =>
                         array (
+                            'key' => 'KBC.uniqueKey',
+                            'value' => false,
+                        ),
+                    9 =>
+                        array (
                             'key' => 'KBC.ordinalPosition',
                             'value' => 3,
                         ),
@@ -541,6 +556,11 @@ class PgsqlTest extends BaseTest
                             'value' => false,
                         ),
                     6 =>
+                        array (
+                            'key' => 'KBC.uniqueKey',
+                            'value' => false,
+                        ),
+                    7 =>
                         array (
                             'key' => 'KBC.ordinalPosition',
                             'value' => 4,
@@ -605,6 +625,11 @@ class PgsqlTest extends BaseTest
                         ),
                     7 =>
                         array (
+                            'key' => 'KBC.uniqueKey',
+                            'value' => false,
+                        ),
+                    8 =>
+                        array (
                             'key' => 'KBC.ordinalPosition',
                             'value' => 1,
                         ),
@@ -647,6 +672,11 @@ class PgsqlTest extends BaseTest
                             'value' => false,
                         ),
                     7 =>
+                        array (
+                            'key' => 'KBC.uniqueKey',
+                            'value' => false,
+                        ),
+                    8 =>
                         array (
                             'key' => 'KBC.ordinalPosition',
                             'value' => 2,
@@ -696,6 +726,11 @@ class PgsqlTest extends BaseTest
                         ),
                     8 =>
                         array (
+                            'key' => 'KBC.uniqueKey',
+                            'value' => false,
+                        ),
+                    9 =>
+                        array (
                             'key' => 'KBC.ordinalPosition',
                             'value' => 3,
                         ),
@@ -733,6 +768,11 @@ class PgsqlTest extends BaseTest
                             'value' => false,
                         ),
                     6 =>
+                        array (
+                            'key' => 'KBC.uniqueKey',
+                            'value' => false,
+                        ),
+                    7 =>
                         array (
                             'key' => 'KBC.ordinalPosition',
                             'value' => 4,
