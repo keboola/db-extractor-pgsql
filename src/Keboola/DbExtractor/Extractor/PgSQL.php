@@ -214,7 +214,7 @@ class PgSQL extends Extractor
             if (!is_array($resultRow) || empty($resultRow)) {
                 $this->logger->warning('Query returned empty result. Nothing was imported');
                 // no rows found.  If incremental fetching is turned on, we need to preserve the last state
-                if ($this->incrementalFetching['column'] && isset($this->state['lastFetchedRow'])) {
+                if (isset($this->incrementalFetching['column']) && isset($this->state['lastFetchedRow'])) {
                     $output['lastFetchedRow'] = $this->state['lastFetchedRow'];
                 }
                 $output['rows'] = 0;

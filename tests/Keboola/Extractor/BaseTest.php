@@ -139,6 +139,12 @@ abstract class BaseTest extends ExtractorTest
             . "WITH DELIMITER ',' CSV HEADER;"
         );
 
+        $processes[] = $this->createDbProcess(
+            'CREATE TABLE IF NOT EXISTS empty_table ' .
+            '(integer integer NOT NULL DEFAULT 42, ' .
+            'date date DEFAULT NULL);'
+        );
+
         $this->runProcesses($processes);
     }
 
