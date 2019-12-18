@@ -90,9 +90,6 @@ abstract class BaseTest extends ExtractorTest
         $processes[] = $this->createDbProcess(
             'DROP TABLE IF EXISTS moving_targets'
         );
-        $processes[] = $this->createDbProcess(
-            'DROP TABLE IF EXISTS empty_table'
-        );
         $processes[] = $this->createDbProcess('DROP SEQUENCE IF EXISTS user_id_seq;');
 
         // create test tables
@@ -143,7 +140,7 @@ abstract class BaseTest extends ExtractorTest
         );
 
         $processes[] = $this->createDbProcess(
-            'CREATE TABLE empty_table ' .
+            'CREATE TABLE IF NOT EXISTS empty_table ' .
             '(integer integer NOT NULL DEFAULT 42, ' .
             'date date DEFAULT NULL);'
         );
