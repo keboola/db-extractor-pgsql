@@ -66,6 +66,18 @@ class PgsqlTest extends BaseTest
         }
     }
 
+    public function testRunPDOEmptyTable(): void
+    {
+        $config = $this->getConfigRow(self::DRIVER);
+        $config['parameters']['forceFallback'] = true;
+        $config['parameters']['table']['tableName'] = 'empty_table';
+
+        $app = $this->createApplication($config);
+
+        $result = $app->run();
+        $this->assertEquals('success', $result['status']);
+    }
+
     public function testTestConnection(): void
     {
         $config = $this->getConfig();
@@ -116,10 +128,39 @@ class PgsqlTest extends BaseTest
         $result = $app->run();
         $this->assertArrayHasKey('status', $result);
         $this->assertArrayHasKey('tables', $result);
-        $this->assertCount(4, $result['tables']);
+        $this->assertCount(5, $result['tables']);
 
         $expectedData = array (
-            0 =>
+            0 => array(
+                'name' => 'empty_table',
+                'schema' => 'public',
+                'type' => 'table',
+                'columns' => array(
+                    0 => array(
+                        'name' => 'integer',
+                        'sanitizedName' => 'integer',
+                        'type' => 'integer',
+                        'primaryKey' => false,
+                        'length' => null,
+                        'nullable' => false,
+                        'default' => '42',
+                        'ordinalPosition' => 1,
+
+                    ),
+                    1 => array(
+                        'name' => 'date',
+                        'sanitizedName' => 'date',
+                        'type' => 'date',
+                        'primaryKey' => false,
+                        'length' => null,
+                        'nullable' => true,
+                        'default' => null,
+                        'ordinalPosition' => 2,
+
+                    ),
+                ),
+            ),
+            1 =>
                 array (
                     'name' => 'escaping',
                     'schema' => 'public',
@@ -150,7 +191,7 @@ class PgsqlTest extends BaseTest
                                 ),
                         ),
                 ),
-            1 =>
+            2 =>
                 array (
                     'name' => 'types',
                     'schema' => 'public',
@@ -203,7 +244,7 @@ class PgsqlTest extends BaseTest
                                 ),
                         ),
                 ),
-            2 =>
+            3 =>
                 array (
                     'name' => 'types_fk',
                     'schema' => 'public',
@@ -256,7 +297,7 @@ class PgsqlTest extends BaseTest
                                 ),
                         ),
                 ),
-            3 =>
+            4 =>
                 array (
                     'name' => 'escaping',
                     'schema' => 'testing',

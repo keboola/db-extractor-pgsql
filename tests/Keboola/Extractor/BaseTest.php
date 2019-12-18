@@ -90,6 +90,9 @@ abstract class BaseTest extends ExtractorTest
         $processes[] = $this->createDbProcess(
             'DROP TABLE IF EXISTS moving_targets'
         );
+        $processes[] = $this->createDbProcess(
+            'DROP TABLE IF EXISTS empty_table'
+        );
         $processes[] = $this->createDbProcess('DROP SEQUENCE IF EXISTS user_id_seq;');
 
         // create test tables
@@ -137,6 +140,12 @@ abstract class BaseTest extends ExtractorTest
         $processes[] = $this->createDbProcess(
             "\COPY testing.escaping FROM 'vendor/keboola/db-extractor-common/tests/data/escaping.csv' "
             . "WITH DELIMITER ',' CSV HEADER;"
+        );
+
+        $processes[] = $this->createDbProcess(
+            'CREATE TABLE empty_table ' .
+            '(integer integer NOT NULL DEFAULT 42, ' .
+            'date date DEFAULT NULL);'
         );
 
         $this->runProcesses($processes);
