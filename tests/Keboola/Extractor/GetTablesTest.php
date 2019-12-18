@@ -27,7 +27,7 @@ class GetTablesTest extends BaseTest
         $process->setTimeout(300);
         $process->mustRun();
         $data = json_decode($process->getOutput(), true);
-        self::assertCount(4, $data['tables']);
+        self::assertCount(5, $data['tables']);
         self::assertArrayHasKey('columns', $data['tables'][0]);
         self::assertEquals(0, $process->getExitCode());
         self::assertEquals('', $process->getErrorOutput());
@@ -48,7 +48,7 @@ class GetTablesTest extends BaseTest
         $process->setTimeout(300);
         $process->mustRun();
         $data = json_decode($process->getOutput(), true);
-        self::assertCount(4, $data['tables']);
+        self::assertCount(5, $data['tables']);
         self::assertArrayNotHasKey('columns', $data['tables'][0]);
         self::assertEquals(0, $process->getExitCode());
         self::assertEquals('', $process->getErrorOutput());
