@@ -146,7 +146,7 @@ abstract class BaseTest extends ExtractorTest
         );
 
         $processes[] = $this->createDbProcess(
-            "CREATE INDEX escaping_funnycol ON escaping(_funnycol);"
+            'CREATE INDEX escaping_funnycol ON escaping(_funnycol);'
         );
 
         $this->runProcesses($processes);
