@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5db9e5130eb43e07d232ed16f895795b",
+    "content-hash": "0399b134ed90e01e823b0fe68bb4fa5f",
     "packages": [
         {
             "name": "keboola/common-exceptions",
@@ -260,21 +260,22 @@
         },
         {
             "name": "keboola/db-extractor-table-format",
-            "version": "1.2.0",
+            "version": "2.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/db-extractor-table-format.git",
-                "reference": "a6d51af4261867233e8109691a5c14b37d461a3f"
+                "reference": "a0d1ff6219f4a8dd58e459a270b217dccd9f3302"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/db-extractor-table-format/zipball/a6d51af4261867233e8109691a5c14b37d461a3f",
-                "reference": "a6d51af4261867233e8109691a5c14b37d461a3f",
+                "url": "https://api.github.com/repos/keboola/db-extractor-table-format/zipball/a0d1ff6219f4a8dd58e459a270b217dccd9f3302",
+                "reference": "a0d1ff6219f4a8dd58e459a270b217dccd9f3302",
                 "shasum": ""
             },
             "require": {
                 "keboola/common-exceptions": "^1.0",
-                "keboola/php-utils": "^4.1"
+                "keboola/php-utils": "^4.1",
+                "php": "^7.3"
             },
             "require-dev": {
                 "keboola/coding-standard": "^9.0",
@@ -298,7 +299,7 @@
                 }
             ],
             "description": "PHP class for formating table result",
-            "time": "2019-12-17T09:57:25+00:00"
+            "time": "2020-01-30T12:52:19+00:00"
         },
         {
             "name": "keboola/php-component",
