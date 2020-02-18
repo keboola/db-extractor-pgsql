@@ -201,4 +201,28 @@ class ApplicationTest extends BaseTest
 
         $this->assertJson($process->getOutput());
     }
+
+    public function testBoolConsistency(): void
+    {
+        $config = $this->getConfigRow(self::DRIVER);
+
+        $config['parameters']['table']['tableName'] = 'types';
+        $config['parameters']['forceFallback'] = true;
+        $config['parameters']['outputTable'] = 'in.c-main.bool_consistency_test';
+        $this->replaceConfig($config);
+
+        $expectedCsvFile = new CsvFile($this->dataDir . '/pgsql/types.csv');
+        $outputCsvFile = new CsvFile($this->dataDir . '/out/tables/in.c-main.bool_consistency_test.csv');
+
+        $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
+        $process->setTimeout(300);
+        $process->mustRun();
+
+        // assert the correct file contents
+        $outputArr = iterator_to_array($outputCsvFile);
+        $expectedArr = iterator_to_array($expectedCsvFile);
+        for ($i = 1; $i < count($expectedArr); $i++) {
+            $this->assertContains($expectedArr[$i], $outputArr);
+        }
+    }
 }
