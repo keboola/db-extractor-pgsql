@@ -145,6 +145,10 @@ abstract class BaseTest extends ExtractorTest
             'date date DEFAULT NULL);'
         );
 
+        $processes[] = $this->createDbProcess(
+            'CREATE INDEX escaping_funnycol ON escaping(_funnycol);'
+        );
+
         $this->runProcesses($processes);
     }
 
