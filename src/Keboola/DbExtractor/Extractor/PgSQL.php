@@ -221,6 +221,7 @@ class PgSQL extends Extractor
                 $output['rows'] = 0;
                 return $output;
             }
+            $resultRow = $this->replaceBooleanValues($resultRow);
             // only write header for advanced query case
             if ($advancedQuery) {
                 $csv->writeRow(array_keys($resultRow));
@@ -234,6 +235,7 @@ class PgSQL extends Extractor
             $innerStatement = $this->db->prepare("FETCH 10000 FROM $cursorName");
             while ($innerStatement->execute() && count($resultRows = $innerStatement->fetchAll(PDO::FETCH_ASSOC)) > 0) {
                 foreach ($resultRows as $resultRow) {
+                    $resultRow = $this->replaceBooleanValues($resultRow);
                     $csv->writeRow($resultRow);
                     $lastRow = $resultRow;
                     $numRows++;
@@ -728,6 +730,16 @@ EOT;
                 );
             }
         }
+    }
+
+    private function replaceBooleanValues(array $row): array
+    {
+        array_walk($row, function (&$item): void {
+            if (is_bool($item)) {
+                $item = $item === true ? 't' : 'f';
+            }
+        });
+        return $row;
     }
 
     private function quote(string $obj): string
