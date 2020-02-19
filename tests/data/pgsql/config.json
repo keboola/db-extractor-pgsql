@@ -38,7 +38,7 @@
           "schema": "public",
           "tableName": "types"
         },
-        "columns": ["character", "integer", "decimal", "date"]
+        "columns": ["character", "integer", "decimal", "boolean", "date"]
       }
     ]
   }

@@ -233,12 +233,23 @@ class PgsqlTest extends BaseTest
                                 ),
                             3 =>
                                 array (
+                                    'name' => 'boolean',
+                                    'sanitizedName' => 'boolean',
+                                    'type' => 'boolean',
+                                    'primaryKey' => false,
+                                    'nullable' => false,
+                                    'ordinalPosition' => 4,
+                                    'uniqueKey' => false,
+                                    'default' => 'false',
+                                ),
+                            4 =>
+                                array (
                                     'name' => 'date',
                                     'sanitizedName' => 'date',
                                     'type' => 'date',
                                     'primaryKey' => false,
                                     'nullable' => true,
-                                    'ordinalPosition' => 4,
+                                    'ordinalPosition' => 5,
                                     'uniqueKey' => false,
                                 ),
                         ),
@@ -286,12 +297,23 @@ class PgsqlTest extends BaseTest
                                 ),
                             3 =>
                                 array (
+                                    'name' => 'boolean',
+                                    'sanitizedName' => 'boolean',
+                                    'type' => 'boolean',
+                                    'primaryKey' => false,
+                                    'nullable' => false,
+                                    'ordinalPosition' => 4,
+                                    'uniqueKey' => false,
+                                    'default' => 'false',
+                                ),
+                            4 =>
+                                array (
                                     'name' => 'date',
                                     'sanitizedName' => 'date',
                                     'type' => 'date',
                                     'primaryKey' => false,
                                     'nullable' => true,
-                                    'ordinalPosition' => 4,
+                                    'ordinalPosition' => 5,
                                     'uniqueKey' => false,
                                 ),
                         ),
@@ -560,9 +582,47 @@ class PgsqlTest extends BaseTest
                     7 =>
                         array (
                             'key' => 'KBC.ordinalPosition',
-                            'value' => 4,
+                            'value' => 5,
                         ),
                 ),
+            'boolean' => array(
+                0 => array(
+                    'key' => 'KBC.datatype.type',
+                    'value' => 'boolean',
+                ),
+                1 => array(
+                    'key' => 'KBC.datatype.nullable',
+                    'value' => false,
+                ),
+                2 => array(
+                    'key' => 'KBC.datatype.basetype',
+                    'value' => 'BOOLEAN',
+                ),
+                3 => array(
+                    'key' => 'KBC.datatype.default',
+                    'value' => 'false',
+                ),
+                4 => array(
+                    'key' => 'KBC.sourceName',
+                    'value' => 'boolean',
+                ),
+                5 => array(
+                    'key' => 'KBC.sanitizedName',
+                    'value' => 'boolean',
+                ),
+                6 => array(
+                    'key' => 'KBC.primaryKey',
+                    'value' => false,
+                ),
+                7 => array(
+                    'key' => 'KBC.uniqueKey',
+                    'value' => false,
+                ),
+                8 => array(
+                    'key' => 'KBC.ordinalPosition',
+                    'value' => 4,
+                ),
+            ),
         );
 
         $expectedTableMetadata[1] = [
@@ -772,9 +832,48 @@ class PgsqlTest extends BaseTest
                     7 =>
                         array (
                             'key' => 'KBC.ordinalPosition',
-                            'value' => 4,
+                            'value' => 5,
                         ),
                 ),
+
+            'boolean' => array(
+                0 => array(
+                    'key' => 'KBC.datatype.type',
+                    'value' => 'boolean',
+                ),
+                1 => array(
+                    'key' => 'KBC.datatype.nullable',
+                    'value' => false,
+                ),
+                2 => array(
+                    'key' => 'KBC.datatype.basetype',
+                    'value' => 'BOOLEAN',
+                ),
+                3 => array(
+                    'key' => 'KBC.datatype.default',
+                    'value' => 'false',
+                ),
+                4 => array(
+                    'key' => 'KBC.sourceName',
+                    'value' => 'boolean',
+                ),
+                5 => array(
+                    'key' => 'KBC.sanitizedName',
+                    'value' => 'boolean',
+                ),
+                6 => array(
+                    'key' => 'KBC.primaryKey',
+                    'value' => false,
+                ),
+                7 => array(
+                    'key' => 'KBC.uniqueKey',
+                    'value' => false,
+                ),
+                8 => array(
+                    'key' => 'KBC.ordinalPosition',
+                    'value' => 4,
+                ),
+            ),
         );
 
         foreach ($result['imported'] as $i => $outputArray) {
@@ -822,7 +921,7 @@ class PgsqlTest extends BaseTest
         $this->assertFileExists($outputManifestFile);
 
         $outputManifest = json_decode((string) file_get_contents($outputManifestFile), true);
-        $this->assertEquals(['character', 'integer', 'decimal', 'date'], $outputManifest['columns']);
+        $this->assertEquals(['character', 'integer', 'decimal', 'boolean', 'date'], $outputManifest['columns']);
         $this->assertEquals(['character'], $outputManifest['primary_key']);
 
         $outputArr = iterator_to_array($outputCsvFile);
@@ -851,7 +950,7 @@ class PgsqlTest extends BaseTest
         $outputManifestFile = $this->dataDir . '/out/tables/' . $result['imported'][0]['outputTable'] . '.csv.manifest';
         $outputManifest = json_decode((string) file_get_contents($outputManifestFile), true);
         // check that the manifest has the correct column ordering
-        $this->assertEquals(['character', 'integer', 'decimal', 'date'], $outputManifest['columns']);
+        $this->assertEquals(['character', 'integer', 'decimal', 'boolean', 'date'], $outputManifest['columns']);
 
         // check the data
         $expectedData = iterator_to_array($expectedCsvFile);
