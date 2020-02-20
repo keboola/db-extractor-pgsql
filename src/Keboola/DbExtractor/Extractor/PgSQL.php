@@ -154,9 +154,17 @@ class PgSQL extends Extractor
             };
             $proxy = new DbRetryProxy($this->logger, $maxTries);
             try {
-                $result = $proxy->call(function () use ($query, $outputTable, $advancedQuery) {
+                $fallbackBooleanStyle = isset($table['fallbackBooleanStringStyle']) ?
+                    $table['fallbackBooleanStringStyle'] :
+                    false;
+                $result = $proxy->call(function () use ($query, $outputTable, $advancedQuery, $fallbackBooleanStyle) {
                     try {
-                        return $this->executeQueryPDO($query, $this->createOutputCsv($outputTable), $advancedQuery);
+                        return $this->executeQueryPDO(
+                            $query,
+                            $this->createOutputCsv($outputTable),
+                            $advancedQuery,
+                            $fallbackBooleanStyle
+                        );
                     } catch (Throwable $queryError) {
                         try {
                             $this->db = $this->createConnection($this->getDbParameters());
@@ -199,8 +207,12 @@ class PgSQL extends Extractor
         return $output;
     }
 
-    protected function executeQueryPDO(string $query, CsvFile $csv, bool $advancedQuery): array
-    {
+    protected function executeQueryPDO(
+        string $query,
+        CsvFile $csv,
+        bool $advancedQuery,
+        bool $fallbackBooleanStringStyle
+    ): array {
         $cursorName = 'exdbcursor' . intval(microtime(true));
         $curSql = "DECLARE $cursorName CURSOR FOR $query";
         $this->logger->info('Executing query via PDO ...');
@@ -221,7 +233,9 @@ class PgSQL extends Extractor
                 $output['rows'] = 0;
                 return $output;
             }
-            $resultRow = $this->replaceBooleanValues($resultRow);
+            if ($fallbackBooleanStringStyle) {
+                $resultRow = $this->replaceBooleanValues($resultRow);
+            }
             // only write header for advanced query case
             if ($advancedQuery) {
                 $csv->writeRow(array_keys($resultRow));
@@ -235,7 +249,9 @@ class PgSQL extends Extractor
             $innerStatement = $this->db->prepare("FETCH 10000 FROM $cursorName");
             while ($innerStatement->execute() && count($resultRows = $innerStatement->fetchAll(PDO::FETCH_ASSOC)) > 0) {
                 foreach ($resultRows as $resultRow) {
-                    $resultRow = $this->replaceBooleanValues($resultRow);
+                    if ($fallbackBooleanStringStyle) {
+                        $resultRow = $this->replaceBooleanValues($resultRow);
+                    }
                     $csv->writeRow($resultRow);
                     $lastRow = $resultRow;
                     $numRows++;
