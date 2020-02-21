@@ -154,8 +154,8 @@ class PgSQL extends Extractor
             };
             $proxy = new DbRetryProxy($this->logger, $maxTries);
             try {
-                $fallbackBooleanStyle = isset($table['fallbackBooleanStringStyle']) ?
-                    $table['fallbackBooleanStringStyle'] :
+                $fallbackBooleanStyle = isset($table['useConsistentFallbackBooleanStyle']) ?
+                    $table['useConsistentFallbackBooleanStyle'] :
                     false;
                 $result = $proxy->call(function () use ($query, $outputTable, $advancedQuery, $fallbackBooleanStyle) {
                     try {

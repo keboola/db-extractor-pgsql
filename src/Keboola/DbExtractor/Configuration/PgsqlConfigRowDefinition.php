@@ -65,7 +65,7 @@ class PgsqlConfigRowDefinition extends ConfigRowDefinition
                 ->integerNode('retries')
                     ->min(0)
                 ->end()
-                ->booleanNode('fallbackBooleanStringStyle')
+                ->booleanNode('useConsistentFallbackBooleanStyle')
                     ->defaultFalse()
                 ->end()
                 ->booleanNode('forceFallback')

@@ -208,7 +208,7 @@ class ApplicationTest extends BaseTest
 
         $config['parameters']['table']['tableName'] = 'types';
         $config['parameters']['forceFallback'] = true;
-        $config['parameters']['fallbackBooleanStringStyle'] = true;
+        $config['parameters']['useConsistentFallbackBooleanStyle'] = true;
         $config['parameters']['outputTable'] = 'in.c-main.bool_consistency_test';
         $this->replaceConfig($config);
 
