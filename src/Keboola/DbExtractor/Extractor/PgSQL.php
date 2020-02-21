@@ -154,16 +154,21 @@ class PgSQL extends Extractor
             };
             $proxy = new DbRetryProxy($this->logger, $maxTries);
             try {
-                $fallbackBooleanStyle = isset($table['useConsistentFallbackBooleanStyle']) ?
+                $useConsistentFallbackBooleanStyle = isset($table['useConsistentFallbackBooleanStyle']) ?
                     $table['useConsistentFallbackBooleanStyle'] :
                     false;
-                $result = $proxy->call(function () use ($query, $outputTable, $advancedQuery, $fallbackBooleanStyle) {
+                $result = $proxy->call(function () use (
+                    $query,
+                    $outputTable,
+                    $advancedQuery,
+                    $useConsistentFallbackBooleanStyle
+                ) {
                     try {
                         return $this->executeQueryPDO(
                             $query,
                             $this->createOutputCsv($outputTable),
                             $advancedQuery,
-                            $fallbackBooleanStyle
+                            $useConsistentFallbackBooleanStyle
                         );
                     } catch (Throwable $queryError) {
                         try {
@@ -211,7 +216,7 @@ class PgSQL extends Extractor
         string $query,
         CsvFile $csv,
         bool $advancedQuery,
-        bool $fallbackBooleanStringStyle
+        bool $useConsistentFallbackBooleanStyle
     ): array {
         $cursorName = 'exdbcursor' . intval(microtime(true));
         $curSql = "DECLARE $cursorName CURSOR FOR $query";
@@ -233,7 +238,7 @@ class PgSQL extends Extractor
                 $output['rows'] = 0;
                 return $output;
             }
-            if ($fallbackBooleanStringStyle) {
+            if ($useConsistentFallbackBooleanStyle) {
                 $resultRow = $this->replaceBooleanValues($resultRow);
             }
             // only write header for advanced query case
@@ -249,7 +254,7 @@ class PgSQL extends Extractor
             $innerStatement = $this->db->prepare("FETCH 10000 FROM $cursorName");
             while ($innerStatement->execute() && count($resultRows = $innerStatement->fetchAll(PDO::FETCH_ASSOC)) > 0) {
                 foreach ($resultRows as $resultRow) {
-                    if ($fallbackBooleanStringStyle) {
+                    if ($useConsistentFallbackBooleanStyle) {
                         $resultRow = $this->replaceBooleanValues($resultRow);
                     }
                     $csv->writeRow($resultRow);
