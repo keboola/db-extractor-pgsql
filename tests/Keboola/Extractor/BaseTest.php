@@ -109,6 +109,7 @@ abstract class BaseTest extends ExtractorTest
             '(character varchar(123) PRIMARY KEY, ' .
             'integer integer NOT NULL DEFAULT 42, ' .
             'decimal decimal(5,3) NOT NULL DEFAULT 1.2, ' .
+            'boolean bool NOT NULL DEFAULT FALSE,' .
             'date date DEFAULT NULL);'
         );
 
@@ -121,6 +122,7 @@ abstract class BaseTest extends ExtractorTest
             '(character varchar(123) REFERENCES types (character), ' .
             'integer integer NOT NULL DEFAULT 42, ' .
             'decimal decimal(5,3) NOT NULL DEFAULT 1.2, ' .
+            'boolean bool NOT NULL DEFAULT FALSE,' .
             'date date DEFAULT NULL);'
         );
 
