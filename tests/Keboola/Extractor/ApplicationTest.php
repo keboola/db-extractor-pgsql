@@ -226,4 +226,16 @@ class ApplicationTest extends BaseTest
             $this->assertContains($expectedArr[$i], $outputArr);
         }
     }
+
+    public function testExportEmptyTableData(): void
+    {
+        $config = $this->getConfigRow(self::DRIVER);
+        $config['parameters']['table']['tableName'] = 'empty_table';
+        $config['parameters']['outputTable'] = 'empty_table';
+        $this->replaceConfig($config);
+        $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
+        $process->setTimeout(300);
+        $process->mustRun();
+        $this->assertStringContainsString('Query returned empty result. Nothing was imported to [empty_table]', $process->getErrorOutput());
+    }
 }
