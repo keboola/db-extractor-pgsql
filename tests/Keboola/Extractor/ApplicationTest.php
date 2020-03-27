@@ -240,5 +240,6 @@ class ApplicationTest extends BaseTest
             'Query returned empty result. Nothing was imported to [empty_table]',
             $process->getErrorOutput()
         );
+        $this->assertFileNotExists($this->dataDir . '/out/tables/empty_table.csv');
     }
 }
