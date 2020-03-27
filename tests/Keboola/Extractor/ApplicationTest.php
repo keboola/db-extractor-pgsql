@@ -236,6 +236,9 @@ class ApplicationTest extends BaseTest
         $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
         $process->mustRun();
-        $this->assertStringContainsString('Query returned empty result. Nothing was imported to [empty_table]', $process->getErrorOutput());
+        $this->assertStringContainsString(
+            'Query returned empty result. Nothing was imported to [empty_table]',
+            $process->getErrorOutput()
+        );
     }
 }
