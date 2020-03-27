@@ -129,12 +129,16 @@ class PgSQL extends Extractor
             if (isset($table['forceFallback']) && $table['forceFallback'] === true) {
                 throw new \Exception('Forcing extractor to use PDO fallback fetching');
             }
+            $csvFile = $this->createOutputCsv($outputTable);
             $result = $this->executeCopyQuery(
                 $query,
-                $this->createOutputCsv($outputTable),
+                $csvFile,
                 $table['outputTable'],
                 $advancedQuery
             );
+            if ($result['rows'] === 0) {
+                $this->removeFile($csvFile->getPathname());
+            }
             if (!$advancedQuery && isset($result['lastFetchedRow'])) {
                 $result['lastFetchedRow'] = $this->getLastFetchedValue($columnMetadata, $result['lastFetchedRow']);
             }
@@ -164,12 +168,17 @@ class PgSQL extends Extractor
                     $useConsistentFallbackBooleanStyle
                 ) {
                     try {
-                        return $this->executeQueryPDO(
+                        $csvFile = $this->createOutputCsv($outputTable);
+                        $result = $this->executeQueryPDO(
                             $query,
-                            $this->createOutputCsv($outputTable),
+                            $csvFile,
                             $advancedQuery,
                             $useConsistentFallbackBooleanStyle
                         );
+                        if ($result['rows'] === 0) {
+                            $this->removeFile($csvFile->getPathname());
+                        }
+                        return $result;
                     } catch (Throwable $queryError) {
                         try {
                             $this->db = $this->createConnection($this->getDbParameters());
@@ -240,7 +249,6 @@ class PgSQL extends Extractor
             // write header and first line
             $resultRow = $innerStatement->fetch(PDO::FETCH_ASSOC);
             if (!is_array($resultRow) || empty($resultRow)) {
-                $this->logger->warning('Query returned empty result. Nothing was imported');
                 // no rows found.  If incremental fetching is turned on, we need to preserve the last state
                 if (isset($this->incrementalFetching['column']) && isset($this->state['lastFetchedRow'])) {
                     $output['lastFetchedRow'] = $this->state['lastFetchedRow'];
@@ -776,5 +784,12 @@ EOT;
     private function quote(string $obj): string
     {
         return "\"{$obj}\"";
+    }
+
+    private function removeFile(string $filePathname): void
+    {
+        if (file_exists($filePathname)) {
+            unlink($filePathname);
+        }
     }
 }
