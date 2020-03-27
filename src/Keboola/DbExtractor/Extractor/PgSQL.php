@@ -190,14 +190,24 @@ class PgSQL extends Extractor
                 throw($generalError);
             }
         }
-        if ($this->createManifest($table) === false) {
-            throw new ApplicationException(
-                'Unable to create manifest',
-                0,
-                null,
-                [
-                'table' => $table,
-                ]
+
+        if ($result['rows'] > 0) {
+            if ($this->createManifest($table) === false) {
+                throw new ApplicationException(
+                    'Unable to create manifest',
+                    0,
+                    null,
+                    [
+                        'table' => $table,
+                    ]
+                );
+            }
+        } else {
+            $this->logger->warn(
+                sprintf(
+                    'Query returned empty result. Nothing was imported to [%s]',
+                    $table['outputTable']
+                )
             );
         }
 
