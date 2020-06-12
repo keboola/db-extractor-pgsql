@@ -1,4 +1,3 @@
-FROM keboola/db-component-ssh-proxy:latest AS sshproxy
 FROM php:7.4-cli
 
 ENV DEBIAN_FRONTEND noninteractive
@@ -27,7 +26,5 @@ WORKDIR /code
 ADD . /code
 
 RUN composer install --no-interaction
-
-COPY --from=sshproxy /root/.ssh /root/.ssh
 
 CMD php /code/src/run.php --data=/data
