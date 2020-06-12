@@ -23,7 +23,7 @@ class GetTablesTest extends BaseTest
         $config['action'] = 'getTables';
         $this->replaceConfig($config);
 
-        $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
+        $process = Process::fromShellCommandline('php /code/src/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
         $process->mustRun();
         $data = json_decode($process->getOutput(), true);
@@ -44,7 +44,7 @@ class GetTablesTest extends BaseTest
         ];
         $this->replaceConfig($config);
 
-        $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
+        $process = Process::fromShellCommandline('php /code/src/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
         $process->mustRun();
         $data = json_decode($process->getOutput(), true);
@@ -68,7 +68,7 @@ class GetTablesTest extends BaseTest
         ];
         $this->replaceConfig($config);
 
-        $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
+        $process = Process::fromShellCommandline('php /code/src/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
         $process->mustRun();
         $data = json_decode($process->getOutput(), true);
@@ -94,7 +94,7 @@ class GetTablesTest extends BaseTest
         ];
         $this->replaceConfig($config);
 
-        $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
+        $process = Process::fromShellCommandline('php /code/src/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
         $process->mustRun();
         $data = json_decode($process->getOutput(), true);

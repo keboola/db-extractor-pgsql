@@ -29,12 +29,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Keboola\\": "src/Keboola/"
+            "Keboola\\DbExtractor\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Keboola\\DbExtractor\\Tests\\": "tests/Keboola/Extractor"
+            "Keboola\\DbExtractor\\Tests\\": "tests/phpunit"
         }
     },
     "scripts": {

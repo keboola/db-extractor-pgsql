@@ -30,4 +30,4 @@ RUN composer install --no-interaction
 
 COPY --from=sshproxy /root/.ssh /root/.ssh
 
-CMD php ./run.php --data=/data
+CMD php /code/src/run.php --data=/data

@@ -24,7 +24,7 @@ class ApplicationTest extends BaseTest
     public function testRunAction(array $config): void
     {
         $this->replaceConfig($config);
-        $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
+        $process = Process::fromShellCommandline('php /code/src/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
         $process->mustRun();
 
@@ -49,7 +49,7 @@ class ApplicationTest extends BaseTest
         ];
         $this->replaceConfig($config);
 
-        $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
+        $process = Process::fromShellCommandline('php /code/src/run.php --data=' . $this->dataDir);
         $process->mustRun();
 
         $this->assertEquals(0, $process->getExitCode());
@@ -66,7 +66,7 @@ class ApplicationTest extends BaseTest
         $config['parameters']['db'] = $this->getConfigRow(self::DRIVER)['parameters']['db'];
         $this->replaceConfig($config);
 
-        $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
+        $process = Process::fromShellCommandline('php /code/src/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
         $process->mustRun();
         $this->assertJson($process->getOutput());
@@ -80,7 +80,7 @@ class ApplicationTest extends BaseTest
         unset($config['parameters']['tables'][0]['table']);
         $config['parameters']['tables'][0]['query'] = 'SELECT * FROM escaping;';
         $this->replaceConfig($config);
-        $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
+        $process = Process::fromShellCommandline('php /code/src/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
         $process->mustRun();
         $this->assertEquals(0, $process->getExitCode());
@@ -94,7 +94,7 @@ class ApplicationTest extends BaseTest
         $config['parameters']['tables'][0]['query'] = 'SELECT something, fake';
         $this->replaceConfig($config);
 
-        $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
+        $process = Process::fromShellCommandline('php /code/src/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
         $process->run();
 
@@ -124,7 +124,7 @@ class ApplicationTest extends BaseTest
         $config['parameters']['outputTable'] = 'in.c-main.info_schema';
         $this->replaceConfig($config);
 
-        $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
+        $process = Process::fromShellCommandline('php /code/src/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
         $process->mustRun();
 
@@ -158,7 +158,7 @@ class ApplicationTest extends BaseTest
 
         $this->replaceConfig($config);
 
-        $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
+        $process = Process::fromShellCommandline('php /code/src/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
         $process->mustRun();
 
@@ -178,7 +178,7 @@ class ApplicationTest extends BaseTest
         file_put_contents($inputStateFile, file_get_contents($outputStateFile));
 
         // run the config again
-        $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
+        $process = Process::fromShellCommandline('php /code/src/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
         $process->mustRun();
 
@@ -195,7 +195,7 @@ class ApplicationTest extends BaseTest
         $config['action'] = 'getTables';
         $this->replaceConfig($config);
 
-        $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
+        $process = Process::fromShellCommandline('php /code/src/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
         $process->mustRun();
 
@@ -215,7 +215,7 @@ class ApplicationTest extends BaseTest
         $expectedCsvFile = new CsvFile($this->dataDir . '/pgsql/types.csv');
         $outputCsvFile = new CsvFile($this->dataDir . '/out/tables/in.c-main.bool_consistency_test.csv');
 
-        $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
+        $process = Process::fromShellCommandline('php /code/src/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
         $process->mustRun();
 
@@ -233,7 +233,7 @@ class ApplicationTest extends BaseTest
         $config['parameters']['table']['tableName'] = 'empty_table';
         $config['parameters']['outputTable'] = 'empty_table';
         $this->replaceConfig($config);
-        $process = Process::fromShellCommandline('php ' . $this->rootPath . '/run.php --data=' . $this->dataDir);
+        $process = Process::fromShellCommandline('php /code/src/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
         $process->mustRun();
         $this->assertStringContainsString(

@@ -10,7 +10,7 @@ use Monolog\Handler\NullHandler;
 use Symfony\Component\Serializer\Encoder\JsonDecode;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 
-require_once(__DIR__ . '/vendor/autoload.php');
+require_once(__DIR__ . '/../vendor/autoload.php');
 
 $logger = new Logger('ex-db-pgsql');
 

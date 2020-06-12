@@ -18,10 +18,8 @@ abstract class BaseTest extends ExtractorTest
 
     protected Application $app;
 
-    protected string $rootPath;
-
     /** @var string  */
-    protected $dataDir = __DIR__ . '/../../data';
+    protected $dataDir = __DIR__ . '/data';
 
     protected array $dbConfig;
 
@@ -56,10 +54,9 @@ abstract class BaseTest extends ExtractorTest
         $fs->mkdir($this->dataDir . '/out/tables');
     }
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         $this->cleanOutputDir();
-        $this->rootPath = '/code/';
         $config = $this->getConfig();
         $logger = new Logger('ex-db-pgsql-tests');
         $this->app = new Application($config, $logger);
@@ -114,7 +111,7 @@ abstract class BaseTest extends ExtractorTest
         );
 
         $processes[] = $this->createDbProcess(
-            "\COPY types FROM 'tests/data/pgsql/types.csv' WITH DELIMITER ',' CSV HEADER;"
+            "\COPY types FROM 'tests/phpunit/data/pgsql/types.csv' WITH DELIMITER ',' CSV HEADER;"
         );
 
         $processes[] = $this->createDbProcess(
@@ -127,7 +124,7 @@ abstract class BaseTest extends ExtractorTest
         );
 
         $processes[] = $this->createDbProcess(
-            "\COPY types_fk FROM 'tests/data/pgsql/types.csv' WITH DELIMITER ',' CSV HEADER;"
+            "\COPY types_fk FROM 'tests/phpunit/data/pgsql/types.csv' WITH DELIMITER ',' CSV HEADER;"
         );
 
         $processes[] = $this->createDbProcess(
@@ -152,6 +149,15 @@ abstract class BaseTest extends ExtractorTest
         );
 
         $this->runProcesses($processes);
+    }
+
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+
+        # Close SSH tunnel if created
+        $process = new Process(['sh', '-c', 'pgrep ssh | xargs -r kill']);
+        $process->mustRun();
     }
 
     public function getConfigRow(string $driver): array
@@ -180,7 +186,7 @@ abstract class BaseTest extends ExtractorTest
 
     public function configProvider(): array
     {
-        $this->dataDir = __DIR__ . '/../../data';
+        $this->dataDir = __DIR__ . '/data';
         return [
             [$this->getConfig(self::DRIVER)],
             [$this->getConfigRow(self::DRIVER)],
