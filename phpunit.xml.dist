@@ -10,7 +10,7 @@
          bootstrap="vendor/autoload.php">
 
     <testsuite name="DB Extractor PgSQL Test Suite">
-        <directory>tests/Keboola/Extractor</directory>
+        <directory>tests/phpunit</directory>
     </testsuite>
 
 </phpunit>

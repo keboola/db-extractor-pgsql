@@ -6,6 +6,7 @@ namespace Keboola\DbExtractor\Tests;
 
 use Keboola\Csv\CsvFile;
 use Keboola\DbExtractor\Exception\UserException;
+use Symfony\Component\Process\Process;
 
 class PgsqlTest extends BaseTest
 {
