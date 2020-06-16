@@ -7,15 +7,15 @@ namespace Keboola\DbExtractor\Extractor;
 use Keboola\DbExtractor\Exception\UserException;
 use Keboola\DbExtractor\TableResultFormat\Table;
 use Keboola\DbExtractor\TableResultFormat\TableColumn;
-use Keboola\DbExtractorLogger\Logger;
+use Psr\Log\LoggerInterface;
 
 class PgSQLMetadataProvider
 {
-    private Logger $logger;
+    private LoggerInterface $logger;
 
     private PDOAdapter $pdoAdapter;
 
-    public function __construct(Logger $logger, PDOAdapter $pdoAdapter)
+    public function __construct(LoggerInterface $logger, PDOAdapter $pdoAdapter)
     {
         $this->logger = $logger;
         $this->pdoAdapter = $pdoAdapter;

@@ -9,16 +9,16 @@ use Keboola\DbExtractor\Configuration\PgsqlConfigRowDefinition;
 use Keboola\DbExtractorConfig\Config;
 use Keboola\DbExtractorConfig\Configuration\ActionConfigRowDefinition;
 use Keboola\DbExtractorConfig\Configuration\ConfigDefinition;
-use Keboola\DbExtractorLogger\Logger;
+use Psr\Log\LoggerInterface;
 
 class PgsqlApplication extends Application
 {
-    public function __construct(array $config, ?Logger $logger = null, array $state = [], string $dataDir = '/data/')
+    public function __construct(array $config, LoggerInterface $logger, array $state, string $dataDir)
     {
         $config['parameters']['data_dir'] = $dataDir;
         $config['parameters']['extractor_class'] = 'PgSQL';
 
-        parent::__construct($config, ($logger) ? $logger : new Logger('ex-db-pgsql'), $state);
+        parent::__construct($config, $logger, $state);
     }
 
     public function buildConfig(array $config): void

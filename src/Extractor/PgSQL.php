@@ -8,7 +8,7 @@ use Keboola\Datatype\Definition\GenericStorage;
 use Keboola\DbExtractor\Exception\ApplicationException;
 use Keboola\DbExtractor\Exception\CopyAdapterException;
 use Keboola\DbExtractor\Exception\UserException;
-use Keboola\DbExtractorLogger\Logger;
+use Psr\Log\LoggerInterface;
 use PDOException;
 
 class PgSQL extends Extractor
@@ -28,7 +28,7 @@ class PgSQL extends Extractor
 
     private bool $listColumns = true;
 
-    public function __construct(array $parameters, array $state = [], ?Logger $logger = null)
+    public function __construct(array $parameters, array $state, LoggerInterface $logger)
     {
         $parameters['db']['ssh']['compression'] = true;
         parent::__construct($parameters, $state, $logger);

@@ -8,18 +8,18 @@ use Keboola\Csv\CsvFile;
 use Keboola\DbExtractor\Exception\CopyAdapterConnectionException;
 use Keboola\DbExtractor\Exception\CopyAdapterException;
 use Keboola\DbExtractor\Exception\CopyAdapterQueryException;
-use Keboola\DbExtractorLogger\Logger;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Process\Process;
 
 class CopyAdapter
 {
-    private Logger $logger;
+    private LoggerInterface $logger;
 
     private array $dbParams;
 
     private array $state;
 
-    public function __construct(Logger $logger, array $dbParams, array $state)
+    public function __construct(LoggerInterface $logger, array $dbParams, array $state)
     {
         $this->logger = $logger;
         $this->dbParams = $dbParams;

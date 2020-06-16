@@ -4,19 +4,18 @@ declare(strict_types=1);
 
 namespace Keboola\DbExtractor\Extractor;
 
+use Psr\Log\LoggerInterface;
 use Throwable;
 use PDO;
 use PDOException;
 use Retry\RetryProxy;
-use Keboola\DbExtractorLogger\Logger;
-use Keboola\Csv\CsvFile;
 use Keboola\DbExtractor\DbRetryProxy;
 use Keboola\DbExtractor\Exception\DeadConnectionException;
 use Keboola\DbExtractor\Exception\UserException;
 
 class PDOAdapter
 {
-    private Logger $logger;
+    private LoggerInterface $logger;
 
     private PDO $pdo;
 
@@ -24,7 +23,7 @@ class PDOAdapter
 
     private array $state;
 
-    public function __construct(Logger $logger, array $dbParams, array $state)
+    public function __construct(LoggerInterface $logger, array $dbParams, array $state)
     {
         $this->logger = $logger;
         $this->dbParams = $dbParams;
