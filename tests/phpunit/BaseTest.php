@@ -9,6 +9,7 @@ use Keboola\DbExtractor\Test\ExtractorTest;
 
 use Keboola\DbExtractor\Application;
 use Keboola\Component\Logger;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -174,7 +175,7 @@ abstract class BaseTest extends ExtractorTest
         return $config;
     }
 
-    protected function createApplication(array $config, array $state = [], ?Logger $logger = null): Application
+    protected function createApplication(array $config, array $state = [], ?LoggerInterface $logger = null): Application
     {
         return new PgsqlApplication(
             $config,
@@ -191,5 +192,15 @@ abstract class BaseTest extends ExtractorTest
             [$this->getConfig(self::DRIVER)],
             [$this->getConfigRow(self::DRIVER)],
         ];
+    }
+
+
+    protected function createAppProcess(): Process
+    {
+        $process = Process::fromShellCommandline('php /code/src/run.php', null, [
+            'KBC_DATADIR' => $this->dataDir,
+        ]);
+        $process->setTimeout(300);
+        return $process;
     }
 }

@@ -29,7 +29,7 @@ class PgsqlExportConfig extends ExportConfig
             $data['outputTable'],
             $data['primaryKey'],
             $data['retries'],
-            // Only part of config row
+            // Only in the config row configuration
             $data['forceFallback'] ?? false,
             $data['useConsistentFallbackBooleanStyle'] ?? false
         );

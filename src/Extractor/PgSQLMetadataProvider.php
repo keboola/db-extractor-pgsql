@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\DbExtractor\Extractor;
 
+use Keboola\DbExtractor\TableResultFormat\Metadata\Builder\ColumnBuilder;
 use Keboola\DbExtractor\TableResultFormat\Metadata\Builder\MetadataBuilder;
 use Keboola\DbExtractor\TableResultFormat\Metadata\Builder\TableBuilder;
 use Keboola\DbExtractor\TableResultFormat\Metadata\ValueObject\Table;
@@ -16,6 +17,9 @@ class PgSQLMetadataProvider implements MetadataProvider
     private LoggerInterface $logger;
 
     private PDOAdapter $pdoAdapter;
+
+    /** @var TableCollection[] */
+    private array $cache = [];
 
     public function __construct(LoggerInterface $logger, PDOAdapter $pdoAdapter)
     {
@@ -36,58 +40,89 @@ class PgSQLMetadataProvider implements MetadataProvider
      */
     public function listTables(array $whitelist = [], bool $loadColumns = true): TableCollection
     {
+        // Return cached value if present
+        $cacheKey = md5(serialize(func_get_args()));
+        if (isset($this->cache[$cacheKey])) {
+            return $this->cache[$cacheKey];
+        }
+
         /** @var TableBuilder[] $tableBuilders */
         $tableBuilders = [];
 
+        /** @var TableBuilder[] $columnBuilders */
+        $columnBuilders = [];
+
         // Process tables
-        $tableRequiredProperties = ['schema', 'type', 'rowCount'];
+        $tableRequiredProperties = ['schema', 'type'];
         $columnRequiredProperties= ['ordinalPosition', 'nullable'];
         $builder = MetadataBuilder::create($tableRequiredProperties, $columnRequiredProperties);
         foreach ($this->queryTablesAndColumns($whitelist, $loadColumns) as $data) {
             // Table data
             $tableId = $data['table_schema'] . '.' . $data['table_name'];
             if (!array_key_exists($tableId, $tableBuilders)) {
-                $tableBuilder = $builder->addTable();
+                $tableBuilder = $this->processTable($data, $builder);
                 $tableBuilders[$tableId] = $tableBuilder;
-                $tableBuilder
-                    ->setName((string) $data['table_name'])
-                    ->setSchema($data['table_schema'] ?? '')
-                    ->setType(self::tableTypeFromCode($data['table_type']));
             } else {
                 $tableBuilder = $tableBuilders[$tableId];
             }
 
-            // Column data
-            $columnType = $data['data_type_with_length'];
-            $length = null;
-
-            // Length
-            if (preg_match('/(.*)\((\d+|\d+,\d+)\)/', $columnType, $parsedType) === 1) {
-                $columnType = $parsedType[1] ?? null;
-                $length = $parsedType[2] ?? null;
+            if ($loadColumns) {
+                $columnId = $data['table_schema'] . '.' . $data['table_name'] . '.' . $data['column_name'];
+                if (!array_key_exists($columnId, $columnBuilders)) {
+                    $columnBuilders[$columnId] = $this->processColumn($data, $tableBuilder);
+                }
+            } else {
+                $tableBuilder->setColumnsNotExpected();
             }
-
-            // Default value
-            $default = $data['default_value'];
-            if ($columnType === 'character varying' && $default !== null) {
-                $default = str_replace("'", '', explode('::', $data['default_value'])[0]);
-            }
-
-            // Create  column
-            $tableBuilder
-                ->addColumn()
-                ->setName($data['column_name'])
-                ->setType($columnType)
-                ->setPrimaryKey($data['primary_key'] ?: false)
-                ->setLength($length)
-                ->setNullable($data['nullable'])
-                ->setDefault($default)
-                ->setOrdinalPosition($data['ordinal_position']);
         }
 
-        return $builder->build();
+        $collection = $builder->build();
+        $this->cache[$cacheKey] = $collection;
+        return $collection;
     }
 
+    private function processTable(array $data, MetadataBuilder $builder): TableBuilder
+    {
+        return $builder
+            ->addTable()
+            ->setName((string) $data['table_name'])
+            ->setSchema($data['table_schema'] ?? '')
+            ->setType(self::tableTypeFromCode($data['table_type']));
+    }
+
+    private function processColumn(array $data, TableBuilder $tableBuilder): ColumnBuilder
+    {
+        // Column type
+        $columnType = $data['data_type_with_length'];
+
+        // Length
+        $length = null;
+        if (preg_match('/(.*)\((\d+|\d+,\d+)\)/', $columnType, $parsedType) === 1) {
+            $columnType = $parsedType[1] ?? null;
+            $length = $parsedType[2] ?? null;
+        }
+
+        // Create  column
+        $columnBuilder = $tableBuilder
+            ->addColumn()
+            ->setName($data['column_name'])
+            ->setType($columnType)
+            ->setPrimaryKey($data['primary_key'] ?: false)
+            ->setLength($length)
+            ->setNullable($data['nullable'])
+            ->setOrdinalPosition($data['ordinal_position']);
+
+        // Default value
+        $default = $columnType === 'character varying' && $data['default_value'] !== null ?
+            str_replace("'", '', explode('::', $data['default_value'])[0]) :
+            $data['default_value'];
+
+        if ($default) {
+            $columnBuilder->setDefault($default);
+        }
+
+        return $columnBuilder;
+    }
 
     /**
      * @param array|InputTable[] $whitelist
@@ -121,17 +156,20 @@ class PgSQLMetadataProvider implements MetadataProvider
 
         // Joins --------
         // Schema
-        $sql[] = 'INNER JOIN pg_namespace ns ON ns.oid = c.relnamespace';
 
         if ($loadColumns) {
             // Indexes have 0 reltype, we don't want them here
             $sql[] = 'JOIN pg_class c ON a.attrelid = c.oid AND c.reltype != 0';
+            $sql[] = 'INNER JOIN pg_namespace ns ON ns.oid = c.relnamespace';
 
             // PKs
-            $sql[] = 'LEFT JOIN pg_index i ON a.attrelid = i.indrelid AND a.attnum = ANY(i.indkey)';
+            $sql[] = 'LEFT JOIN pg_index i ON';
+            $sql[] = 'a.attrelid = i.indrelid AND a.attnum = ANY(i.indkey) AND i.indisprimary = TRUE';
 
             // Default values
             $sql[] = 'LEFT JOIN pg_catalog.pg_attrdef d ON (a.attrelid, a.attnum) = (d.adrelid, d.adnum)';
+        } else {
+            $sql[] = 'INNER JOIN pg_namespace ns ON ns.oid = c.relnamespace';
         }
 
         // Where --------
@@ -166,6 +204,10 @@ class PgSQLMetadataProvider implements MetadataProvider
             );
         }
         $sql[] = 'WHERE ' . implode(' AND ', $where);
+
+        // Sort
+        $sql[] = $loadColumns ?
+            'ORDER BY table_schema, table_name, ordinal_position' : 'ORDER BY table_schema, table_name';
 
         // Run query
         return $this->pdoAdapter->runRetryableQuery(implode(' ', $sql));

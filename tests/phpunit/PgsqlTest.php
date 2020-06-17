@@ -136,202 +136,114 @@ class PgsqlTest extends BaseTest
             [
                 'name' => 'empty_table',
                 'schema' => 'public',
-                'type' => 'table',
                 'columns' => [
                     [
                         'name' => 'integer',
-                        'sanitizedName' => 'integer',
                         'type' => 'integer',
                         'primaryKey' => false,
-                        'nullable' => false,
-                        'default' => '42',
-                        'ordinalPosition' => 1,
-                        'uniqueKey' => false,
                     ],
                     [
                         'name' => 'date',
-                        'sanitizedName' => 'date',
                         'type' => 'date',
                         'primaryKey' => false,
-                        'nullable' => true,
-                        'ordinalPosition' => 2,
-                        'uniqueKey' => false,
                     ],
                 ],
             ],
             [
                 'name' => 'escaping',
                 'schema' => 'public',
-                'type' => 'table',
                 'columns' =>
                     [
                         [
                             'name' => '_funnycol',
-                            'sanitizedName' => 'funnycol',
                             'type' => 'character varying',
                             'primaryKey' => true,
-                            'length' => '123',
-                            'nullable' => false,
-                            'default' => 'column 1',
-                            'ordinalPosition' => 1,
-                            'uniqueKey' => false,
                         ],
                         [
                             'name' => '_sadcol',
-                            'sanitizedName' => 'sadcol',
                             'type' => 'character varying',
                             'primaryKey' => true,
-                            'length' => '221',
-                            'nullable' => false,
-                            'default' => 'column 2',
-                            'ordinalPosition' => 2,
-                            'uniqueKey' => false,
                         ],
                     ],
             ],
             [
                 'name' => 'types',
                 'schema' => 'public',
-                'type' => 'table',
                 'columns' =>
                     [
                         [
                             'name' => 'character',
-                            'sanitizedName' => 'character',
                             'type' => 'character varying',
                             'primaryKey' => true,
-                            'length' => 123,
-                            'nullable' => false,
-                            'ordinalPosition' => 1,
-                            'uniqueKey' => false,
                         ],
                         [
                             'name' => 'integer',
-                            'sanitizedName' => 'integer',
                             'type' => 'integer',
                             'primaryKey' => false,
-                            'nullable' => false,
-                            'default' => '42',
-                            'ordinalPosition' => 2,
-                            'uniqueKey' => false,
                         ],
                         [
                             'name' => 'decimal',
-                            'sanitizedName' => 'decimal',
                             'type' => 'numeric',
                             'primaryKey' => false,
-                            'length' => '5,3',
-                            'nullable' => false,
-                            'default' => '1.2',
-                            'ordinalPosition' => 3,
-                            'uniqueKey' => false,
                         ],
                         [
                             'name' => 'boolean',
-                            'sanitizedName' => 'boolean',
                             'type' => 'boolean',
                             'primaryKey' => false,
-                            'nullable' => false,
-                            'ordinalPosition' => 4,
-                            'uniqueKey' => false,
-                            'default' => 'false',
                         ],
                         [
                             'name' => 'date',
-                            'sanitizedName' => 'date',
                             'type' => 'date',
                             'primaryKey' => false,
-                            'nullable' => true,
-                            'ordinalPosition' => 5,
-                            'uniqueKey' => false,
                         ],
                     ],
             ],
             [
                 'name' => 'types_fk',
                 'schema' => 'public',
-                'type' => 'table',
                 'columns' =>
                     [
                         [
                             'name' => 'character',
-                            'sanitizedName' => 'character',
                             'type' => 'character varying',
                             'primaryKey' => false,
-                            'length' => '123',
-                            'nullable' => true,
-                            'ordinalPosition' => 1,
-                            'uniqueKey' => false,
                         ],
                         [
                             'name' => 'integer',
-                            'sanitizedName' => 'integer',
                             'type' => 'integer',
                             'primaryKey' => false,
-                            'nullable' => false,
-                            'default' => '42',
-                            'ordinalPosition' => 2,
-                            'uniqueKey' => false,
                         ],
                         [
                             'name' => 'decimal',
-                            'sanitizedName' => 'decimal',
                             'type' => 'numeric',
                             'primaryKey' => false,
-                            'length' => '5,3',
-                            'nullable' => false,
-                            'default' => '1.2',
-                            'ordinalPosition' => 3,
-                            'uniqueKey' => false,
                         ],
                         [
                             'name' => 'boolean',
-                            'sanitizedName' => 'boolean',
                             'type' => 'boolean',
                             'primaryKey' => false,
-                            'nullable' => false,
-                            'ordinalPosition' => 4,
-                            'uniqueKey' => false,
-                            'default' => 'false',
                         ],
                         [
                             'name' => 'date',
-                            'sanitizedName' => 'date',
                             'type' => 'date',
                             'primaryKey' => false,
-                            'nullable' => true,
-                            'ordinalPosition' => 5,
-                            'uniqueKey' => false,
                         ],
                     ],
             ],
             [
                 'name' => 'escaping',
                 'schema' => 'testing',
-                'type' => 'table',
                 'columns' =>
                     [
                         [
                             'name' => '_funnycol',
-                            'sanitizedName' => 'funnycol',
                             'type' => 'character varying',
                             'primaryKey' => true,
-                            'length' => '123',
-                            'nullable' => false,
-                            'default' => 'column 1',
-                            'ordinalPosition' => 1,
-                            'uniqueKey' => false,
                         ],
                         [
                             'name' => '_sadcol',
-                            'sanitizedName' => 'sadcol',
                             'type' => 'character varying',
                             'primaryKey' => true,
-                            'length' => '221',
-                            'nullable' => false,
-                            'default' => 'column 2',
-                            'ordinalPosition' => 2,
-                            'uniqueKey' => false,
                         ],
                     ],
             ],
@@ -362,6 +274,10 @@ class PgsqlTest extends BaseTest
         $expectedTableMetadata[0] = [
             [
                 'key' => 'KBC.name',
+                'value' => 'types',
+            ],
+            [
+                'key' => 'KBC.sanitizedName',
                 'value' => 'types',
             ],
             [
@@ -573,6 +489,10 @@ class PgsqlTest extends BaseTest
         $expectedTableMetadata[1] = [
             [
                 'key' => 'KBC.name',
+                'value' => 'types_fk',
+            ],
+            [
+                'key' => 'KBC.sanitizedName',
                 'value' => 'types_fk',
             ],
             [
@@ -943,7 +863,7 @@ class PgsqlTest extends BaseTest
         $config['parameters']['tables'][2]['query'] = 'SELECT %%% FROM types';
 
         $this->expectException(UserException::class);
-        $this->expectExceptionMessage('Error executing [in.c-main.types]: SQLSTATE[42601]:');
+        $this->expectExceptionMessage('Error executing "types": SQLSTATE[42601]:');
 
         $app = $this->createApplication($config);
         $app->run();

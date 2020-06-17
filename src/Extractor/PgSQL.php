@@ -23,6 +23,8 @@ class PgSQL extends BaseExtractor
 
     private CopyAdapter $copyAdapter;
 
+    private ?MetadataProvider $metadataProvider = null;
+
     public function __construct(array $parameters, array $state, LoggerInterface $logger)
     {
         $parameters['db']['ssh']['compression'] = true;
@@ -31,7 +33,10 @@ class PgSQL extends BaseExtractor
 
     public function getMetadataProvider(): MetadataProvider
     {
-        return new PgSQLMetadataProvider($this->logger, $this->pdoAdapter);
+        if (!$this->metadataProvider) {
+            $this->metadataProvider = new PgSQLMetadataProvider($this->logger, $this->pdoAdapter);
+        }
+        return $this->metadataProvider;
     }
 
     public function createConnection(array $dbParams): void
@@ -50,6 +55,10 @@ class PgSQL extends BaseExtractor
     {
         if (!$exportConfig instanceof PgsqlExportConfig) {
             throw new InvalidArgumentException('PgsqlExportConfig expected.');
+        }
+
+        if ($exportConfig->isIncrementalFetching()) {
+            $this->validateIncrementalFetching($exportConfig);
         }
 
         $this->logger->info('Exporting to ' . $exportConfig->getOutputTable());
@@ -86,7 +95,7 @@ class PgSQL extends BaseExtractor
                 );
             } catch (PDOException $pdoError) {
                 throw new UserException(
-                    sprintf("Error executing '%s': %s", $logPrefix, $pdoError->getMessage())
+                    sprintf('Error executing "%s": %s', $logPrefix, $pdoError->getMessage())
                 );
             }
         }
@@ -97,7 +106,7 @@ class PgSQL extends BaseExtractor
         } else {
             @unlink($this->getOutputFilename($exportConfig->getOutputTable()));
             $this->logger->warning(sprintf(
-                "Query returned empty result. Nothing was imported to '%s'",
+                'Query returned empty result. Nothing was imported to "%s"',
                 $exportConfig->getOutputTable(),
             ));
         }
@@ -136,7 +145,7 @@ class PgSQL extends BaseExtractor
 
         if ($exportConfig->isIncrementalFetching() && isset($this->state['lastFetchedRow'])) {
             $sql[] = sprintf(
-            // intentionally ">=" last row should be included, it is handled by storage deduplication process
+                // intentionally ">=" last row should be included, it is handled by storage deduplication process
                 'WHERE %s >= %s',
                 $this->pdoAdapter->quoteIdentifier($exportConfig->getIncrementalFetchingColumn()),
                 $this->pdoAdapter->quote((string) $this->state['lastFetchedRow'])
