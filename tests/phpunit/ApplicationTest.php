@@ -129,7 +129,7 @@ class ApplicationTest extends BaseTest
         $process->mustRun();
 
         // valid query should not error
-        $this->assertStringContainsString('Failed \copy command', $process->getOutput());
+        $this->assertStringContainsString('Failed \copy command (will attempt via PDO):', $process->getOutput());
         // assert that PDO attempt succeeded
         $this->assertEquals(0, $process->getExitCode());
         $this->assertTrue($outputCsvFile->isFile());
