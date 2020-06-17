@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Keboola\DbExtractor;
 
 use Keboola\DbExtractor\Configuration\PgsqlExportConfig;
-use Keboola\DbExtractor\Configuration\PgsqlGetTablesConfigDefinition;
 use Keboola\DbExtractor\Configuration\PgsqlConfigRowDefinition;
 use Keboola\DbExtractorConfig\Config;
 use Keboola\DbExtractorConfig\Configuration\ActionConfigRowDefinition;
 use Keboola\DbExtractorConfig\Configuration\ConfigDefinition;
+use Keboola\DbExtractorConfig\Configuration\GetTablesListFilterDefinition;
 use Keboola\DbExtractorConfig\Configuration\ValueObject\ExportConfig;
 use Psr\Log\LoggerInterface;
 
@@ -26,7 +26,7 @@ class PgsqlApplication extends Application
     public function buildConfig(array $config): void
     {
         if ($this['action'] === 'getTables') {
-            $this->config = new Config($config, new PgsqlGetTablesConfigDefinition());
+            $this->config = new Config($config, new GetTablesListFilterDefinition());
         } elseif ($this->isRowConfiguration($config)) {
             if ($this['action'] === 'run') {
                 $this->config = new Config($config, new PgsqlConfigRowDefinition());

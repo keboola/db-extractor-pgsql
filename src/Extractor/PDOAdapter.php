@@ -105,7 +105,7 @@ class PDOAdapter
             $resultRow = $innerStatement->fetch(PDO::FETCH_ASSOC);
             if (!is_array($resultRow) || empty($resultRow)) {
                 // no rows found.  If incremental fetching is turned on, we need to preserve the last state
-                if (isset($incrementalFetching['column']) && isset($this->state['lastFetchedRow'])) {
+                if ($exportConfig->isIncrementalFetching() && isset($this->state['lastFetchedRow'])) {
                     $output['lastFetchedRow'] = $this->state['lastFetchedRow'];
                 }
                 $output['rows'] = 0;
@@ -147,16 +147,16 @@ class PDOAdapter
             $this->pdo->commit();
 
             // get last fetched value
-            if (isset($incrementalFetching['column'])) {
-                if (!array_key_exists($incrementalFetching['column'], $lastRow)) {
+            if ($exportConfig->isIncrementalFetching()) {
+                if (!array_key_exists($exportConfig->getIncrementalFetchingColumn(), $lastRow)) {
                     throw new UserException(
                         sprintf(
                             'The specified incremental fetching column %s not found in the table',
-                            $incrementalFetching['column']
+                            $exportConfig->getIncrementalFetchingColumn()
                         )
                     );
                 }
-                $output['lastFetchedRow'] = $lastRow[$incrementalFetching['column']];
+                $output['lastFetchedRow'] = $lastRow[$exportConfig->getIncrementalFetchingColumn()];
             }
             $output['rows'] = $numRows;
             $this->logger->info("Extraction completed. Fetched {$numRows} rows.");

@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace Keboola\DbExtractor\Tests;
 
-use Keboola\Csv\CsvFile;
-use Keboola\DbExtractor\Test\ExtractorTest;
+use Keboola\Csv\CsvReader;
 use Symfony\Component\Filesystem;
 use Symfony\Component\Process\Process;
-use Keboola\DbExtractor\Exception\UserException;
 
 class ApplicationTest extends BaseTest
 {
@@ -105,9 +103,9 @@ class ApplicationTest extends BaseTest
 
     public function testPDOFallback(): void
     {
-        $outputCsvFile = new CsvFile($this->dataDir . '/out/tables/in.c-main.info_schema.csv');
+        $outputCsvFilePath = $this->dataDir . '/out/tables/in.c-main.info_schema.csv';
         $manifestFile = $this->dataDir . '/out/tables/in.c-main.info_schema.csv.manifest';
-        @unlink($outputCsvFile->getPathname());
+        @unlink($outputCsvFilePath);
         @unlink($manifestFile);
 
         $config = $this->getConfigRow(self::DRIVER);
@@ -132,7 +130,7 @@ class ApplicationTest extends BaseTest
         $this->assertStringContainsString('Failed \copy command (will attempt via PDO):', $process->getOutput());
         // assert that PDO attempt succeeded
         $this->assertEquals(0, $process->getExitCode());
-        $this->assertTrue($outputCsvFile->isFile());
+        $this->assertFileExists($outputCsvFilePath);
         $this->assertFileExists($manifestFile);
     }
 
@@ -212,8 +210,8 @@ class ApplicationTest extends BaseTest
         $config['parameters']['outputTable'] = 'in.c-main.bool_consistency_test';
         $this->replaceConfig($config);
 
-        $expectedCsvFile = new CsvFile($this->dataDir . '/pgsql/types.csv');
-        $outputCsvFile = new CsvFile($this->dataDir . '/out/tables/in.c-main.bool_consistency_test.csv');
+        $expectedCsvFile = new CsvReader($this->dataDir . '/pgsql/types.csv');
+        $outputCsvFile = new CsvReader($this->dataDir . '/out/tables/in.c-main.bool_consistency_test.csv');
 
         $process = Process::fromShellCommandline('php /code/src/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);

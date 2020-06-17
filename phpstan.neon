@@ -3,4 +3,4 @@ parameters:
     excludes_analyse:
         - src/run.php
     ignoreErrors:
-        - '#Cannot call method scalarNode\(\) on Symfony\\Component\\Config\\Definition\\Builder\\NodeParentInterface\|null\.#'
+        - '#Cannot call method .* on Symfony\\Component\\Config\\Definition\\Builder\\NodeParentInterface\|null\.#'
