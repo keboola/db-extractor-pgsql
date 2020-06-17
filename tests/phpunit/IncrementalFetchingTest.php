@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Keboola\DbExtractor\Tests;
 
+use Keboola\Csv\CsvReader;
 use Keboola\DbExtractor\Exception\UserException;
 use Keboola\DbExtractorConfig\Exception\UserException as ConfigUserException;
-use Keboola\Csv\CsvFile;
-use Keboola\DbExtractorLogger\Logger;
+use Keboola\Component\Logger;
 use Monolog\Handler\TestHandler;
 
 class IncrementalFetchingTest extends BaseTest
@@ -444,7 +444,7 @@ class IncrementalFetchingTest extends BaseTest
         $this->assertEquals(4, $result['imported']['rows']);
 
         $outputCsvFile = iterator_to_array(
-            new CsvFile(
+            new CsvReader(
                 $this->dataDir . '/out/tables/' . $result['imported']['outputTable'] . '.csv'
             )
         );
@@ -488,7 +488,7 @@ class IncrementalFetchingTest extends BaseTest
         $config['parameters']['forceFallback'] = true;
         // use a test logger to make sure we can tell that it actually falls back to pdo
         $handler = new TestHandler();
-        $logger = new Logger('test');
+        $logger = new Logger();
         $logger->pushHandler($handler);
         $newResult = ($this->createApplication($config, $result['state'], $logger))->run();
 
