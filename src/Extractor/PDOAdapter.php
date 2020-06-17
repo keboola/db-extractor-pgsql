@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Keboola\DbExtractor\Extractor;
 
-use Psr\Log\LoggerInterface;
-use Throwable;
 use PDO;
 use PDOException;
 use Retry\RetryProxy;
+use Throwable;
+use Psr\Log\LoggerInterface;
+use Keboola\Csv\CsvWriter;
+use Keboola\DbExtractor\Configuration\PgsqlExportConfig;
 use Keboola\DbExtractor\DbRetryProxy;
 use Keboola\DbExtractor\Exception\DeadConnectionException;
 use Keboola\DbExtractor\Exception\UserException;
@@ -44,34 +46,16 @@ class PDOAdapter
         $this->pdo->query('SELECT 1');
     }
 
-    public function export(
-        string $query,
-        bool $advancedQuery,
-        int $maxTries,
-        bool $replaceBooleans,
-        ?array $incrementalFetching,
-        CsvFile $csvFile
-    ): array {
+    public function export(string $query, PgsqlExportConfig $exportConfig, CsvWriter $csvFile): array
+    {
         // Check connection
         $this->tryReconnect();
 
         return $this
-            ->createRetryProxy($maxTries)
-            ->call(function () use (
-                $query,
-                $csvFile,
-                $advancedQuery,
-                $replaceBooleans,
-                $incrementalFetching
-            ) {
+            ->createRetryProxy($exportConfig->getMaxRetries())
+            ->call(function () use ($query, $exportConfig, $csvFile) {
                 try {
-                    return $this->executeQueryPDO(
-                        $query,
-                        $csvFile,
-                        $advancedQuery,
-                        $replaceBooleans,
-                        $incrementalFetching,
-                    );
+                    return $this->executeQueryPDO($query, $exportConfig, $csvFile);
                 } catch (Throwable $queryError) {
                     try {
                         $this->createConnection();
@@ -107,13 +91,8 @@ class PDOAdapter
         return "\"{$str}\"";
     }
 
-    protected function executeQueryPDO(
-        string $query,
-        CsvFile $csv,
-        bool $advancedQuery,
-        bool $replaceBooleans,
-        ?array $incrementalFetching
-    ): array {
+    protected function executeQueryPDO(string $query, PgsqlExportConfig $exportConfig, CsvWriter $csv): array
+    {
         $cursorName = 'exdbcursor' . intval(microtime(true));
         $curSql = "DECLARE $cursorName CURSOR FOR $query";
         try {
@@ -132,11 +111,11 @@ class PDOAdapter
                 $output['rows'] = 0;
                 return $output;
             }
-            if ($replaceBooleans) {
+            if ($exportConfig->getReplaceBooleans()) {
                 $resultRow = $this->replaceBooleanValues($resultRow);
             }
             // only write header for advanced query case
-            if ($advancedQuery) {
+            if ($exportConfig->hasQuery()) {
                 $csv->writeRow(array_keys($resultRow));
             }
             $csv->writeRow($resultRow);
@@ -155,7 +134,7 @@ class PDOAdapter
                 }
 
                 foreach ($resultRows as $resultRow) {
-                    if ($replaceBooleans) {
+                    if ($exportConfig->getReplaceBooleans()) {
                         $resultRow = $this->replaceBooleanValues($resultRow);
                     }
                     $csv->writeRow($resultRow);
@@ -240,7 +219,7 @@ class PDOAdapter
         } catch (DeadConnectionException $e) {
             $reconnectionRetryProxy = new DbRetryProxy(
                 $this->logger,
-                Extractor::DEFAULT_MAX_TRIES,
+                DbRetryProxy::DEFAULT_MAX_TRIES,
                 null,
                 1000
             );

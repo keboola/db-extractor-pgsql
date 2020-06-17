@@ -9,7 +9,7 @@ use Keboola\DbExtractor\TableResultFormat\Table;
 use Keboola\DbExtractor\TableResultFormat\TableColumn;
 use Psr\Log\LoggerInterface;
 
-class PgSQLMetadataProvider
+class PgSQLMetadataProvider implements MetadataProvider
 {
     private LoggerInterface $logger;
 
