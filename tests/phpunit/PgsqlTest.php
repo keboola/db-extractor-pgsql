@@ -1023,7 +1023,7 @@ class PgsqlTest extends BaseTest
         echo "\nComplete test finished in  " . $entireTime . " seconds.\n";
     }
 
-    public function testBadSprintf(): void
+    public function testBadQuery(): void
     {
         $config = $this->getConfig();
 
@@ -1032,10 +1032,10 @@ class PgsqlTest extends BaseTest
         unset($config['parameters']['tables'][1]);
         unset($config['parameters']['tables'][2]['columns']);
         unset($config['parameters']['tables'][2]['table']);
-        $config['parameters']['tables'][2]['query'] = 'SELECT %s FROM types';
+        $config['parameters']['tables'][2]['query'] = 'SELECT %%% FROM types';
 
         $this->expectException(UserException::class);
-        $this->expectExceptionMessageRegExp('/^Error executing \[in.c-main.types\]\: SQLSTATE\[42601\]\:.*/');
+        $this->expectExceptionMessage('Error executing [in.c-main.types]: SQLSTATE[42601]:');
 
         $app = $this->createApplication($config);
         $app->run();
