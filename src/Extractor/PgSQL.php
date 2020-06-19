@@ -4,44 +4,39 @@ declare(strict_types=1);
 
 namespace Keboola\DbExtractor\Extractor;
 
+use PDOException;
+use Psr\Log\LoggerInterface;
+use InvalidArgumentException;
+use Keboola\Datatype\Definition\Exception\InvalidLengthException;
 use Keboola\Datatype\Definition\GenericStorage;
-use Keboola\DbExtractor\Exception\ApplicationException;
 use Keboola\DbExtractor\Exception\CopyAdapterException;
 use Keboola\DbExtractor\Exception\UserException;
-use Keboola\DbExtractorLogger\Logger;
-use PDOException;
+use Keboola\DbExtractor\TableResultFormat\Exception\ColumnNotFoundException;
+use Keboola\DbExtractorConfig\Configuration\ValueObject\ExportConfig;
+use Keboola\DbExtractor\Configuration\PgsqlExportConfig;
 
-class PgSQL extends Extractor
+class PgSQL extends BaseExtractor
 {
-    public const DEFAULT_MAX_TRIES = 5;
-    public const INCREMENT_TYPE_NUMERIC = 'numeric';
-    public const INCREMENT_TYPE_TIMESTAMP = 'timestamp';
-    public const NUMERIC_BASE_TYPES = ['INTEGER', 'NUMERIC', 'FLOAT'];
-
-    private PgSQLMetadataProvider $metadataProvider;
+    public const INCREMENTAL_TYPES = ['INTEGER', 'NUMERIC', 'FLOAT', 'TIMESTAMP'];
 
     private PDOAdapter $pdoAdapter;
 
     private CopyAdapter $copyAdapter;
 
-    private array $tablesToList = [];
+    private ?MetadataProvider $metadataProvider = null;
 
-    private bool $listColumns = true;
-
-    public function __construct(array $parameters, array $state = [], ?Logger $logger = null)
+    public function __construct(array $parameters, array $state, LoggerInterface $logger)
     {
         $parameters['db']['ssh']['compression'] = true;
         parent::__construct($parameters, $state, $logger);
-        if (!empty($parameters['tableListFilter'])) {
-            if (!empty($parameters['tableListFilter']['tablesToList'])) {
-                $this->tablesToList = $parameters['tableListFilter']['tablesToList'];
-            }
-            if (isset($parameters['tableListFilter']['listColumns'])) {
-                $this->listColumns = $parameters['tableListFilter']['listColumns'];
-            }
-        }
+    }
 
-        $this->metadataProvider = new PgSQLMetadataProvider($this->logger, $this->pdoAdapter);
+    public function getMetadataProvider(): MetadataProvider
+    {
+        if (!$this->metadataProvider) {
+            $this->metadataProvider = new PgSQLMetadataProvider($this->logger, $this->pdoAdapter);
+        }
+        return $this->metadataProvider;
     }
 
     public function createConnection(array $dbParams): void
@@ -56,107 +51,69 @@ class PgSQL extends Extractor
         $this->copyAdapter->testConnection();
     }
 
-    public function getTables(?array $tables = null): array
+    public function export(ExportConfig $exportConfig): array
     {
-        if (!$this->listColumns) {
-            return $this->metadataProvider->getOnlyTables($this->tablesToList);
+        if (!$exportConfig instanceof PgsqlExportConfig) {
+            throw new InvalidArgumentException('PgsqlExportConfig expected.');
         }
 
-        if ($this->tablesToList && !$tables) {
-            $tables = $this->tablesToList;
+        if ($exportConfig->isIncrementalFetching()) {
+            $this->validateIncrementalFetching($exportConfig);
         }
 
-        return $this->metadataProvider->getTables($tables);
-    }
-
-
-    public function export(array $table): array
-    {
-        $outputTable = $table['outputTable'];
-        $this->logger->info('Exporting to ' . $outputTable);
-
-        if (!isset($table['query']) || $table['query'] === '') {
-            $advancedQuery = false;
-            $query = $this->simpleQuery($table['table'], $table['columns']);
-        } else {
-            $advancedQuery = true;
-            $query = $table['query'];
-        }
-
-        $maxTries = isset($table['retries']) ? (int) $table['retries'] : self::DEFAULT_MAX_TRIES;
-        $replaceBooleans = isset($table['useConsistentFallbackBooleanStyle']) ?
-            $table['useConsistentFallbackBooleanStyle'] :
-            false;
-        $forceFallback = isset($table['forceFallback']) && $table['forceFallback'] === true;
+        $this->logger->info('Exporting to ' . $exportConfig->getOutputTable());
+        $query = $exportConfig->hasQuery() ? $exportConfig->getQuery() : $this->simpleQuery($exportConfig);
+        $logPrefix = $exportConfig->hasConfigName() ? $exportConfig->getConfigName() : $exportConfig->getOutputTable();
 
         // Copy adapter
         $result = null;
-        if ($forceFallback) {
+        if ($exportConfig->getForceFallback()) {
             $this->logger->warning('Forcing extractor to use PDO fallback fetching');
         } else {
-            $columnMetadata = $advancedQuery ? [] : $this->metadataProvider->getColumnMetadataFromTable($table);
-            $this->logger->info(sprintf("Executing query '%s' via \copy ...", $outputTable));
+            $this->logger->info(sprintf("Executing query '%s' via \copy ...", $logPrefix));
             try {
                 $result = $this->copyAdapter->export(
                     $query,
-                    $advancedQuery,
-                    $columnMetadata,
-                    $this->incrementalFetching,
-                    $this->createOutputCsv($outputTable)
+                    $exportConfig,
+                    $this->getMetadataProvider(),
+                    $this->getOutputFilename($exportConfig->getOutputTable())
                 );
             } catch (CopyAdapterException $e) {
-                @unlink($this->getOutputFilename($outputTable));
+                @unlink($this->getOutputFilename($exportConfig->getOutputTable()));
                 $this->logger->info('Failed \copy command (will attempt via PDO): ' . $e->getMessage());
             }
         }
 
         // PDO (fallback) adapter
         if ($result === null) {
-            $this->logger->info(sprintf("Executing query '%s' via PDO ...", $outputTable));
+            $this->logger->info(sprintf("Executing query '%s' via PDO ...", $logPrefix));
             try {
                 $result = $this->pdoAdapter->export(
                     $query,
-                    $advancedQuery,
-                    $maxTries,
-                    $replaceBooleans,
-                    $this->incrementalFetching,
-                    $this->createOutputCsv($outputTable)
+                    $exportConfig,
+                    $this->createOutputCsv($exportConfig->getOutputTable())
                 );
             } catch (PDOException $pdoError) {
                 throw new UserException(
-                    sprintf(
-                        'Error executing [%s]: %s',
-                        $outputTable,
-                        $pdoError->getMessage()
-                    )
+                    sprintf('Error executing "%s": %s', $logPrefix, $pdoError->getMessage())
                 );
             }
         }
 
+        // Manifest
         if ($result['rows'] > 0) {
-            if ($this->createManifest($table) === false) {
-                throw new ApplicationException(
-                    'Unable to create manifest',
-                    0,
-                    null,
-                    [
-                        'table' => $table,
-                    ]
-                );
-            }
+            $this->createManifest($exportConfig);
         } else {
-            @unlink($this->getOutputFilename($outputTable));
-            $this->logger->warning(
-                sprintf(
-                    'Query returned empty result. Nothing was imported to [%s]',
-                    $table['outputTable']
-                )
-            );
+            @unlink($this->getOutputFilename($exportConfig->getOutputTable()));
+            $this->logger->warning(sprintf(
+                'Query returned empty result. Nothing was imported to "%s"',
+                $exportConfig->getOutputTable(),
+            ));
         }
 
         // Output state
         $output = [
-            'outputTable' => $outputTable,
+            'outputTable' => $exportConfig->getOutputTable(),
             'rows' => $result['rows'],
         ];
 
@@ -167,105 +124,97 @@ class PgSQL extends Extractor
         return $output;
     }
 
-
-    public function simpleQuery(array $table, array $columns = []): string
+    public function simpleQuery(ExportConfig $exportConfig): string
     {
-        $incrementalAddon = null;
+        $sql = [];
 
-        if (count($columns) > 0) {
-            $query = sprintf(
-                'SELECT %s FROM %s.%s',
-                implode(', ', array_map(function ($column): string {
-                    return $this->pdoAdapter->quoteIdentifier($column);
-                }, $columns)),
-                $this->pdoAdapter->quoteIdentifier($table['schema']),
-                $this->pdoAdapter->quoteIdentifier($table['tableName'])
-            );
+        if ($exportConfig->hasColumns()) {
+            $sql[] = sprintf('SELECT %s', implode(', ', array_map(
+                fn(string $c) => $this->pdoAdapter->quoteIdentifier($c),
+                $exportConfig->getColumns()
+            )));
         } else {
-            $query = sprintf(
-                'SELECT * FROM %s.%s',
-                $this->pdoAdapter->quoteIdentifier($table['schema']),
-                $this->pdoAdapter->quoteIdentifier($table['tableName'])
-            );
+            $sql[] = 'SELECT *';
         }
 
-        if ($this->incrementalFetching && isset($this->incrementalFetching['column'])) {
-            if (isset($this->state['lastFetchedRow'])) {
-                $query .= sprintf(
-                    ' WHERE %s >= %s',
-                    $this->pdoAdapter->quoteIdentifier($this->incrementalFetching['column']),
-                    $this->pdoAdapter->quote((string) $this->state['lastFetchedRow'])
-                );
-            }
-            $query .= sprintf(' ORDER BY %s', $this->pdoAdapter->quoteIdentifier($this->incrementalFetching['column']));
-
-            if (isset($this->incrementalFetching['limit'])) {
-                $query .= sprintf(
-                    ' LIMIT %d',
-                    $this->incrementalFetching['limit']
-                );
-            }
-        }
-        return $query;
-    }
-
-    public function validateIncrementalFetching(array $table, string $columnName, ?int $limit = null): void
-    {
-        $sql = sprintf(
-            'SELECT * FROM INFORMATION_SCHEMA.COLUMNS as cols
-                            WHERE TABLE_SCHEMA = %s AND TABLE_NAME = %s AND COLUMN_NAME = %s',
-            $this->pdoAdapter->quote($table['schema']),
-            $this->pdoAdapter->quote($table['tableName']),
-            $this->pdoAdapter->quote($columnName)
+        $sql[] = sprintf(
+            'FROM %s.%s',
+            $this->pdoAdapter->quoteIdentifier($exportConfig->getTable()->getSchema()),
+            $this->pdoAdapter->quoteIdentifier($exportConfig->getTable()->getName())
         );
 
-        $columns = $this->pdoAdapter->runRetryableQuery($sql);
-        if (count($columns) === 0) {
+        if ($exportConfig->isIncrementalFetching() && isset($this->state['lastFetchedRow'])) {
+            $sql[] = sprintf(
+                // intentionally ">=" last row should be included, it is handled by storage deduplication process
+                'WHERE %s >= %s',
+                $this->pdoAdapter->quoteIdentifier($exportConfig->getIncrementalFetchingColumn()),
+                $this->pdoAdapter->quote((string) $this->state['lastFetchedRow'])
+            );
+        }
+
+        if ($exportConfig->isIncrementalFetching()) {
+            $sql[] = sprintf(
+                'ORDER BY %s',
+                $this->pdoAdapter->quoteIdentifier($exportConfig->getIncrementalFetchingColumn())
+            );
+        }
+
+        if ($exportConfig->hasIncrementalFetchingLimit()) {
+            $sql[] = sprintf('LIMIT %d', $exportConfig->getIncrementalFetchingLimit());
+        }
+
+        return implode(' ', $sql);
+    }
+
+    public function validateIncrementalFetching(ExportConfig $exportConfig): void
+    {
+        try {
+            $column = $this
+                ->getMetadataProvider()
+                ->getTable($exportConfig->getTable())
+                ->getColumns()
+                ->getByName($exportConfig->getIncrementalFetchingColumn());
+        } catch (ColumnNotFoundException $e) {
             throw new UserException(
                 sprintf(
-                    'Column [%s] specified for incremental fetching was not found in the table',
-                    $columnName
+                    'Column "%s" specified for incremental fetching was not found in the table',
+                    $exportConfig->getIncrementalFetchingColumn()
                 )
             );
         }
 
         try {
-            $datatype = new GenericStorage($columns[0]['data_type']);
-            if (in_array($datatype->getBasetype(), self::NUMERIC_BASE_TYPES)) {
-                $this->incrementalFetching['column'] = $columnName;
-                $this->incrementalFetching['type'] = self::INCREMENT_TYPE_NUMERIC;
-            } else if ($datatype->getBasetype() === 'TIMESTAMP') {
-                $this->incrementalFetching['column'] = $columnName;
-                $this->incrementalFetching['type'] = self::INCREMENT_TYPE_TIMESTAMP;
-            } else {
-                throw new UserException('invalid incremental fetching column type');
-            }
-        } catch (\Keboola\Datatype\Definition\Exception\InvalidLengthException | UserException $exception) {
+            $datatype = new GenericStorage($column->getType());
+            $type = $datatype->getBasetype();
+        } catch (InvalidLengthException $e) {
             throw new UserException(
                 sprintf(
-                    'Column [%s] specified for incremental fetching is not a numeric or timestamp type column',
-                    $columnName
+                    'Column "%s" specified for incremental fetching must has numeric or timestamp type.',
+                    $exportConfig->getIncrementalFetchingColumn()
                 )
             );
         }
 
-        if ($limit && $limit >= 0) {
-            $this->incrementalFetching['limit'] = $limit;
-        } else if ($limit < 0) {
-            throw new UserException('The limit parameter must be an integer >= 0');
+        if (!in_array($type, self::INCREMENTAL_TYPES, true)) {
+            throw new UserException(sprintf(
+                'Column "%s" specified for incremental fetching has unexpected type "%s", expected: "%s".',
+                $exportConfig->getIncrementalFetchingColumn(),
+                $datatype->getBasetype(),
+                implode('", "', self::INCREMENTAL_TYPES),
+            ));
         }
     }
 
-    public function getMaxOfIncrementalFetchingColumn(array $table): ?string
+    public function getMaxOfIncrementalFetchingColumn(ExportConfig $exportConfig): ?string
     {
         $result = $this->pdoAdapter->runRetryableQuery(sprintf(
             'SELECT MAX(%s) as %s FROM %s.%s',
-            $this->pdoAdapter->quoteIdentifier($this->incrementalFetching['column']),
-            $this->pdoAdapter->quoteIdentifier($this->incrementalFetching['column']),
-            $this->pdoAdapter->quoteIdentifier($table['schema']),
-            $this->pdoAdapter->quoteIdentifier($table['tableName'])
+            $this->pdoAdapter->quoteIdentifier($exportConfig->getIncrementalFetchingColumn()),
+            $this->pdoAdapter->quoteIdentifier($exportConfig->getIncrementalFetchingColumn()),
+            $this->pdoAdapter->quoteIdentifier($exportConfig->getTable()->getSchema()),
+            $this->pdoAdapter->quoteIdentifier($exportConfig->getTable()->getName())
         ));
 
-        return count($result) > 0 ? $result[0][$this->incrementalFetching['column']] : null;
+        return count($result) > 0 ? $result[0][$exportConfig->getIncrementalFetchingColumn()] : null;
     }
 }

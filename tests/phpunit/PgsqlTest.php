@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Keboola\DbExtractor\Tests;
 
-use Keboola\Csv\CsvFile;
+use Keboola\Csv\CsvReader;
 use Keboola\DbExtractor\Exception\UserException;
-use Symfony\Component\Process\Process;
 
 class PgsqlTest extends BaseTest
 {
@@ -14,12 +13,13 @@ class PgsqlTest extends BaseTest
     {
         $config = $this->getConfig('pgsql');
         $result = $this->createApplication($config)->run();
-        $expectedCsvFile = new CsvFile($this->dataDir . '/pgsql/escaping.csv');
-        $outputCsvFile = new CsvFile($this->dataDir . '/out/tables/' . $result['imported'][0]['outputTable'] . '.csv');
+        $expectedCsvFile = new CsvReader($this->dataDir . '/pgsql/escaping.csv');
+        $outputCsvFile = new CsvReader(
+            $this->dataDir . '/out/tables/' . $result['imported'][0]['outputTable'] . '.csv'
+        );
         $outputManifestFile = $this->dataDir . '/out/tables/' . $result['imported'][0]['outputTable'] . '.csv.manifest';
 
         $this->assertEquals('success', $result['status']);
-        $this->assertTrue($outputCsvFile->isFile());
         $this->assertFileExists($outputManifestFile);
         $outputManifest = json_decode((string) file_get_contents($outputManifestFile), true);
 
@@ -48,8 +48,10 @@ class PgsqlTest extends BaseTest
         $app = $this->createApplication($config);
         $result = $app->run();
 
-        $expectedCsvFile = new CsvFile($this->dataDir . '/pgsql/escaping.csv');
-        $outputCsvFile = new CsvFile($this->dataDir . '/out/tables/' . $result['imported'][0]['outputTable'] . '.csv');
+        $expectedCsvFile = new CsvReader($this->dataDir . '/pgsql/escaping.csv');
+        $outputCsvFile = new CsvReader(
+            $this->dataDir . '/out/tables/' . $result['imported'][0]['outputTable'] . '.csv'
+        );
         $outputManifestFile = $this->dataDir . '/out/tables/' . $result['imported'][0]['outputTable'] . '.csv.manifest';
         $this->assertFileExists($outputManifestFile);
 
@@ -58,7 +60,6 @@ class PgsqlTest extends BaseTest
         $this->assertEquals(['funnycol', 'sadcol'], $outputManifest['primary_key']);
 
         $this->assertEquals('success', $result['status']);
-        $this->assertTrue($outputCsvFile->isFile());
 
         $outputArr = iterator_to_array($outputCsvFile);
         $expectedArr = iterator_to_array($expectedCsvFile);
@@ -98,7 +99,7 @@ class PgsqlTest extends BaseTest
         $app = $this->createApplication($config);
 
         try {
-            $result = $app->run();
+            $app->run();
             $this->fail('Invalid credentials should throw exception');
         } catch (UserException $exception) {
             $this->assertStringStartsWith('Connection failed', $exception->getMessage());
@@ -112,7 +113,7 @@ class PgsqlTest extends BaseTest
 
         $app = $this->createApplication($config);
         try {
-            $result = $app->run();
+            $app->run();
             $this->fail('Invalid credentials should throw exception');
         } catch (UserException $exception) {
             $this->assertStringStartsWith('Error connecting', $exception->getMessage());
@@ -131,228 +132,122 @@ class PgsqlTest extends BaseTest
         $this->assertArrayHasKey('tables', $result);
         $this->assertCount(5, $result['tables']);
 
-        $expectedData = array (
-            0 => array(
+        $expectedData = [
+            [
                 'name' => 'empty_table',
                 'schema' => 'public',
-                'type' => 'table',
-                'columns' => array(
-                    0 => array(
+                'columns' => [
+                    [
                         'name' => 'integer',
-                        'sanitizedName' => 'integer',
                         'type' => 'integer',
                         'primaryKey' => false,
-                        'nullable' => false,
-                        'default' => '42',
-                        'ordinalPosition' => 1,
-                        'uniqueKey' => false,
-                    ),
-                    1 => array(
+                    ],
+                    [
                         'name' => 'date',
-                        'sanitizedName' => 'date',
                         'type' => 'date',
                         'primaryKey' => false,
-                        'nullable' => true,
-                        'ordinalPosition' => 2,
-                        'uniqueKey' => false,
-                    ),
-                ),
-            ),
-            1 =>
-                array (
-                    'name' => 'escaping',
-                    'schema' => 'public',
-                    'type' => 'table',
-                    'columns' =>
-                        array (
-                            0 =>
-                                array (
-                                    'name' => '_funnycol',
-                                    'sanitizedName' => 'funnycol',
-                                    'type' => 'character varying',
-                                    'primaryKey' => true,
-                                    'length' => '123',
-                                    'nullable' => false,
-                                    'default' => 'column 1',
-                                    'ordinalPosition' => 1,
-                                    'uniqueKey' => false,
-                                ),
-                            1 =>
-                                array (
-                                    'name' => '_sadcol',
-                                    'sanitizedName' => 'sadcol',
-                                    'type' => 'character varying',
-                                    'primaryKey' => true,
-                                    'length' => '221',
-                                    'nullable' => false,
-                                    'default' => 'column 2',
-                                    'ordinalPosition' => 2,
-                                    'uniqueKey' => false,
-                                ),
-                        ),
-                ),
-            2 =>
-                array (
-                    'name' => 'types',
-                    'schema' => 'public',
-                    'type' => 'table',
-                    'columns' =>
-                        array (
-                            0 =>
-                                array (
-                                    'name' => 'character',
-                                    'sanitizedName' => 'character',
-                                    'type' => 'character varying',
-                                    'primaryKey' => true,
-                                    'length' => 123,
-                                    'nullable' => false,
-                                    'ordinalPosition' => 1,
-                                    'uniqueKey' => false,
-                                ),
-                            1 =>
-                                array (
-                                    'name' => 'integer',
-                                    'sanitizedName' => 'integer',
-                                    'type' => 'integer',
-                                    'primaryKey' => false,
-                                    'nullable' => false,
-                                    'default' => '42',
-                                    'ordinalPosition' => 2,
-                                    'uniqueKey' => false,
-                                ),
-                            2 =>
-                                array (
-                                    'name' => 'decimal',
-                                    'sanitizedName' => 'decimal',
-                                    'type' => 'numeric',
-                                    'primaryKey' => false,
-                                    'length' => '5,3',
-                                    'nullable' => false,
-                                    'default' => '1.2',
-                                    'ordinalPosition' => 3,
-                                    'uniqueKey' => false,
-                                ),
-                            3 =>
-                                array (
-                                    'name' => 'boolean',
-                                    'sanitizedName' => 'boolean',
-                                    'type' => 'boolean',
-                                    'primaryKey' => false,
-                                    'nullable' => false,
-                                    'ordinalPosition' => 4,
-                                    'uniqueKey' => false,
-                                    'default' => 'false',
-                                ),
-                            4 =>
-                                array (
-                                    'name' => 'date',
-                                    'sanitizedName' => 'date',
-                                    'type' => 'date',
-                                    'primaryKey' => false,
-                                    'nullable' => true,
-                                    'ordinalPosition' => 5,
-                                    'uniqueKey' => false,
-                                ),
-                        ),
-                ),
-            3 =>
-                array (
-                    'name' => 'types_fk',
-                    'schema' => 'public',
-                    'type' => 'table',
-                    'columns' =>
-                        array(
-                            0 =>
-                                array(
-                                    'name' => 'character',
-                                    'sanitizedName' => 'character',
-                                    'type' => 'character varying',
-                                    'primaryKey' => false,
-                                    'length' => '123',
-                                    'nullable' => true,
-                                    'ordinalPosition' => 1,
-                                    'uniqueKey' => false,
-                                ),
-                            1 =>
-                                array(
-                                    'name' => 'integer',
-                                    'sanitizedName' => 'integer',
-                                    'type' => 'integer',
-                                    'primaryKey' => false,
-                                    'nullable' => false,
-                                    'default' => '42',
-                                    'ordinalPosition' => 2,
-                                    'uniqueKey' => false,
-                                ),
-                            2 =>
-                                array(
-                                    'name' => 'decimal',
-                                    'sanitizedName' => 'decimal',
-                                    'type' => 'numeric',
-                                    'primaryKey' => false,
-                                    'length' => '5,3',
-                                    'nullable' => false,
-                                    'default' => '1.2',
-                                    'ordinalPosition' => 3,
-                                    'uniqueKey' => false,
-                                ),
-                            3 =>
-                                array (
-                                    'name' => 'boolean',
-                                    'sanitizedName' => 'boolean',
-                                    'type' => 'boolean',
-                                    'primaryKey' => false,
-                                    'nullable' => false,
-                                    'ordinalPosition' => 4,
-                                    'uniqueKey' => false,
-                                    'default' => 'false',
-                                ),
-                            4 =>
-                                array (
-                                    'name' => 'date',
-                                    'sanitizedName' => 'date',
-                                    'type' => 'date',
-                                    'primaryKey' => false,
-                                    'nullable' => true,
-                                    'ordinalPosition' => 5,
-                                    'uniqueKey' => false,
-                                ),
-                        ),
-                ),
-            4 =>
-                array (
-                    'name' => 'escaping',
-                    'schema' => 'testing',
-                    'type' => 'table',
-                    'columns' =>
-                        array (
-                            0 =>
-                                array (
-                                    'name' => '_funnycol',
-                                    'sanitizedName' => 'funnycol',
-                                    'type' => 'character varying',
-                                    'primaryKey' => true,
-                                    'length' => '123',
-                                    'nullable' => false,
-                                    'default' => 'column 1',
-                                    'ordinalPosition' => 1,
-                                    'uniqueKey' => false,
-                                ),
-                            1 =>
-                                array (
-                                    'name' => '_sadcol',
-                                    'sanitizedName' => 'sadcol',
-                                    'type' => 'character varying',
-                                    'primaryKey' => true,
-                                    'length' => '221',
-                                    'nullable' => false,
-                                    'default' => 'column 2',
-                                    'ordinalPosition' => 2,
-                                    'uniqueKey' => false,
-                                ),
-                        ),
-                ),
-        );
+                    ],
+                ],
+            ],
+            [
+                'name' => 'escaping',
+                'schema' => 'public',
+                'columns' =>
+                    [
+                        [
+                            'name' => '_funnycol',
+                            'type' => 'character varying',
+                            'primaryKey' => true,
+                        ],
+                        [
+                            'name' => '_sadcol',
+                            'type' => 'character varying',
+                            'primaryKey' => true,
+                        ],
+                    ],
+            ],
+            [
+                'name' => 'types',
+                'schema' => 'public',
+                'columns' =>
+                    [
+                        [
+                            'name' => 'character',
+                            'type' => 'character varying',
+                            'primaryKey' => true,
+                        ],
+                        [
+                            'name' => 'integer',
+                            'type' => 'integer',
+                            'primaryKey' => false,
+                        ],
+                        [
+                            'name' => 'decimal',
+                            'type' => 'numeric',
+                            'primaryKey' => false,
+                        ],
+                        [
+                            'name' => 'boolean',
+                            'type' => 'boolean',
+                            'primaryKey' => false,
+                        ],
+                        [
+                            'name' => 'date',
+                            'type' => 'date',
+                            'primaryKey' => false,
+                        ],
+                    ],
+            ],
+            [
+                'name' => 'types_fk',
+                'schema' => 'public',
+                'columns' =>
+                    [
+                        [
+                            'name' => 'character',
+                            'type' => 'character varying',
+                            'primaryKey' => false,
+                        ],
+                        [
+                            'name' => 'integer',
+                            'type' => 'integer',
+                            'primaryKey' => false,
+                        ],
+                        [
+                            'name' => 'decimal',
+                            'type' => 'numeric',
+                            'primaryKey' => false,
+                        ],
+                        [
+                            'name' => 'boolean',
+                            'type' => 'boolean',
+                            'primaryKey' => false,
+                        ],
+                        [
+                            'name' => 'date',
+                            'type' => 'date',
+                            'primaryKey' => false,
+                        ],
+                    ],
+            ],
+            [
+                'name' => 'escaping',
+                'schema' => 'testing',
+                'columns' =>
+                    [
+                        [
+                            'name' => '_funnycol',
+                            'type' => 'character varying',
+                            'primaryKey' => true,
+                        ],
+                        [
+                            'name' => '_sadcol',
+                            'type' => 'character varying',
+                            'primaryKey' => true,
+                        ],
+                    ],
+            ],
+        ];
 
         $this->assertEquals($expectedData, $result['tables']);
     }
@@ -377,505 +272,435 @@ class PgsqlTest extends BaseTest
         $result = $app->run();
 
         $expectedTableMetadata[0] = [
-            0 =>
-                [
-                    'key' => 'KBC.name',
-                    'value' => 'types',
-                ],
-                1 =>
-                [
-                    'key' => 'KBC.schema',
-                    'value' => 'public',
-                ],
-                2 =>
-                [
-                    'key' => 'KBC.type',
-                    'value' => 'table',
-                ],
+            [
+                'key' => 'KBC.name',
+                'value' => 'types',
+            ],
+            [
+                'key' => 'KBC.sanitizedName',
+                'value' => 'types',
+            ],
+            [
+                'key' => 'KBC.schema',
+                'value' => 'public',
+            ],
+            [
+                'key' => 'KBC.type',
+                'value' => 'table',
+            ],
         ];
-        $expectedColumnMetadata[0] = array (
+        $expectedColumnMetadata[0] = [
             'character' =>
-                array (
-                    0 =>
-                        array (
-                            'key' => 'KBC.datatype.type',
-                            'value' => 'character varying',
-                        ),
-                    1 =>
-                        array (
-                            'key' => 'KBC.datatype.nullable',
-                            'value' => false,
-                        ),
-                    2 =>
-                        array (
-                            'key' => 'KBC.datatype.basetype',
-                            'value' => 'STRING',
-                        ),
-                    3 =>
-                        array (
-                            'key' => 'KBC.datatype.length',
-                            'value' => 123,
-                        ),
-                    4 =>
-                        array (
-                            'key' => 'KBC.sourceName',
-                            'value' => 'character',
-                        ),
-                    5 =>
-                        array (
-                            'key' => 'KBC.sanitizedName',
-                            'value' => 'character',
-                        ),
-                    6 =>
-                        array (
-                            'key' => 'KBC.primaryKey',
-                            'value' => true,
-                        ),
-                    7 =>
-                        array (
-                            'key' => 'KBC.uniqueKey',
-                            'value' => false,
-                        ),
-                    8 =>
-                        array (
-                            'key' => 'KBC.ordinalPosition',
-                            'value' => 1,
-                        ),
-                ),
+                [
+                    [
+                        'key' => 'KBC.datatype.type',
+                        'value' => 'character varying',
+                    ],
+                    [
+                        'key' => 'KBC.datatype.nullable',
+                        'value' => false,
+                    ],
+                    [
+                        'key' => 'KBC.datatype.basetype',
+                        'value' => 'STRING',
+                    ],
+                    [
+                        'key' => 'KBC.datatype.length',
+                        'value' => 123,
+                    ],
+                    [
+                        'key' => 'KBC.sourceName',
+                        'value' => 'character',
+                    ],
+                    [
+                        'key' => 'KBC.sanitizedName',
+                        'value' => 'character',
+                    ],
+                    [
+                        'key' => 'KBC.primaryKey',
+                        'value' => true,
+                    ],
+                    [
+                        'key' => 'KBC.uniqueKey',
+                        'value' => false,
+                    ],
+                    [
+                        'key' => 'KBC.ordinalPosition',
+                        'value' => 1,
+                    ],
+                ],
             'integer' =>
-                array (
-                    0 =>
-                        array (
-                            'key' => 'KBC.datatype.type',
-                            'value' => 'integer',
-                        ),
-                    1 =>
-                        array (
-                            'key' => 'KBC.datatype.nullable',
-                            'value' => false,
-                        ),
-                    2 =>
-                        array (
-                            'key' => 'KBC.datatype.basetype',
-                            'value' => 'INTEGER',
-                        ),
-                    3 =>
-                        array (
-                            'key' => 'KBC.datatype.default',
-                            'value' => '42',
-                        ),
-                    4 =>
-                        array (
-                            'key' => 'KBC.sourceName',
-                            'value' => 'integer',
-                        ),
-                    5 =>
-                        array (
-                            'key' => 'KBC.sanitizedName',
-                            'value' => 'integer',
-                        ),
-                    6 =>
-                        array (
-                            'key' => 'KBC.primaryKey',
-                            'value' => false,
-                        ),
-                    7 =>
-                        array (
-                            'key' => 'KBC.uniqueKey',
-                            'value' => false,
-                        ),
-                    8 =>
-                        array (
-                            'key' => 'KBC.ordinalPosition',
-                            'value' => 2,
-                        ),
-                ),
+                [
+                    [
+                        'key' => 'KBC.datatype.type',
+                        'value' => 'integer',
+                    ],
+                    [
+                        'key' => 'KBC.datatype.nullable',
+                        'value' => false,
+                    ],
+                    [
+                        'key' => 'KBC.datatype.basetype',
+                        'value' => 'INTEGER',
+                    ],
+                    [
+                        'key' => 'KBC.datatype.default',
+                        'value' => '42',
+                    ],
+                    [
+                        'key' => 'KBC.sourceName',
+                        'value' => 'integer',
+                    ],
+                    [
+                        'key' => 'KBC.sanitizedName',
+                        'value' => 'integer',
+                    ],
+                    [
+                        'key' => 'KBC.primaryKey',
+                        'value' => false,
+                    ],
+                    [
+                        'key' => 'KBC.uniqueKey',
+                        'value' => false,
+                    ],
+                    [
+                        'key' => 'KBC.ordinalPosition',
+                        'value' => 2,
+                    ],
+                ],
             'decimal' =>
-                array (
-                    0 =>
-                        array (
-                            'key' => 'KBC.datatype.type',
-                            'value' => 'numeric',
-                        ),
-                    1 =>
-                        array (
-                            'key' => 'KBC.datatype.nullable',
-                            'value' => false,
-                        ),
-                    2 =>
-                        array (
-                            'key' => 'KBC.datatype.basetype',
-                            'value' => 'NUMERIC',
-                        ),
-                    3 =>
-                        array (
-                            'key' => 'KBC.datatype.length',
-                            'value' => '5,3',
-                        ),
-                    4 =>
-                        array (
-                            'key' => 'KBC.datatype.default',
-                            'value' => '1.2',
-                        ),
-                    5 =>
-                        array (
-                            'key' => 'KBC.sourceName',
-                            'value' => 'decimal',
-                        ),
-                    6 =>
-                        array (
-                            'key' => 'KBC.sanitizedName',
-                            'value' => 'decimal',
-                        ),
-                    7 =>
-                        array (
-                            'key' => 'KBC.primaryKey',
-                            'value' => false,
-                        ),
-                    8 =>
-                        array (
-                            'key' => 'KBC.uniqueKey',
-                            'value' => false,
-                        ),
-                    9 =>
-                        array (
-                            'key' => 'KBC.ordinalPosition',
-                            'value' => 3,
-                        ),
-                ),
+                [
+                    [
+                        'key' => 'KBC.datatype.type',
+                        'value' => 'numeric',
+                    ],
+                    [
+                        'key' => 'KBC.datatype.nullable',
+                        'value' => false,
+                    ],
+                    [
+                        'key' => 'KBC.datatype.basetype',
+                        'value' => 'NUMERIC',
+                    ],
+                    [
+                        'key' => 'KBC.datatype.length',
+                        'value' => '5,3',
+                    ],
+                    [
+                        'key' => 'KBC.datatype.default',
+                        'value' => '1.2',
+                    ],
+                    [
+                        'key' => 'KBC.sourceName',
+                        'value' => 'decimal',
+                    ],
+                    [
+                        'key' => 'KBC.sanitizedName',
+                        'value' => 'decimal',
+                    ],
+                    [
+                        'key' => 'KBC.primaryKey',
+                        'value' => false,
+                    ],
+                    [
+                        'key' => 'KBC.uniqueKey',
+                        'value' => false,
+                    ],
+                    [
+                        'key' => 'KBC.ordinalPosition',
+                        'value' => 3,
+                    ],
+                ],
             'date' =>
-                array (
-                    0 =>
-                        array (
-                            'key' => 'KBC.datatype.type',
-                            'value' => 'date',
-                        ),
-                    1 =>
-                        array (
-                            'key' => 'KBC.datatype.nullable',
-                            'value' => true,
-                        ),
-                    2 =>
-                        array (
-                            'key' => 'KBC.datatype.basetype',
-                            'value' => 'DATE',
-                        ),
-                    3 =>
-                        array (
-                            'key' => 'KBC.sourceName',
-                            'value' => 'date',
-                        ),
-                    4 =>
-                        array (
-                            'key' => 'KBC.sanitizedName',
-                            'value' => 'date',
-                        ),
-                    5 =>
-                        array (
-                            'key' => 'KBC.primaryKey',
-                            'value' => false,
-                        ),
-                    6 =>
-                        array (
-                            'key' => 'KBC.uniqueKey',
-                            'value' => false,
-                        ),
-                    7 =>
-                        array (
-                            'key' => 'KBC.ordinalPosition',
-                            'value' => 5,
-                        ),
-                ),
-            'boolean' => array(
-                0 => array(
+                [
+                    [
+                        'key' => 'KBC.datatype.type',
+                        'value' => 'date',
+                    ],
+                    [
+                        'key' => 'KBC.datatype.nullable',
+                        'value' => true,
+                    ],
+                    [
+                        'key' => 'KBC.datatype.basetype',
+                        'value' => 'DATE',
+                    ],
+                    [
+                        'key' => 'KBC.sourceName',
+                        'value' => 'date',
+                    ],
+                    [
+                        'key' => 'KBC.sanitizedName',
+                        'value' => 'date',
+                    ],
+                    [
+                        'key' => 'KBC.primaryKey',
+                        'value' => false,
+                    ],
+                    [
+                        'key' => 'KBC.uniqueKey',
+                        'value' => false,
+                    ],
+                    [
+                        'key' => 'KBC.ordinalPosition',
+                        'value' => 5,
+                    ],
+                ],
+            'boolean' => [
+                [
                     'key' => 'KBC.datatype.type',
                     'value' => 'boolean',
-                ),
-                1 => array(
+                ],
+                [
                     'key' => 'KBC.datatype.nullable',
                     'value' => false,
-                ),
-                2 => array(
+                ],
+                [
                     'key' => 'KBC.datatype.basetype',
                     'value' => 'BOOLEAN',
-                ),
-                3 => array(
+                ],
+                [
                     'key' => 'KBC.datatype.default',
                     'value' => 'false',
-                ),
-                4 => array(
+                ],
+                [
                     'key' => 'KBC.sourceName',
                     'value' => 'boolean',
-                ),
-                5 => array(
+                ],
+                [
                     'key' => 'KBC.sanitizedName',
                     'value' => 'boolean',
-                ),
-                6 => array(
+                ],
+                [
                     'key' => 'KBC.primaryKey',
                     'value' => false,
-                ),
-                7 => array(
+                ],
+                [
                     'key' => 'KBC.uniqueKey',
                     'value' => false,
-                ),
-                8 => array(
+                ],
+                [
                     'key' => 'KBC.ordinalPosition',
                     'value' => 4,
-                ),
-            ),
-        );
+                ],
+            ],
+        ];
 
         $expectedTableMetadata[1] = [
-            0 =>
-                [
-                    'key' => 'KBC.name',
-                    'value' => 'types_fk',
-                ],
-                1 =>
-                [
-                    'key' => 'KBC.schema',
-                    'value' => 'public',
-                ],
-                2 =>
-                [
-                    'key' => 'KBC.type',
-                    'value' => 'table',
-                ],
+            [
+                'key' => 'KBC.name',
+                'value' => 'types_fk',
+            ],
+            [
+                'key' => 'KBC.sanitizedName',
+                'value' => 'types_fk',
+            ],
+            [
+                'key' => 'KBC.schema',
+                'value' => 'public',
+            ],
+            [
+                'key' => 'KBC.type',
+                'value' => 'table',
+            ],
         ];
-        $expectedColumnMetadata[1] = array (
+        $expectedColumnMetadata[1] = [
             'character' =>
-                array (
-                    0 =>
-                        array (
-                            'key' => 'KBC.datatype.type',
-                            'value' => 'character varying',
-                        ),
-                    1 =>
-                        array (
-                            'key' => 'KBC.datatype.nullable',
-                            'value' => true,
-                        ),
-                    2 =>
-                        array (
-                            'key' => 'KBC.datatype.basetype',
-                            'value' => 'STRING',
-                        ),
-                    3 =>
-                        array (
-                            'key' => 'KBC.datatype.length',
-                            'value' => 123,
-                        ),
-                    4 =>
-                        array (
-                            'key' => 'KBC.sourceName',
-                            'value' => 'character',
-                        ),
-                    5 =>
-                        array (
-                            'key' => 'KBC.sanitizedName',
-                            'value' => 'character',
-                        ),
-                    6 =>
-                        array (
-                            'key' => 'KBC.primaryKey',
-                            'value' => false,
-                        ),
-                    7 =>
-                        array (
-                            'key' => 'KBC.uniqueKey',
-                            'value' => false,
-                        ),
-                    8 =>
-                        array (
-                            'key' => 'KBC.ordinalPosition',
-                            'value' => 1,
-                        ),
-                ),
+                [
+                    [
+                        'key' => 'KBC.datatype.type',
+                        'value' => 'character varying',
+                    ],
+                    [
+                        'key' => 'KBC.datatype.nullable',
+                        'value' => true,
+                    ],
+                    [
+                        'key' => 'KBC.datatype.basetype',
+                        'value' => 'STRING',
+                    ],
+                    [
+                        'key' => 'KBC.datatype.length',
+                        'value' => 123,
+                    ],
+                    [
+                        'key' => 'KBC.sourceName',
+                        'value' => 'character',
+                    ],
+                    [
+                        'key' => 'KBC.sanitizedName',
+                        'value' => 'character',
+                    ],
+                    [
+                        'key' => 'KBC.primaryKey',
+                        'value' => false,
+                    ],
+                    [
+                        'key' => 'KBC.uniqueKey',
+                        'value' => false,
+                    ],
+                    [
+                        'key' => 'KBC.ordinalPosition',
+                        'value' => 1,
+                    ],
+                ],
             'integer' =>
-                array (
-                    0 =>
-                        array (
-                            'key' => 'KBC.datatype.type',
-                            'value' => 'integer',
-                        ),
-                    1 =>
-                        array (
-                            'key' => 'KBC.datatype.nullable',
-                            'value' => false,
-                        ),
-                    2 =>
-                        array (
-                            'key' => 'KBC.datatype.basetype',
-                            'value' => 'INTEGER',
-                        ),
-                    3 =>
-                        array (
-                            'key' => 'KBC.datatype.default',
-                            'value' => '42',
-                        ),
-                    4 =>
-                        array (
-                            'key' => 'KBC.sourceName',
-                            'value' => 'integer',
-                        ),
-                    5 =>
-                        array (
-                            'key' => 'KBC.sanitizedName',
-                            'value' => 'integer',
-                        ),
-                    6 =>
-                        array (
-                            'key' => 'KBC.primaryKey',
-                            'value' => false,
-                        ),
-                    7 =>
-                        array (
-                            'key' => 'KBC.uniqueKey',
-                            'value' => false,
-                        ),
-                    8 =>
-                        array (
-                            'key' => 'KBC.ordinalPosition',
-                            'value' => 2,
-                        ),
-                ),
+                [
+                    [
+                        'key' => 'KBC.datatype.type',
+                        'value' => 'integer',
+                    ],
+                    [
+                        'key' => 'KBC.datatype.nullable',
+                        'value' => false,
+                    ],
+                    [
+                        'key' => 'KBC.datatype.basetype',
+                        'value' => 'INTEGER',
+                    ],
+                    [
+                        'key' => 'KBC.datatype.default',
+                        'value' => '42',
+                    ],
+                    [
+                        'key' => 'KBC.sourceName',
+                        'value' => 'integer',
+                    ],
+                    [
+                        'key' => 'KBC.sanitizedName',
+                        'value' => 'integer',
+                    ],
+                    [
+                        'key' => 'KBC.primaryKey',
+                        'value' => false,
+                    ],
+                    [
+                        'key' => 'KBC.uniqueKey',
+                        'value' => false,
+                    ],
+                    [
+                        'key' => 'KBC.ordinalPosition',
+                        'value' => 2,
+                    ],
+                ],
             'decimal' =>
-                array (
-                    0 =>
-                        array (
-                            'key' => 'KBC.datatype.type',
-                            'value' => 'numeric',
-                        ),
-                    1 =>
-                        array (
-                            'key' => 'KBC.datatype.nullable',
-                            'value' => false,
-                        ),
-                    2 =>
-                        array (
-                            'key' => 'KBC.datatype.basetype',
-                            'value' => 'NUMERIC',
-                        ),
-                    3 =>
-                        array (
-                            'key' => 'KBC.datatype.length',
-                            'value' => '5,3',
-                        ),
-                    4 =>
-                        array (
-                            'key' => 'KBC.datatype.default',
-                            'value' => '1.2',
-                        ),
-                    5 =>
-                        array (
-                            'key' => 'KBC.sourceName',
-                            'value' => 'decimal',
-                        ),
-                    6 =>
-                        array (
-                            'key' => 'KBC.sanitizedName',
-                            'value' => 'decimal',
-                        ),
-                    7 =>
-                        array (
-                            'key' => 'KBC.primaryKey',
-                            'value' => false,
-                        ),
-                    8 =>
-                        array (
-                            'key' => 'KBC.uniqueKey',
-                            'value' => false,
-                        ),
-                    9 =>
-                        array (
-                            'key' => 'KBC.ordinalPosition',
-                            'value' => 3,
-                        ),
-                ),
+                [
+                    [
+                        'key' => 'KBC.datatype.type',
+                        'value' => 'numeric',
+                    ],
+                    [
+                        'key' => 'KBC.datatype.nullable',
+                        'value' => false,
+                    ],
+                    [
+                        'key' => 'KBC.datatype.basetype',
+                        'value' => 'NUMERIC',
+                    ],
+                    [
+                        'key' => 'KBC.datatype.length',
+                        'value' => '5,3',
+                    ],
+                    [
+                        'key' => 'KBC.datatype.default',
+                        'value' => '1.2',
+                    ],
+                    [
+                        'key' => 'KBC.sourceName',
+                        'value' => 'decimal',
+                    ],
+                    [
+                        'key' => 'KBC.sanitizedName',
+                        'value' => 'decimal',
+                    ],
+                    [
+                        'key' => 'KBC.primaryKey',
+                        'value' => false,
+                    ],
+                    [
+                        'key' => 'KBC.uniqueKey',
+                        'value' => false,
+                    ],
+                    [
+                        'key' => 'KBC.ordinalPosition',
+                        'value' => 3,
+                    ],
+                ],
             'date' =>
-                array (
-                    0 =>
-                        array (
-                            'key' => 'KBC.datatype.type',
-                            'value' => 'date',
-                        ),
-                    1 =>
-                        array (
-                            'key' => 'KBC.datatype.nullable',
-                            'value' => true,
-                        ),
-                    2 =>
-                        array (
-                            'key' => 'KBC.datatype.basetype',
-                            'value' => 'DATE',
-                        ),
-                    3 =>
-                        array (
-                            'key' => 'KBC.sourceName',
-                            'value' => 'date',
-                        ),
-                    4 =>
-                        array (
-                            'key' => 'KBC.sanitizedName',
-                            'value' => 'date',
-                        ),
-                    5 =>
-                        array (
-                            'key' => 'KBC.primaryKey',
-                            'value' => false,
-                        ),
-                    6 =>
-                        array (
-                            'key' => 'KBC.uniqueKey',
-                            'value' => false,
-                        ),
-                    7 =>
-                        array (
-                            'key' => 'KBC.ordinalPosition',
-                            'value' => 5,
-                        ),
-                ),
+                [
+                    [
+                        'key' => 'KBC.datatype.type',
+                        'value' => 'date',
+                    ],
+                    [
+                        'key' => 'KBC.datatype.nullable',
+                        'value' => true,
+                    ],
+                    [
+                        'key' => 'KBC.datatype.basetype',
+                        'value' => 'DATE',
+                    ],
+                    [
+                        'key' => 'KBC.sourceName',
+                        'value' => 'date',
+                    ],
+                    [
+                        'key' => 'KBC.sanitizedName',
+                        'value' => 'date',
+                    ],
+                    [
+                        'key' => 'KBC.primaryKey',
+                        'value' => false,
+                    ],
+                    [
+                        'key' => 'KBC.uniqueKey',
+                        'value' => false,
+                    ],
+                    [
+                        'key' => 'KBC.ordinalPosition',
+                        'value' => 5,
+                    ],
+                ],
 
-            'boolean' => array(
-                0 => array(
+            'boolean' => [
+                [
                     'key' => 'KBC.datatype.type',
                     'value' => 'boolean',
-                ),
-                1 => array(
+                ],
+                [
                     'key' => 'KBC.datatype.nullable',
                     'value' => false,
-                ),
-                2 => array(
+                ],
+                [
                     'key' => 'KBC.datatype.basetype',
                     'value' => 'BOOLEAN',
-                ),
-                3 => array(
+                ],
+                [
                     'key' => 'KBC.datatype.default',
                     'value' => 'false',
-                ),
-                4 => array(
+                ],
+                [
                     'key' => 'KBC.sourceName',
                     'value' => 'boolean',
-                ),
-                5 => array(
+                ],
+                [
                     'key' => 'KBC.sanitizedName',
                     'value' => 'boolean',
-                ),
-                6 => array(
+                ],
+                [
                     'key' => 'KBC.primaryKey',
                     'value' => false,
-                ),
-                7 => array(
+                ],
+                [
                     'key' => 'KBC.uniqueKey',
                     'value' => false,
-                ),
-                8 => array(
+                ],
+                [
                     'key' => 'KBC.ordinalPosition',
                     'value' => 4,
-                ),
-            ),
-        );
+                ],
+            ],
+        ];
 
         foreach ($result['imported'] as $i => $outputArray) {
             $filenameManifest = $this->dataDir . '/out/tables/' . $outputArray['outputTable'] . '.csv.manifest';
@@ -913,12 +738,13 @@ class PgsqlTest extends BaseTest
 
         $result = $app->run();
 
-        $expectedCsvFile = new CsvFile($this->dataDir . '/pgsql/types.csv');
-        $outputCsvFile = new CsvFile($this->dataDir . '/out/tables/' . $result['imported'][0]['outputTable'] . '.csv');
+        $expectedCsvFile = new CsvReader($this->dataDir . '/pgsql/types.csv');
+        $outputCsvFile = new CsvReader(
+            $this->dataDir . '/out/tables/' . $result['imported'][0]['outputTable'] . '.csv'
+        );
         $outputManifestFile = $this->dataDir . '/out/tables/' . $result['imported'][0]['outputTable'] . '.csv.manifest';
 
         $this->assertEquals('success', $result['status']);
-        $this->assertTrue($outputCsvFile->isFile());
         $this->assertFileExists($outputManifestFile);
 
         $outputManifest = json_decode((string) file_get_contents($outputManifestFile), true);
@@ -946,8 +772,10 @@ class PgsqlTest extends BaseTest
 
         $this->assertEquals('success', $result['status']);
 
-        $expectedCsvFile = new CsvFile($this->dataDir . '/pgsql/types.csv');
-        $outputCsvFile = new CsvFile($this->dataDir . '/out/tables/' . $result['imported'][0]['outputTable'] . '.csv');
+        $expectedCsvFile = new CsvReader($this->dataDir . '/pgsql/types.csv');
+        $outputCsvFile = new CsvReader(
+            $this->dataDir . '/out/tables/' . $result['imported'][0]['outputTable'] . '.csv'
+        );
         $outputManifestFile = $this->dataDir . '/out/tables/' . $result['imported'][0]['outputTable'] . '.csv.manifest';
         $outputManifest = json_decode((string) file_get_contents($outputManifestFile), true);
         // check that the manifest has the correct column ordering
@@ -1035,7 +863,7 @@ class PgsqlTest extends BaseTest
         $config['parameters']['tables'][2]['query'] = 'SELECT %%% FROM types';
 
         $this->expectException(UserException::class);
-        $this->expectExceptionMessage('Error executing [in.c-main.types]: SQLSTATE[42601]:');
+        $this->expectExceptionMessage('Error executing "types": SQLSTATE[42601]:');
 
         $app = $this->createApplication($config);
         $app->run();

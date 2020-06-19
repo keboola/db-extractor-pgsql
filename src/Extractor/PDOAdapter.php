@@ -4,19 +4,20 @@ declare(strict_types=1);
 
 namespace Keboola\DbExtractor\Extractor;
 
-use Throwable;
 use PDO;
 use PDOException;
 use Retry\RetryProxy;
-use Keboola\DbExtractorLogger\Logger;
-use Keboola\Csv\CsvFile;
+use Throwable;
+use Psr\Log\LoggerInterface;
+use Keboola\Csv\CsvWriter;
+use Keboola\DbExtractor\Configuration\PgsqlExportConfig;
 use Keboola\DbExtractor\DbRetryProxy;
 use Keboola\DbExtractor\Exception\DeadConnectionException;
 use Keboola\DbExtractor\Exception\UserException;
 
 class PDOAdapter
 {
-    private Logger $logger;
+    private LoggerInterface $logger;
 
     private PDO $pdo;
 
@@ -24,7 +25,7 @@ class PDOAdapter
 
     private array $state;
 
-    public function __construct(Logger $logger, array $dbParams, array $state)
+    public function __construct(LoggerInterface $logger, array $dbParams, array $state)
     {
         $this->logger = $logger;
         $this->dbParams = $dbParams;
@@ -45,34 +46,16 @@ class PDOAdapter
         $this->pdo->query('SELECT 1');
     }
 
-    public function export(
-        string $query,
-        bool $advancedQuery,
-        int $maxTries,
-        bool $replaceBooleans,
-        ?array $incrementalFetching,
-        CsvFile $csvFile
-    ): array {
+    public function export(string $query, PgsqlExportConfig $exportConfig, CsvWriter $csvFile): array
+    {
         // Check connection
         $this->tryReconnect();
 
         return $this
-            ->createRetryProxy($maxTries)
-            ->call(function () use (
-                $query,
-                $csvFile,
-                $advancedQuery,
-                $replaceBooleans,
-                $incrementalFetching
-            ) {
+            ->createRetryProxy($exportConfig->getMaxRetries())
+            ->call(function () use ($query, $exportConfig, $csvFile) {
                 try {
-                    return $this->executeQueryPDO(
-                        $query,
-                        $csvFile,
-                        $advancedQuery,
-                        $replaceBooleans,
-                        $incrementalFetching,
-                    );
+                    return $this->executeQueryPDO($query, $exportConfig, $csvFile);
                 } catch (Throwable $queryError) {
                     try {
                         $this->createConnection();
@@ -108,13 +91,8 @@ class PDOAdapter
         return "\"{$str}\"";
     }
 
-    protected function executeQueryPDO(
-        string $query,
-        CsvFile $csv,
-        bool $advancedQuery,
-        bool $replaceBooleans,
-        ?array $incrementalFetching
-    ): array {
+    protected function executeQueryPDO(string $query, PgsqlExportConfig $exportConfig, CsvWriter $csv): array
+    {
         $cursorName = 'exdbcursor' . intval(microtime(true));
         $curSql = "DECLARE $cursorName CURSOR FOR $query";
         try {
@@ -127,17 +105,17 @@ class PDOAdapter
             $resultRow = $innerStatement->fetch(PDO::FETCH_ASSOC);
             if (!is_array($resultRow) || empty($resultRow)) {
                 // no rows found.  If incremental fetching is turned on, we need to preserve the last state
-                if (isset($incrementalFetching['column']) && isset($this->state['lastFetchedRow'])) {
+                if ($exportConfig->isIncrementalFetching() && isset($this->state['lastFetchedRow'])) {
                     $output['lastFetchedRow'] = $this->state['lastFetchedRow'];
                 }
                 $output['rows'] = 0;
                 return $output;
             }
-            if ($replaceBooleans) {
+            if ($exportConfig->getReplaceBooleans()) {
                 $resultRow = $this->replaceBooleanValues($resultRow);
             }
             // only write header for advanced query case
-            if ($advancedQuery) {
+            if ($exportConfig->hasQuery()) {
                 $csv->writeRow(array_keys($resultRow));
             }
             $csv->writeRow($resultRow);
@@ -156,7 +134,7 @@ class PDOAdapter
                 }
 
                 foreach ($resultRows as $resultRow) {
-                    if ($replaceBooleans) {
+                    if ($exportConfig->getReplaceBooleans()) {
                         $resultRow = $this->replaceBooleanValues($resultRow);
                     }
                     $csv->writeRow($resultRow);
@@ -169,16 +147,16 @@ class PDOAdapter
             $this->pdo->commit();
 
             // get last fetched value
-            if (isset($incrementalFetching['column'])) {
-                if (!array_key_exists($incrementalFetching['column'], $lastRow)) {
+            if ($exportConfig->isIncrementalFetching()) {
+                if (!array_key_exists($exportConfig->getIncrementalFetchingColumn(), $lastRow)) {
                     throw new UserException(
                         sprintf(
                             'The specified incremental fetching column %s not found in the table',
-                            $incrementalFetching['column']
+                            $exportConfig->getIncrementalFetchingColumn()
                         )
                     );
                 }
-                $output['lastFetchedRow'] = $lastRow[$incrementalFetching['column']];
+                $output['lastFetchedRow'] = $lastRow[$exportConfig->getIncrementalFetchingColumn()];
             }
             $output['rows'] = $numRows;
             $this->logger->info("Extraction completed. Fetched {$numRows} rows.");
@@ -241,7 +219,7 @@ class PDOAdapter
         } catch (DeadConnectionException $e) {
             $reconnectionRetryProxy = new DbRetryProxy(
                 $this->logger,
-                Extractor::DEFAULT_MAX_TRIES,
+                DbRetryProxy::DEFAULT_MAX_TRIES,
                 null,
                 1000
             );

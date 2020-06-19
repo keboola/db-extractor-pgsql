@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Keboola\DbExtractor\Tests;
 
+use Keboola\Csv\CsvReader;
 use Keboola\DbExtractor\Exception\UserException;
 use Keboola\DbExtractorConfig\Exception\UserException as ConfigUserException;
-use Keboola\Csv\CsvFile;
-use Keboola\DbExtractorLogger\Logger;
-use Monolog\Handler\TestHandler;
+use Keboola\Component\Logger;
+use Psr\Log\Test\TestLogger;
 
 class IncrementalFetchingTest extends BaseTest
 {
@@ -444,7 +444,7 @@ class IncrementalFetchingTest extends BaseTest
         $this->assertEquals(4, $result['imported']['rows']);
 
         $outputCsvFile = iterator_to_array(
-            new CsvFile(
+            new CsvReader(
                 $this->dataDir . '/out/tables/' . $result['imported']['outputTable'] . '.csv'
             )
         );
@@ -487,14 +487,12 @@ class IncrementalFetchingTest extends BaseTest
         // set the config to use the pdo fallback
         $config['parameters']['forceFallback'] = true;
         // use a test logger to make sure we can tell that it actually falls back to pdo
-        $handler = new TestHandler();
-        $logger = new Logger('test');
-        $logger->pushHandler($handler);
+        $logger = new TestLogger();
         $newResult = ($this->createApplication($config, $result['state'], $logger))->run();
 
-        $this->assertTrue($handler->hasWarningThatContains('Forcing extractor to use PDO fallback fetching'));
-        $this->assertTrue($handler->hasInfoThatContains(
-            "Executing query 'in.c-main.auto-increment-timestamp' via PDO ..."
+        $this->assertTrue($logger->hasWarningThatContains('Forcing extractor to use PDO fallback fetching'));
+        $this->assertTrue($logger->hasInfoThatContains(
+            "Executing query 'auto-increment-timestamp' via PDO ..."
         ));
         //check that output state contains expected information
         $this->assertArrayHasKey('state', $newResult);
@@ -511,7 +509,9 @@ class IncrementalFetchingTest extends BaseTest
         unset($config['parameters']['table']);
 
         $this->expectException(ConfigUserException::class);
-        $this->expectExceptionMessage('Incremental fetching is not supported for advanced queries.');
+        $this->expectExceptionMessage(
+            'The "incrementalFetchingColumn" is configured, but incremental fetching is not supported for custom query.'
+        );
         $app = $this->createApplication($config);
         $app->run();
     }
@@ -535,11 +535,12 @@ class IncrementalFetchingTest extends BaseTest
         return [
             'column does not exist' => [
                 'fakeCol',
-                'Column [fakeCol] specified for incremental fetching was not found in the table',
+                'Column "fakeCol" specified for incremental fetching was not found in the table',
             ],
             'column exists but is not auto-increment nor updating timestamp so should fail' => [
                 'weird_name',
-                'Column [weird_name] specified for incremental fetching is not a numeric or timestamp type column',
+                'Column "weird_name" specified for incremental fetching has unexpected type "STRING", ' .
+                'expected: "INTEGER", "NUMERIC", "FLOAT", "TIMESTAMP".',
             ],
         ];
     }

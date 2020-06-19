@@ -23,8 +23,7 @@ class GetTablesTest extends BaseTest
         $config['action'] = 'getTables';
         $this->replaceConfig($config);
 
-        $process = Process::fromShellCommandline('php /code/src/run.php --data=' . $this->dataDir);
-        $process->setTimeout(300);
+        $process = $this->createAppProcess();
         $process->mustRun();
         $data = json_decode($process->getOutput(), true);
         self::assertCount(5, $data['tables']);
@@ -44,8 +43,7 @@ class GetTablesTest extends BaseTest
         ];
         $this->replaceConfig($config);
 
-        $process = Process::fromShellCommandline('php /code/src/run.php --data=' . $this->dataDir);
-        $process->setTimeout(300);
+        $process = $this->createAppProcess();
         $process->mustRun();
         $data = json_decode($process->getOutput(), true);
         self::assertCount(5, $data['tables']);
@@ -68,8 +66,7 @@ class GetTablesTest extends BaseTest
         ];
         $this->replaceConfig($config);
 
-        $process = Process::fromShellCommandline('php /code/src/run.php --data=' . $this->dataDir);
-        $process->setTimeout(300);
+        $process = $this->createAppProcess();
         $process->mustRun();
         $data = json_decode($process->getOutput(), true);
         self::assertCount(1, $data['tables']);
@@ -94,8 +91,7 @@ class GetTablesTest extends BaseTest
         ];
         $this->replaceConfig($config);
 
-        $process = Process::fromShellCommandline('php /code/src/run.php --data=' . $this->dataDir);
-        $process->setTimeout(300);
+        $process = $this->createAppProcess();
         $process->mustRun();
         $data = json_decode($process->getOutput(), true);
         self::assertCount(1, $data['tables']);

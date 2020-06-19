@@ -2,77 +2,49 @@
 
 declare(strict_types=1);
 
-use \Keboola\DbExtractor\PgsqlApplication;
 use Keboola\DbExtractor\Exception\UserException;
-use Keboola\DbExtractorConfig\Exception\UserException as ConfigUserException;
-use Keboola\DbExtractorLogger\Logger;
-use Monolog\Handler\NullHandler;
-use Symfony\Component\Serializer\Encoder\JsonDecode;
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Keboola\Component\Logger;
+use Keboola\Component\JsonHelper;
+use Keboola\CommonExceptions\UserExceptionInterface;
+use Keboola\DbExtractor\PgsqlApplication;
 
-require_once(__DIR__ . '/../vendor/autoload.php');
+require __DIR__ . '/../vendor/autoload.php';
 
-$logger = new Logger('ex-db-pgsql');
-
-$runAction = true;
+$logger = new Logger();
 
 try {
-    $arguments = getopt('d::', ['data::']);
-    if (!isset($arguments['data'])) {
-        throw new UserException('Data folder not set.');
-    }
-
-    $jsonDecode = new JsonDecode(true);
-
-    if (file_exists($arguments['data'] . '/config.json')) {
-        $config = $jsonDecode->decode(
-            file_get_contents($arguments['data'] . '/config.json'),
-            JsonEncoder::FORMAT
-        );
+    $dataFolder = getenv('KBC_DATADIR') === false ? '/data/' : (string) getenv('KBC_DATADIR');
+    if (file_exists($dataFolder . '/config.json')) {
+        $config = JsonHelper::readFile($dataFolder . '/config.json');
     } else {
         throw new UserException('Configuration file not found.');
     }
 
-    $config['parameters']['data_dir'] = $arguments['data'];
-    $config['parameters']['extractor_class'] = 'PgSQL';
-
     // get the state
-    $inputState = [];
-    $inputStateFile = $arguments['data'] . '/in/state.json';
+    $inputStateFile = $dataFolder . '/in/state.json';
     if (file_exists($inputStateFile)) {
-        $inputState = $jsonDecode->decode(
-            file_get_contents($inputStateFile),
-            JsonEncoder::FORMAT
-        );
+        $inputState = JsonHelper::readFile($inputStateFile);
+    } else {
+        $inputState = [];
     }
 
-    $app = new PgsqlApplication($config, $logger, $inputState, $arguments['data']);
+    $app = new PgsqlApplication($config, $logger, $inputState, $dataFolder);
+    $result = $app->run();
 
     if ($app['action'] !== 'run') {
-        $app['logger']->setHandlers(array(new NullHandler(Logger::INFO)));
-        $runAction = false;
+        // Print sync action result
+        echo JsonHelper::encode($result);
+    } else if (!empty($result['state'])) {
+        // Write state if present
+        $outputStateFile = $dataFolder . '/out/state.json';
+        JsonHelper::writeFile($outputStateFile, $result['state']);
     }
-
-    $result = $app->run();
-    if (!$runAction) {
-        echo json_encode($result);
-    } else {
-        if (!empty($result['state'])) {
-            // write state
-            $outputStateFile = $arguments['data'] . '/out/state.json';
-            $jsonEncode = new \Symfony\Component\Serializer\Encoder\JsonEncode();
-            file_put_contents($outputStateFile, $jsonEncode->encode($result['state'], JsonEncoder::FORMAT));
-        }
-    }
-    $app['logger']->log('info', 'Extractor finished successfully.');
+    $logger->log('info', 'Extractor finished successfully.');
     exit(0);
-} catch (UserException|ConfigUserException $e) {
-    $logger->log('error', $e->getMessage());
-    if (!$runAction) {
-        echo $e->getMessage();
-    }
+} catch (UserExceptionInterface $e) {
+    $logger->error($e->getMessage());
     exit(1);
-} catch (Throwable $e) {
+} catch (\Throwable $e) {
     $logger->critical(
         get_class($e) . ':' . $e->getMessage(),
         [

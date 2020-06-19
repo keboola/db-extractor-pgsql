@@ -8,7 +8,8 @@ use Keboola\DbExtractor\PgsqlApplication;
 use Keboola\DbExtractor\Test\ExtractorTest;
 
 use Keboola\DbExtractor\Application;
-use Keboola\DbExtractorLogger\Logger;
+use Keboola\Component\Logger;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -18,8 +19,7 @@ abstract class BaseTest extends ExtractorTest
 
     protected Application $app;
 
-    /** @var string  */
-    protected $dataDir = __DIR__ . '/data';
+    protected string $dataDir = __DIR__ . '/data';
 
     protected array $dbConfig;
 
@@ -58,7 +58,7 @@ abstract class BaseTest extends ExtractorTest
     {
         $this->cleanOutputDir();
         $config = $this->getConfig();
-        $logger = new Logger('ex-db-pgsql-tests');
+        $logger = new Logger();
         $this->app = new Application($config, $logger);
 
         $this->dbConfig = $config['parameters']['db'];
@@ -98,7 +98,8 @@ abstract class BaseTest extends ExtractorTest
         );
 
         $processes[] = $this->createDbProcess(
-            "\COPY escaping FROM 'vendor/keboola/db-extractor-common/tests/data/escaping.csv' WITH DELIMITER ',' CSV;"
+            "\COPY escaping FROM 'vendor/keboola/db-extractor-common/tests/phpunit/data/escaping.csv' ".
+            "WITH DELIMITER ',' CSV;"
         );
 
         $processes[] = $this->createDbProcess(
@@ -134,7 +135,7 @@ abstract class BaseTest extends ExtractorTest
             'PRIMARY KEY ("_funnY$-col", "_sadcol"));'
         );
         $processes[] = $this->createDbProcess(
-            "\COPY testing.escaping FROM 'vendor/keboola/db-extractor-common/tests/data/escaping.csv' "
+            "\COPY testing.escaping FROM 'vendor/keboola/db-extractor-common/tests/phpunit/data/escaping.csv' "
             . "WITH DELIMITER ',' CSV HEADER;"
         );
 
@@ -174,11 +175,11 @@ abstract class BaseTest extends ExtractorTest
         return $config;
     }
 
-    protected function createApplication(array $config, array $state = [], ?Logger $logger = null): Application
+    protected function createApplication(array $config, array $state = [], ?LoggerInterface $logger = null): Application
     {
         return new PgsqlApplication(
             $config,
-            $logger ? $logger : new Logger('ex-db-pgsql-tests'),
+            $logger ? $logger : new Logger(),
             $state,
             $this->dataDir
         );
@@ -191,5 +192,15 @@ abstract class BaseTest extends ExtractorTest
             [$this->getConfig(self::DRIVER)],
             [$this->getConfigRow(self::DRIVER)],
         ];
+    }
+
+
+    protected function createAppProcess(): Process
+    {
+        $process = Process::fromShellCommandline('php /code/src/run.php', null, [
+            'KBC_DATADIR' => $this->dataDir,
+        ]);
+        $process->setTimeout(300);
+        return $process;
     }
 }

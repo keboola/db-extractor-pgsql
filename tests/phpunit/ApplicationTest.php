@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace Keboola\DbExtractor\Tests;
 
-use Keboola\Csv\CsvFile;
-use Keboola\DbExtractor\Test\ExtractorTest;
+use Keboola\Csv\CsvReader;
 use Symfony\Component\Filesystem;
-use Symfony\Component\Process\Process;
-use Keboola\DbExtractor\Exception\UserException;
 
 class ApplicationTest extends BaseTest
 {
@@ -24,8 +21,7 @@ class ApplicationTest extends BaseTest
     public function testRunAction(array $config): void
     {
         $this->replaceConfig($config);
-        $process = Process::fromShellCommandline('php /code/src/run.php --data=' . $this->dataDir);
-        $process->setTimeout(300);
+        $process = $this->createAppProcess();
         $process->mustRun();
 
         $this->assertEquals(0, $process->getExitCode());
@@ -49,7 +45,7 @@ class ApplicationTest extends BaseTest
         ];
         $this->replaceConfig($config);
 
-        $process = Process::fromShellCommandline('php /code/src/run.php --data=' . $this->dataDir);
+        $process = $this->createAppProcess();
         $process->mustRun();
 
         $this->assertEquals(0, $process->getExitCode());
@@ -66,8 +62,7 @@ class ApplicationTest extends BaseTest
         $config['parameters']['db'] = $this->getConfigRow(self::DRIVER)['parameters']['db'];
         $this->replaceConfig($config);
 
-        $process = Process::fromShellCommandline('php /code/src/run.php --data=' . $this->dataDir);
-        $process->setTimeout(300);
+        $process = $this->createAppProcess();
         $process->mustRun();
         $this->assertJson($process->getOutput());
         $this->assertEquals(0, $process->getExitCode());
@@ -80,8 +75,7 @@ class ApplicationTest extends BaseTest
         unset($config['parameters']['tables'][0]['table']);
         $config['parameters']['tables'][0]['query'] = 'SELECT * FROM escaping;';
         $this->replaceConfig($config);
-        $process = Process::fromShellCommandline('php /code/src/run.php --data=' . $this->dataDir);
-        $process->setTimeout(300);
+        $process = $this->createAppProcess();
         $process->mustRun();
         $this->assertEquals(0, $process->getExitCode());
         $this->assertEquals('', $process->getErrorOutput());
@@ -94,8 +88,7 @@ class ApplicationTest extends BaseTest
         $config['parameters']['tables'][0]['query'] = 'SELECT something, fake';
         $this->replaceConfig($config);
 
-        $process = Process::fromShellCommandline('php /code/src/run.php --data=' . $this->dataDir);
-        $process->setTimeout(300);
+        $process = $this->createAppProcess();
         $process->run();
 
         $this->assertFalse(strstr($process->getErrorOutput(), 'PGPASSWORD'));
@@ -105,9 +98,9 @@ class ApplicationTest extends BaseTest
 
     public function testPDOFallback(): void
     {
-        $outputCsvFile = new CsvFile($this->dataDir . '/out/tables/in.c-main.info_schema.csv');
+        $outputCsvFilePath = $this->dataDir . '/out/tables/in.c-main.info_schema.csv';
         $manifestFile = $this->dataDir . '/out/tables/in.c-main.info_schema.csv.manifest';
-        @unlink($outputCsvFile->getPathname());
+        @unlink($outputCsvFilePath);
         @unlink($manifestFile);
 
         $config = $this->getConfigRow(self::DRIVER);
@@ -124,15 +117,14 @@ class ApplicationTest extends BaseTest
         $config['parameters']['outputTable'] = 'in.c-main.info_schema';
         $this->replaceConfig($config);
 
-        $process = Process::fromShellCommandline('php /code/src/run.php --data=' . $this->dataDir);
-        $process->setTimeout(300);
+        $process = $this->createAppProcess();
         $process->mustRun();
 
         // valid query should not error
         $this->assertStringContainsString('Failed \copy command (will attempt via PDO):', $process->getOutput());
         // assert that PDO attempt succeeded
         $this->assertEquals(0, $process->getExitCode());
-        $this->assertTrue($outputCsvFile->isFile());
+        $this->assertFileExists($outputCsvFilePath);
         $this->assertFileExists($manifestFile);
     }
 
@@ -158,8 +150,7 @@ class ApplicationTest extends BaseTest
 
         $this->replaceConfig($config);
 
-        $process = Process::fromShellCommandline('php /code/src/run.php --data=' . $this->dataDir);
-        $process->setTimeout(300);
+        $process = $this->createAppProcess();
         $process->mustRun();
 
         $this->assertFileExists($outputStateFile);
@@ -178,8 +169,7 @@ class ApplicationTest extends BaseTest
         file_put_contents($inputStateFile, file_get_contents($outputStateFile));
 
         // run the config again
-        $process = Process::fromShellCommandline('php /code/src/run.php --data=' . $this->dataDir);
-        $process->setTimeout(300);
+        $process = $this->createAppProcess();
         $process->mustRun();
 
         $this->assertEquals(0, $process->getExitCode());
@@ -195,8 +185,7 @@ class ApplicationTest extends BaseTest
         $config['action'] = 'getTables';
         $this->replaceConfig($config);
 
-        $process = Process::fromShellCommandline('php /code/src/run.php --data=' . $this->dataDir);
-        $process->setTimeout(300);
+        $process = $this->createAppProcess();
         $process->mustRun();
 
         $this->assertJson($process->getOutput());
@@ -212,12 +201,11 @@ class ApplicationTest extends BaseTest
         $config['parameters']['outputTable'] = 'in.c-main.bool_consistency_test';
         $this->replaceConfig($config);
 
-        $expectedCsvFile = new CsvFile($this->dataDir . '/pgsql/types.csv');
-        $outputCsvFile = new CsvFile($this->dataDir . '/out/tables/in.c-main.bool_consistency_test.csv');
-
-        $process = Process::fromShellCommandline('php /code/src/run.php --data=' . $this->dataDir);
-        $process->setTimeout(300);
+        $process = $this->createAppProcess();
         $process->mustRun();
+
+        $expectedCsvFile = new CsvReader($this->dataDir . '/pgsql/types.csv');
+        $outputCsvFile = new CsvReader($this->dataDir . '/out/tables/in.c-main.bool_consistency_test.csv');
 
         // assert the correct file contents
         $outputArr = iterator_to_array($outputCsvFile);
@@ -233,13 +221,12 @@ class ApplicationTest extends BaseTest
         $config['parameters']['table']['tableName'] = 'empty_table';
         $config['parameters']['outputTable'] = 'empty_table';
         $this->replaceConfig($config);
-        $process = Process::fromShellCommandline('php /code/src/run.php --data=' . $this->dataDir);
-        $process->setTimeout(300);
+        $process = $this->createAppProcess();
         $process->mustRun();
         $this->assertStringContainsString(
-            'Query returned empty result. Nothing was imported to [empty_table]',
+            'Query returned empty result. Nothing was imported to "empty_table"',
             $process->getErrorOutput()
         );
-        $this->assertFileNotExists($this->dataDir . '/out/tables/empty_table.csv');
+        $this->assertFileDoesNotExist($this->dataDir . '/out/tables/empty_table.csv');
     }
 }
