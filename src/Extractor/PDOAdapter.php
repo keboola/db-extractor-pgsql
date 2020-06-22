@@ -209,7 +209,6 @@ class PDOAdapter
             $port,
             $this->databaseConfig->getDatabase()
         );
-        var_dump($dsn);
         $this->logger->info(sprintf('Connecting to %s', $dsn));
         $this->pdo = new PDO(
             $dsn,
