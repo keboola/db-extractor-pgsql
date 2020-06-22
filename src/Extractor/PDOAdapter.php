@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Keboola\DbExtractor\Extractor;
 
 use Keboola\DbExtractorConfig\Configuration\ValueObject\DatabaseConfig;
+use Keboola\Temp\Temp;
 use PDO;
 use PDOException;
 use Retry\RetryProxy;
@@ -204,11 +205,39 @@ class PDOAdapter
         $port = $this->databaseConfig->hasPort() ? $this->databaseConfig->getPort() : '5432';
 
         $dsn = sprintf(
-            'pgsql:host=%s;port=%s;dbname=%s',
+            'pgsql:host=%s;port=%s;dbname=%s;',
             $this->databaseConfig->getHost(),
             $port,
             $this->databaseConfig->getDatabase()
         );
+
+        if ($this->databaseConfig->hasSSLConnection()) {
+            $dsn .= 'sslmode=require;';
+            $tempDir = new Temp('ssl');
+            $sslConnection = $this->databaseConfig->getSslConnectionConfig();
+
+            if ($sslConnection->hasCa()) {
+                $dsn .= sprintf(
+                    'sslrootcert=%s;',
+                    SslHelper::createSSLFile($tempDir, $sslConnection->getCa())
+                );
+            }
+
+            if ($sslConnection->hasCert()) {
+                $dsn .= sprintf(
+                    'sslcert=%s;',
+                    SslHelper::createSSLFile($tempDir, $sslConnection->getCert())
+                );
+            }
+
+            if ($sslConnection->hasKey()) {
+                $dsn .= sprintf(
+                    'sslkey=%s;',
+                    SslHelper::createSSLFile($tempDir, $sslConnection->getKey())
+                );
+            }
+        }
+
         $this->logger->info(sprintf('Connecting to %s', $dsn));
         $this->pdo = new PDO(
             $dsn,
