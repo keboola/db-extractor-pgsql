@@ -31,7 +31,7 @@ class CopyAdapter
     public function testConnection(): void
     {
         try {
-            $this->runQuery('SELECT 1;');
+            $this->runQuery('SELECT 1;', 30);
         } catch (CopyAdapterException $e) {
             throw new CopyAdapterConnectionException('Failed psql connection: ' . $e->getMessage());
         }
@@ -54,7 +54,7 @@ class CopyAdapter
         return $result;
     }
 
-    protected function runQuery(string $sql): void
+    protected function runQuery(string $sql, ?float $timeout): void
     {
         $command = sprintf(
             'PGPASSWORD=%s psql -h %s -p %s -U %s -d %s -w -c %s',
@@ -66,6 +66,7 @@ class CopyAdapter
             escapeshellarg($sql),
         );
         $process = Process::fromShellCommandline($command);
+        $process->setTimeout($timeout); // null => allow it to run for as long as it needs
         $process->run();
         if ($process->getExitCode() !== 0) {
             throw new CopyAdapterException($process->getErrorOutput());
@@ -83,7 +84,7 @@ class CopyAdapter
         );
 
         try {
-            $this->runQuery($copyCommand);
+            $this->runQuery($copyCommand, null);
         } catch (CopyAdapterException $e) {
             throw new CopyAdapterQueryException($e->getMessage(), 0, $e);
         }
