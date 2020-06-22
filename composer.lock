@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "27ad22fc22d2f2c75563c8b12b38a621",
+    "content-hash": "c813f9022e4462d925445e891647e9ca",
     "packages": [
         {
             "name": "doctrine/instantiator",
@@ -160,16 +160,16 @@
         },
         {
             "name": "keboola/db-extractor-common",
-            "version": "13.2.4",
+            "version": "13.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/db-extractor-common.git",
-                "reference": "a83dfc8537b19e2e26e397cd67bd4714474c6d49"
+                "reference": "0857d6896f0568a5ab274490e495fd4918fbd22d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/db-extractor-common/zipball/a83dfc8537b19e2e26e397cd67bd4714474c6d49",
-                "reference": "a83dfc8537b19e2e26e397cd67bd4714474c6d49",
+                "url": "https://api.github.com/repos/keboola/db-extractor-common/zipball/0857d6896f0568a5ab274490e495fd4918fbd22d",
+                "reference": "0857d6896f0568a5ab274490e495fd4918fbd22d",
                 "shasum": ""
             },
             "require": {
@@ -177,7 +177,7 @@
                 "ext-pdo": "*",
                 "keboola/common-exceptions": "^1.0",
                 "keboola/csv": "^2.1",
-                "keboola/db-extractor-config": "^1.3.6",
+                "keboola/db-extractor-config": "^1.4",
                 "keboola/db-extractor-ssh-tunnel": "^1.1",
                 "keboola/db-extractor-table-format": "^3.0",
                 "keboola/php-component": "^8.1",
@@ -216,20 +216,20 @@
                 }
             ],
             "description": "Common library from Keboola Database Extractors",
-            "time": "2020-06-16T12:48:58+00:00"
+            "time": "2020-06-18T12:28:28+00:00"
         },
         {
             "name": "keboola/db-extractor-config",
-            "version": "1.4.6",
+            "version": "1.4.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/db-extractor-config.git",
-                "reference": "8de00d516ab91992f8cfe5fb305a800b3fc28b3c"
+                "reference": "0129ea42dac9e732f54ddb322dc35278bb5b9030"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/db-extractor-config/zipball/8de00d516ab91992f8cfe5fb305a800b3fc28b3c",
-                "reference": "8de00d516ab91992f8cfe5fb305a800b3fc28b3c",
+                "url": "https://api.github.com/repos/keboola/db-extractor-config/zipball/0129ea42dac9e732f54ddb322dc35278bb5b9030",
+                "reference": "0129ea42dac9e732f54ddb322dc35278bb5b9030",
                 "shasum": ""
             },
             "require": {
@@ -255,20 +255,20 @@
                 "MIT"
             ],
             "description": "Config definition for database extractor",
-            "time": "2020-06-26T06:33:17+00:00"
+            "time": "2020-06-19T15:04:34+00:00"
         },
         {
             "name": "keboola/db-extractor-ssh-tunnel",
-            "version": "1.1.3",
+            "version": "1.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/db-extractor-ssh-tunnel.git",
-                "reference": "4fbfcd03c64065464efeb1b7ce6f9f34134020d6"
+                "reference": "f196a79e3d17287c499e086dcc31223012b4422a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/db-extractor-ssh-tunnel/zipball/4fbfcd03c64065464efeb1b7ce6f9f34134020d6",
-                "reference": "4fbfcd03c64065464efeb1b7ce6f9f34134020d6",
+                "url": "https://api.github.com/repos/keboola/db-extractor-ssh-tunnel/zipball/f196a79e3d17287c499e086dcc31223012b4422a",
+                "reference": "f196a79e3d17287c499e086dcc31223012b4422a",
                 "shasum": ""
             },
             "require": {
@@ -293,24 +293,23 @@
                 "MIT"
             ],
             "description": "Create SSH tunnel for DB Extractors",
-            "time": "2020-06-18T08:51:48+00:00"
+            "time": "2020-04-23T10:02:59+00:00"
         },
         {
             "name": "keboola/db-extractor-table-format",
-            "version": "3.1.1",
+            "version": "3.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/db-extractor-table-format.git",
-                "reference": "227523552b75c1d28a7e36982dacaa647504d00c"
+                "reference": "9510ccf276fb9c3bb303ef2c43ad02ed48b70ced"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/db-extractor-table-format/zipball/227523552b75c1d28a7e36982dacaa647504d00c",
-                "reference": "227523552b75c1d28a7e36982dacaa647504d00c",
+                "url": "https://api.github.com/repos/keboola/db-extractor-table-format/zipball/9510ccf276fb9c3bb303ef2c43ad02ed48b70ced",
+                "reference": "9510ccf276fb9c3bb303ef2c43ad02ed48b70ced",
                 "shasum": ""
             },
             "require": {
-                "ext-mbstring": "*",
                 "keboola/common-exceptions": "^1.0",
                 "keboola/php-datatypes": "^4.7",
                 "keboola/php-utils": "^4.1",
@@ -339,7 +338,7 @@
                 }
             ],
             "description": "PHP class for formating table result",
-            "time": "2020-06-18T11:39:02+00:00"
+            "time": "2020-06-15T07:33:56+00:00"
         },
         {
             "name": "keboola/php-component",
@@ -1063,16 +1062,16 @@
         },
         {
             "name": "phpdocumentor/type-resolver",
-            "version": "1.2.0",
+            "version": "1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpDocumentor/TypeResolver.git",
-                "reference": "30441f2752e493c639526b215ed81d54f369d693"
+                "reference": "7462d5f123dfc080dfdf26897032a6513644fc95"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpDocumentor/TypeResolver/zipball/30441f2752e493c639526b215ed81d54f369d693",
-                "reference": "30441f2752e493c639526b215ed81d54f369d693",
+                "url": "https://api.github.com/repos/phpDocumentor/TypeResolver/zipball/7462d5f123dfc080dfdf26897032a6513644fc95",
+                "reference": "7462d5f123dfc080dfdf26897032a6513644fc95",
                 "shasum": ""
             },
             "require": {
@@ -1086,7 +1085,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-1.x": "1.x-dev"
+                    "dev-master": "1.x-dev"
                 }
             },
             "autoload": {
@@ -1105,7 +1104,7 @@
                 }
             ],
             "description": "A PSR-5 based resolver of Class names, Types and Structural Element Names",
-            "time": "2020-06-19T20:22:09+00:00"
+            "time": "2020-02-18T18:59:58+00:00"
         },
         {
             "name": "phpspec/prophecy",
@@ -1522,16 +1521,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "9.2.5",
+            "version": "9.2.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "ad7cc5ec3ab2597b329880e30442d9054526023b"
+                "reference": "c1b1d62095ef78427f112a7a1c1502d4607e3c00"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/ad7cc5ec3ab2597b329880e30442d9054526023b",
-                "reference": "ad7cc5ec3ab2597b329880e30442d9054526023b",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/c1b1d62095ef78427f112a7a1c1502d4607e3c00",
+                "reference": "c1b1d62095ef78427f112a7a1c1502d4607e3c00",
                 "shasum": ""
             },
             "require": {
@@ -1616,7 +1615,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2020-06-22T07:10:55+00:00"
+            "time": "2020-06-15T10:51:34+00:00"
         },
         {
             "name": "pimple/pimple",
@@ -2822,16 +2821,16 @@
         },
         {
             "name": "symfony/polyfill-ctype",
-            "version": "v1.17.1",
+            "version": "v1.17.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-ctype.git",
-                "reference": "2edd75b8b35d62fd3eeabba73b26b8f1f60ce13d"
+                "reference": "e94c8b1bbe2bc77507a1056cdb06451c75b427f9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-ctype/zipball/2edd75b8b35d62fd3eeabba73b26b8f1f60ce13d",
-                "reference": "2edd75b8b35d62fd3eeabba73b26b8f1f60ce13d",
+                "url": "https://api.github.com/repos/symfony/polyfill-ctype/zipball/e94c8b1bbe2bc77507a1056cdb06451c75b427f9",
+                "reference": "e94c8b1bbe2bc77507a1056cdb06451c75b427f9",
                 "shasum": ""
             },
             "require": {
@@ -2844,10 +2843,6 @@
             "extra": {
                 "branch-alias": {
                     "dev-master": "1.17-dev"
-                },
-                "thanks": {
-                    "name": "symfony/polyfill",
-                    "url": "https://github.com/symfony/polyfill"
                 }
             },
             "autoload": {
@@ -2894,20 +2889,20 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-06-06T08:46:27+00:00"
+            "time": "2020-05-12T16:14:59+00:00"
         },
         {
             "name": "symfony/polyfill-php80",
-            "version": "v1.17.1",
+            "version": "v1.17.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-php80.git",
-                "reference": "4a5b6bba3259902e386eb80dd1956181ee90b5b2"
+                "reference": "5e30b2799bc1ad68f7feb62b60a73743589438dd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-php80/zipball/4a5b6bba3259902e386eb80dd1956181ee90b5b2",
-                "reference": "4a5b6bba3259902e386eb80dd1956181ee90b5b2",
+                "url": "https://api.github.com/repos/symfony/polyfill-php80/zipball/5e30b2799bc1ad68f7feb62b60a73743589438dd",
+                "reference": "5e30b2799bc1ad68f7feb62b60a73743589438dd",
                 "shasum": ""
             },
             "require": {
@@ -2917,10 +2912,6 @@
             "extra": {
                 "branch-alias": {
                     "dev-master": "1.17-dev"
-                },
-                "thanks": {
-                    "name": "symfony/polyfill",
-                    "url": "https://github.com/symfony/polyfill"
                 }
             },
             "autoload": {
@@ -2974,7 +2965,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-06-06T08:46:27+00:00"
+            "time": "2020-05-12T16:47:27+00:00"
         },
         {
             "name": "symfony/process",
@@ -3256,16 +3247,16 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "0.12.30",
+            "version": "0.12.29",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "1f2c16d3fbb5eec6e55fbe2358e32570cefa20e5"
+                "reference": "9771daaf6b95c6313b908d0bcdee0afcd51f838a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/1f2c16d3fbb5eec6e55fbe2358e32570cefa20e5",
-                "reference": "1f2c16d3fbb5eec6e55fbe2358e32570cefa20e5",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/9771daaf6b95c6313b908d0bcdee0afcd51f838a",
+                "reference": "9771daaf6b95c6313b908d0bcdee0afcd51f838a",
                 "shasum": ""
             },
             "require": {
@@ -3308,7 +3299,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-06-21T14:08:19+00:00"
+            "time": "2020-06-14T14:10:59+00:00"
         },
         {
             "name": "slevomat/coding-standard",
