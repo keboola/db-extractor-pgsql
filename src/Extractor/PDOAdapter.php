@@ -33,7 +33,7 @@ class PDOAdapter
         $this->state = $state;
 
         if (!$databaseConfig->hasDatabase()) {
-            throw new UserException(sprintf('Parameter "database" is missing.', $r));
+            throw new UserException('Parameter "database" is missing.');
         }
 
         $this->createConnection();
