@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9d6fda3d55e9b76102e6ba528ba984f0",
+    "content-hash": "27ad22fc22d2f2c75563c8b12b38a621",
     "packages": [
         {
             "name": "doctrine/instantiator",
@@ -220,16 +220,16 @@
         },
         {
             "name": "keboola/db-extractor-config",
-            "version": "1.4.5",
+            "version": "1.4.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/db-extractor-config.git",
-                "reference": "0129ea42dac9e732f54ddb322dc35278bb5b9030"
+                "reference": "8de00d516ab91992f8cfe5fb305a800b3fc28b3c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/db-extractor-config/zipball/0129ea42dac9e732f54ddb322dc35278bb5b9030",
-                "reference": "0129ea42dac9e732f54ddb322dc35278bb5b9030",
+                "url": "https://api.github.com/repos/keboola/db-extractor-config/zipball/8de00d516ab91992f8cfe5fb305a800b3fc28b3c",
+                "reference": "8de00d516ab91992f8cfe5fb305a800b3fc28b3c",
                 "shasum": ""
             },
             "require": {
@@ -255,7 +255,7 @@
                 "MIT"
             ],
             "description": "Config definition for database extractor",
-            "time": "2020-06-19T15:04:34+00:00"
+            "time": "2020-06-26T06:33:17+00:00"
         },
         {
             "name": "keboola/db-extractor-ssh-tunnel",
