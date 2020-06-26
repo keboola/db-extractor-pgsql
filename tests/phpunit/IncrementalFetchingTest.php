@@ -547,6 +547,7 @@ class IncrementalFetchingTest extends BaseTest
 
     public function testIncrementalFetchingColumnNull(): void
     {
+        // In old configs can be "incrementalFetchingColumn: null"
         $this->createAutoIncrementAndTimestampTable();
         $config = $this->getIncrementalFetchingConfig();
         $config['parameters']['incrementalFetchingColumn'] = null;
@@ -564,8 +565,9 @@ class IncrementalFetchingTest extends BaseTest
         );
     }
 
-    public function testIncrementalFetchingColumnLimit(): void
+    public function testIncrementalFetchingColumnLimitNull(): void
     {
+        // In old configs can be "incrementalFetchingLimit: null"
         $this->createAutoIncrementAndTimestampTable();
         $config = $this->getIncrementalFetchingConfig();
         $config['parameters']['incrementalFetchingColumn'] = 'timestamp';
