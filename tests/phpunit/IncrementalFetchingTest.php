@@ -544,4 +544,43 @@ class IncrementalFetchingTest extends BaseTest
             ],
         ];
     }
+
+    public function testIncrementalFetchingColumnNull(): void
+    {
+        $this->createAutoIncrementAndTimestampTable();
+        $config = $this->getIncrementalFetchingConfig();
+        $config['parameters']['incrementalFetchingColumn'] = null;
+
+        $app = $this->createApplication($config);
+        $result = $app->run();
+
+        $this->assertEquals('success', $result['status']);
+        $this->assertEquals(
+            [
+                'outputTable' => 'in.c-main.auto-increment-timestamp',
+                'rows' => 2,
+            ],
+            $result['imported']
+        );
+    }
+
+    public function testIncrementalFetchingColumnLimit(): void
+    {
+        $this->createAutoIncrementAndTimestampTable();
+        $config = $this->getIncrementalFetchingConfig();
+        $config['parameters']['incrementalFetchingColumn'] = 'timestamp';
+        $config['parameters']['incrementalFetchingLimit'] = null;
+
+        $app = $this->createApplication($config);
+        $result = $app->run();
+
+        $this->assertEquals('success', $result['status']);
+        $this->assertEquals(
+            [
+                'outputTable' => 'in.c-main.auto-increment-timestamp',
+                'rows' => 2,
+            ],
+            $result['imported']
+        );
+    }
 }
