@@ -46,16 +46,20 @@ class PDOAdapter
         $this->pdo->query('SELECT 1');
     }
 
-    public function export(string $query, PgsqlExportConfig $exportConfig, CsvWriter $csvFile): array
+    public function export(string $query, PgsqlExportConfig $exportConfig, string $csvPath): array
     {
         // Check connection
         $this->tryReconnect();
 
         return $this
             ->createRetryProxy($exportConfig->getMaxRetries())
-            ->call(function () use ($query, $exportConfig, $csvFile) {
+            ->call(function () use ($query, $exportConfig, $csvPath) {
                 try {
-                    return $this->executeQueryPDO($query, $exportConfig, $csvFile);
+                    // Csv writer must be re-created after each error, because some lines could be already written
+                    $csv = new CsvWriter($csvPath);
+                    $result =  $this->executeQueryPDO($query, $exportConfig, $csv);
+                    $this->isAlive();
+                    return $result;
                 } catch (Throwable $queryError) {
                     try {
                         $this->createConnection();

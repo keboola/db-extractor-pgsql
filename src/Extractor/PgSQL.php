@@ -91,7 +91,7 @@ class PgSQL extends BaseExtractor
                 $result = $this->pdoAdapter->export(
                     $query,
                     $exportConfig,
-                    $this->createOutputCsv($exportConfig->getOutputTable())
+                    $this->getOutputFilename($exportConfig->getOutputTable())
                 );
             } catch (PDOException $pdoError) {
                 throw new UserException(
