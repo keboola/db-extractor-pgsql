@@ -585,4 +585,25 @@ class IncrementalFetchingTest extends BaseTest
             $result['imported']
         );
     }
+
+    public function testIncrementalFetchingLimitPresentColumnMissing(): void
+    {
+        // In old configs can be "incrementalFetchingLimit" set, but "incrementalFetchingColumn" missing
+        $this->createAutoIncrementAndTimestampTable();
+        $config = $this->getIncrementalFetchingConfig();
+        unset($config['parameters']['incrementalFetchingColumn']);
+        $config['parameters']['incrementalFetchingLimit'] = 50000;
+
+        $app = $this->createApplication($config);
+        $result = $app->run();
+
+        $this->assertEquals('success', $result['status']);
+        $this->assertEquals(
+            [
+                'outputTable' => 'in.c-main.auto-increment-timestamp',
+                'rows' => 2,
+            ],
+            $result['imported']
+        );
+    }
 }
