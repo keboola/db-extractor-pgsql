@@ -101,27 +101,31 @@ services:
     volumes:
       - ssh-keys:/root/.ssh
       - .:/code
+      - ./tests/data/ssl/certs:/ssl-cert
     links:
       - pgsql
       - sshproxy
 
   pgsql: &mainPgsql
-    image: postgres:latest
+    image: postgres:alpine
+    command: -c ssl=on -c ssl_cert_file=/ssl-cert/server.crt -c ssl_key_file=/ssl-cert/server.key
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=some password
+    volumes:
+      - ./tests/data/ssl/certs:/ssl-cert
 
   pgsql9:
     <<: *mainPgsql
-    image: postgres:9
+    image: postgres:9-alpine
 
   pgsql10:
     <<: *mainPgsql
-    image: postgres:10
+    image: postgres:10-alpine
 
   pgsql11:
     <<: *mainPgsql
-    image: postgres:11
+    image: postgres:11-alpine
 
   sshproxy:
     image: keboola/db-component-ssh-proxy:latest
