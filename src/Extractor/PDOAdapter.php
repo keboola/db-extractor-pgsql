@@ -218,21 +218,21 @@ class PDOAdapter
 
             if ($sslConnection->hasCa()) {
                 $dsn .= sprintf(
-                    'sslrootcert=%s;',
+                    'sslrootcert="%s";',
                     SslHelper::createSSLFile($tempDir, $sslConnection->getCa())
                 );
             }
 
             if ($sslConnection->hasCert()) {
                 $dsn .= sprintf(
-                    'sslcert=%s;',
+                    'sslcert="%s";',
                     SslHelper::createSSLFile($tempDir, $sslConnection->getCert())
                 );
             }
 
             if ($sslConnection->hasKey()) {
                 $dsn .= sprintf(
-                    'sslkey=%s;',
+                    'sslkey="%s";',
                     SslHelper::createSSLFile($tempDir, $sslConnection->getKey())
                 );
             }
