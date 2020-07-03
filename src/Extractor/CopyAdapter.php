@@ -11,6 +11,7 @@ use Keboola\DbExtractor\Exception\CopyAdapterException;
 use Keboola\DbExtractor\Exception\CopyAdapterQueryException;
 use Keboola\DbExtractorConfig\Configuration\ValueObject\DatabaseConfig;
 use Keboola\DbExtractorConfig\Configuration\ValueObject\ExportConfig;
+use Keboola\Temp\Temp;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Process\Process;
 
@@ -57,16 +58,43 @@ class CopyAdapter
 
     protected function runQuery(string $sql, ?float $timeout): void
     {
-        $command = sprintf(
-            'PGPASSWORD=%s psql -h %s -p %s -U %s -d %s -w -c %s',
-            escapeshellarg($this->databaseConfig->getPassword()),
-            escapeshellarg($this->databaseConfig->getHost()),
-            escapeshellarg($this->databaseConfig->getPort()),
-            escapeshellarg($this->databaseConfig->getUsername()),
-            escapeshellarg($this->databaseConfig->getDatabase()),
-            escapeshellarg($sql),
-        );
-        $process = Process::fromShellCommandline($command);
+        $command = [];
+        $command[] = sprintf('PGPASSWORD=%s', escapeshellarg($this->databaseConfig->getPassword()));
+        $command[] = 'psql';
+        $command[] = sprintf('-h %s', escapeshellarg($this->databaseConfig->getHost()));
+        $command[] = sprintf('-p %s', escapeshellarg($this->databaseConfig->getPort()));
+        $command[] = sprintf('-U %s', escapeshellarg($this->databaseConfig->getUsername()));
+        $command[] = sprintf('-d %s', escapeshellarg($this->databaseConfig->getDatabase()));
+        $command[] = sprintf('-w -c %s', escapeshellarg($sql));
+
+        if ($this->databaseConfig->hasSSLConnection()) {
+            $command[] = '--set=sslmode=require';
+            $tempDir = new Temp('ssl');
+            $sslConnection = $this->databaseConfig->getSslConnectionConfig();
+
+            if ($sslConnection->hasCa()) {
+                $command[] = sprintf(
+                    '--set=sslrootcert="%s"',
+                    SslHelper::createSSLFile($tempDir, $sslConnection->getCa())
+                );
+            }
+
+            if ($sslConnection->hasCert()) {
+                $command[] = sprintf(
+                    '--set=sslcert="%s"',
+                    SslHelper::createSSLFile($tempDir, $sslConnection->getCert())
+                );
+            }
+
+            if ($sslConnection->hasKey()) {
+                $command[] = sprintf(
+                    '--set=sslkey="%s"',
+                    SslHelper::createSSLFile($tempDir, $sslConnection->getKey())
+                );
+            }
+        }
+
+        $process = Process::fromShellCommandline(implode(' ', $command));
         $process->setTimeout($timeout); // null => allow it to run for as long as it needs
         $process->run();
         if ($process->getExitCode() !== 0) {
