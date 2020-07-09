@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Keboola\DbExtractor\Configuration;
 
 use Keboola\DbExtractorConfig\Configuration\NodeDefinition\TableNodesDecorator;
+use Symfony\Component\Config\Definition\Builder\NodeBuilder;
 
 class PgsqlTableNodeDecorator extends TableNodesDecorator
 {
@@ -16,5 +17,15 @@ class PgsqlTableNodeDecorator extends TableNodesDecorator
         }
 
         return parent::normalize($v);
+    }
+
+    protected function addPrimaryKeyNode(NodeBuilder $builder): void
+    {
+        // @formatter:off
+        // Fix BC: some old configs can be empty primary key
+        $builder
+            ->arrayNode('primaryKey')
+                ->prototype('scalar')->end();
+        // @formatter:on
     }
 }
