@@ -869,6 +869,19 @@ class PgsqlTest extends BaseTest
         $app->run();
     }
 
+    public function testEmptyPrimaryKeyString(): void
+    {
+        $config = $this->getConfigRow(self::DRIVER);
+
+        $config['parameters']['primaryKey'] = [''];
+
+        $app = $this->createApplication($config);
+        $result = $app->run();
+
+        $this->assertArrayHasKey('status', $result);
+        $this->assertEquals('success', $result['status']);
+    }
+
     public function getPrivateKey(): string
     {
         return (string) file_get_contents('/root/.ssh/id_rsa');
