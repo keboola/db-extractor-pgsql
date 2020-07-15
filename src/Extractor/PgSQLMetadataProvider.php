@@ -83,11 +83,17 @@ class PgSQLMetadataProvider implements MetadataProvider
 
     private function processTable(array $data, MetadataBuilder $builder): TableBuilder
     {
-        return $builder
+        $table = $builder
             ->addTable()
             ->setName((string) $data['table_name'])
-            ->setSchema($data['table_schema'] ?? '')
-            ->setType(self::tableTypeFromCode($data['table_type']));
+            ->setSchema($data['table_schema'] ?? '');
+
+        $type = self::tableTypeFromCode($data['table_type']);
+        if ($type) {
+            $table->setType($type);
+        }
+
+        return $table;
     }
 
     private function processColumn(array $data, TableBuilder $tableBuilder): ColumnBuilder
