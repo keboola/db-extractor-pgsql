@@ -53,7 +53,7 @@ class PgSQLMetadataProvider implements MetadataProvider
         $columnBuilders = [];
 
         // Process tables
-        $tableRequiredProperties = ['schema', 'type'];
+        $tableRequiredProperties = ['schema'];
         $columnRequiredProperties= ['ordinalPosition', 'nullable'];
         $builder = MetadataBuilder::create($tableRequiredProperties, $columnRequiredProperties);
         foreach ($this->queryTablesAndColumns($whitelist, $loadColumns) as $data) {
