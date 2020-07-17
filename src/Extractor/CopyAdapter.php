@@ -11,6 +11,7 @@ use Keboola\DbExtractor\Exception\CopyAdapterException;
 use Keboola\DbExtractor\Exception\CopyAdapterQueryException;
 use Keboola\DbExtractorConfig\Configuration\ValueObject\DatabaseConfig;
 use Keboola\DbExtractorConfig\Configuration\ValueObject\ExportConfig;
+use Keboola\Temp\Temp;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Process\Process;
 
@@ -65,6 +66,33 @@ class CopyAdapter
         $command[] = sprintf('-U %s', escapeshellarg($this->databaseConfig->getUsername()));
         $command[] = sprintf('-d %s', escapeshellarg($this->databaseConfig->getDatabase()));
         $command[] = sprintf('-w -c %s', escapeshellarg($sql));
+
+        if ($this->databaseConfig->hasSSLConnection()) {
+            $command[] = '--set=sslmode=require';
+            $tempDir = new Temp('ssl');
+            $sslConnection = $this->databaseConfig->getSslConnectionConfig();
+
+            if ($sslConnection->hasCa()) {
+                $command[] = sprintf(
+                    '--set=sslrootcert="%s"',
+                    SslHelper::createSSLFile($tempDir, $sslConnection->getCa())
+                );
+            }
+
+            if ($sslConnection->hasCert()) {
+                $command[] = sprintf(
+                    '--set=sslcert="%s"',
+                    SslHelper::createSSLFile($tempDir, $sslConnection->getCert())
+                );
+            }
+
+            if ($sslConnection->hasKey()) {
+                $command[] = sprintf(
+                    '--set=sslkey="%s"',
+                    SslHelper::createSSLFile($tempDir, $sslConnection->getKey())
+                );
+            }
+        }
 
         $process = Process::fromShellCommandline(implode(' ', $command));
         $process->setTimeout($timeout); // null => allow it to run for as long as it needs
