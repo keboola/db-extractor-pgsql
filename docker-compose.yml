@@ -17,6 +17,7 @@ services:
       - PGSQL_DB_PASSWORD=some password
     volumes:
       - ssh-keys:/root/.ssh
+      - ./tests/data/ssl/certs:/ssl-cert
     links:
       - pgsql
       - sshproxy
@@ -38,6 +39,7 @@ services:
       - PGSQL_DB_PASSWORD=some password
     volumes:
       - ssh-keys:/root/.ssh
+      - ./tests/data/ssl/certs:/ssl-cert
     links:
       - pgsql9
       - sshproxy
@@ -59,6 +61,7 @@ services:
       - PGSQL_DB_PASSWORD=some password
     volumes:
       - ssh-keys:/root/.ssh
+      - ./tests/data/ssl/certs:/ssl-cert
     links:
       - pgsql10
       - sshproxy
@@ -80,6 +83,7 @@ services:
       - PGSQL_DB_PASSWORD=some password
     volumes:
       - ssh-keys:/root/.ssh
+      - ./tests/data/ssl/certs:/ssl-cert
     links:
       - pgsql11
       - sshproxy
@@ -107,25 +111,39 @@ services:
       - sshproxy
 
   pgsql: &mainPgsql
-    image: postgres:alpine
+    build:
+      args:
+        version: alpine
+      context: .
+      dockerfile: Dockerfile-pgsql
     command: -c ssl=on -c ssl_cert_file=/ssl-cert/server.crt -c ssl_key_file=/ssl-cert/server.key
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=some password
-    volumes:
-      - ./tests/data/ssl/certs:/ssl-cert
 
   pgsql9:
     <<: *mainPgsql
-    image: postgres:9-alpine
+    build:
+      args:
+        version: 9-alpine
+      context: .
+      dockerfile: Dockerfile-pgsql
 
   pgsql10:
     <<: *mainPgsql
-    image: postgres:10-alpine
+    build:
+      args:
+        version: 10-alpine
+      context: .
+      dockerfile: Dockerfile-pgsql
 
   pgsql11:
     <<: *mainPgsql
-    image: postgres:11-alpine
+    build:
+      args:
+        version: 11-alpine
+      context: .
+      dockerfile: Dockerfile-pgsql
 
   sshproxy:
     image: keboola/db-component-ssh-proxy:latest
