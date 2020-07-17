@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\DbExtractor\Extractor;
 
+use Keboola\DbExtractorConfig\Configuration\ValueObject\DatabaseConfig;
 use PDO;
 use PDOException;
 use Retry\RetryProxy;
@@ -21,21 +22,18 @@ class PDOAdapter
 
     private PDO $pdo;
 
-    private array $dbParams;
+    private DatabaseConfig $databaseConfig;
 
     private array $state;
 
-    public function __construct(LoggerInterface $logger, array $dbParams, array $state)
+    public function __construct(LoggerInterface $logger, DatabaseConfig $databaseConfig, array $state)
     {
         $this->logger = $logger;
-        $this->dbParams = $dbParams;
+        $this->databaseConfig = $databaseConfig;
         $this->state = $state;
 
-        // check params
-        foreach (['host', 'database', 'user', '#password'] as $r) {
-            if (!isset($dbParams[$r])) {
-                throw new UserException(sprintf('Parameter %s is missing.', $r));
-            }
+        if (!$databaseConfig->hasDatabase()) {
+            throw new UserException('Parameter "database" is missing.');
         }
 
         $this->createConnection();
@@ -203,16 +201,21 @@ class PDOAdapter
             PDO::ATTR_TIMEOUT => 60,
         ];
 
-        $port = isset($this->dbParams['port']) ? $this->dbParams['port'] : '5432';
+        $port = $this->databaseConfig->hasPort() ? $this->databaseConfig->getPort() : '5432';
 
         $dsn = sprintf(
-            'pgsql:host=%s;port=%s;dbname=%s',
-            $this->dbParams['host'],
+            'pgsql:host=%s;port=%s;dbname=%s;',
+            $this->databaseConfig->getHost(),
             $port,
-            $this->dbParams['database']
+            $this->databaseConfig->getDatabase()
         );
         $this->logger->info(sprintf('Connecting to %s', $dsn));
-        $this->pdo = new PDO($dsn, $this->dbParams['user'], $this->dbParams['#password'], $options);
+        $this->pdo = new PDO(
+            $dsn,
+            $this->databaseConfig->getUsername(),
+            $this->databaseConfig->getPassword(),
+            $options
+        );
         $this->pdo->exec("SET NAMES 'UTF8';");
     }
 
