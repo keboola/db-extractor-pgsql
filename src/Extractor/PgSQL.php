@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\DbExtractor\Extractor;
 
+use Keboola\DbExtractorConfig\Configuration\ValueObject\DatabaseConfig;
 use PDOException;
 use Psr\Log\LoggerInterface;
 use InvalidArgumentException;
@@ -39,10 +40,10 @@ class PgSQL extends BaseExtractor
         return $this->metadataProvider;
     }
 
-    public function createConnection(array $dbParams): void
+    public function createConnection(DatabaseConfig $databaseConfig): void
     {
-        $this->pdoAdapter = new PDOAdapter($this->logger, $dbParams, $this->state);
-        $this->copyAdapter = new CopyAdapter($this->logger, $dbParams, $this->state);
+        $this->pdoAdapter = new PDOAdapter($this->logger, $databaseConfig, $this->state);
+        $this->copyAdapter = new CopyAdapter($this->logger, $databaseConfig, $this->state);
     }
 
     public function testConnection(): void

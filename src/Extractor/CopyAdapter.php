@@ -9,6 +9,7 @@ use Keboola\DbExtractor\Configuration\PgsqlExportConfig;
 use Keboola\DbExtractor\Exception\CopyAdapterConnectionException;
 use Keboola\DbExtractor\Exception\CopyAdapterException;
 use Keboola\DbExtractor\Exception\CopyAdapterQueryException;
+use Keboola\DbExtractorConfig\Configuration\ValueObject\DatabaseConfig;
 use Keboola\DbExtractorConfig\Configuration\ValueObject\ExportConfig;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Process\Process;
@@ -17,14 +18,14 @@ class CopyAdapter
 {
     private LoggerInterface $logger;
 
-    private array $dbParams;
+    private DatabaseConfig $databaseConfig;
 
     private array $state;
 
-    public function __construct(LoggerInterface $logger, array $dbParams, array $state)
+    public function __construct(LoggerInterface $logger, DatabaseConfig $databaseConfig, array $state)
     {
         $this->logger = $logger;
-        $this->dbParams = $dbParams;
+        $this->databaseConfig = $databaseConfig;
         $this->state = $state;
     }
 
@@ -58,11 +59,11 @@ class CopyAdapter
     {
         $command = sprintf(
             'PGPASSWORD=%s psql -h %s -p %s -U %s -d %s -w -c %s',
-            escapeshellarg($this->dbParams['#password']),
-            escapeshellarg($this->dbParams['host']),
-            escapeshellarg((string) $this->dbParams['port']),
-            escapeshellarg($this->dbParams['user']),
-            escapeshellarg($this->dbParams['database']),
+            escapeshellarg($this->databaseConfig->getPassword()),
+            escapeshellarg($this->databaseConfig->getHost()),
+            escapeshellarg($this->databaseConfig->getPort()),
+            escapeshellarg($this->databaseConfig->getUsername()),
+            escapeshellarg($this->databaseConfig->getDatabase()),
             escapeshellarg($sql),
         );
         $process = Process::fromShellCommandline($command);
