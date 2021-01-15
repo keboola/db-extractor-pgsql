@@ -1,9 +1,7 @@
 vendor/
 .idea/
 composer.phar
-tests/phpunit/data/in
-tests/phpunit/data/out
-tests/phpunit/data/config.json
+tests/phpunit/data
 .DS_Store
 .env
 .phpunit.result.cache
