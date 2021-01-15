@@ -152,5 +152,37 @@ services:
     links:
       - pgsql
 
+  wait:
+    image: waisbrot/wait
+    depends_on:
+      - pgsql
+    environment:
+      - TARGETS=pgsql:5432
+      - TIMEOUT=200
+
+  wait9:
+    image: waisbrot/wait
+    depends_on:
+      - pgsql9
+    environment:
+      - TARGETS=pgsql9:5432
+      - TIMEOUT=200
+
+  wait10:
+    image: waisbrot/wait
+    depends_on:
+      - pgsql10
+    environment:
+      - TARGETS=pgsql10:5432
+      - TIMEOUT=200
+
+  wait11:
+    image: waisbrot/wait
+    depends_on:
+      - pgsql11
+    environment:
+      - TARGETS=pgsql11:5432
+      - TIMEOUT=200
+
 volumes:
   ssh-keys:
