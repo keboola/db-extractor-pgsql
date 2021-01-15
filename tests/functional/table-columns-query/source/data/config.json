@@ -15,7 +15,6 @@
       "user": "%env(string:PGSQL_DB_USER)%",
       "#password": "%env(string:PGSQL_DB_PASSWORD)%",
       "database": "%env(string:PGSQL_DB_DATABASE)%"
-    },
-    "extractor_class": "PGSQL"
+    }
   }
 }

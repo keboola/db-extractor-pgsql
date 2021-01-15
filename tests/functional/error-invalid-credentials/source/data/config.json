@@ -9,7 +9,6 @@
       "user": "fakeguy",
       "#password": "%env(string:PGSQL_DB_PASSWORD)%",
       "database": "%env(string:PGSQL_DB_DATABASE)%"
-    },
-    "extractor_class": "PGSQL"
+    }
   }
 }

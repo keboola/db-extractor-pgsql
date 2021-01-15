@@ -17,7 +17,6 @@
         "cert": "%env(string:SSL_CERT)%",
         "key": "%env(string:SSL_KEY)%"
       }
-    },
-    "extractor_class": "PGSQL"
+    }
   }
 }

@@ -21,7 +21,6 @@
         "remotePort": "%env(string:PGSQL_DB_PORT)%",
         "localPort": "1234"
       }
-    },
-    "extractor_class": "PGSQL"
+    }
   }
 }
