@@ -4,259 +4,66 @@ declare(strict_types=1);
 
 namespace Keboola\DbExtractor\Tests;
 
-use Keboola\Csv\CsvReader;
-use Keboola\DbExtractor\Exception\UserException;
+use Keboola\Component\Logger;
+use Keboola\DbExtractor\FunctionalTests\PdoTestConnection;
+use Keboola\DbExtractor\PgsqlApplication;
+use Keboola\DbExtractor\Tests\Traits\ConfigTrait;
+use Keboola\DbExtractor\TraitTests\CloseSshTunnelsTrait;
+use Keboola\DbExtractor\TraitTests\RemoveAllTablesTrait;
+use Keboola\DbExtractor\TraitTests\Tables\EscapingTableTrait;
+use Keboola\DbExtractor\TraitTests\Tables\TypesTableTrait;
+use PHPUnit\Framework\TestCase;
+use \PDO;
+use Symfony\Component\Filesystem\Filesystem;
 
-class PgsqlTest extends BaseTest
+class PgsqlTest extends TestCase
 {
-    public function testRunConfig(): void
+    use ConfigTrait;
+    use RemoveAllTablesTrait;
+    use CloseSshTunnelsTrait;
+    use TypesTableTrait;
+    use EscapingTableTrait;
+
+    protected string $dataDir = __DIR__ . '/data';
+
+    protected PDO $connection;
+
+    protected function setUp(): void
     {
-        $config = $this->getConfig('pgsql');
-        $result = $this->createApplication($config)->run();
-        $expectedCsvFile = new CsvReader($this->dataDir . '/pgsql/escaping.csv');
-        $outputCsvFile = new CsvReader(
-            $this->dataDir . '/out/tables/' . $result['imported'][0]['outputTable'] . '.csv'
-        );
-        $outputManifestFile = $this->dataDir . '/out/tables/' . $result['imported'][0]['outputTable'] . '.csv.manifest';
-
-        $this->assertEquals('success', $result['status']);
-        $this->assertFileExists($outputManifestFile);
-        $outputManifest = json_decode((string) file_get_contents($outputManifestFile), true);
-
-        $this->assertEquals(['funnycol', 'sadcol'], $outputManifest['columns']);
-        $this->assertEquals(['funnycol', 'sadcol'], $outputManifest['primary_key']);
-        $outputArr = iterator_to_array($outputCsvFile);
-        $expectedArr = iterator_to_array($expectedCsvFile);
-        for ($i = 1; $i < count($expectedArr); $i++) {
-            $this->assertContains($expectedArr[$i], $outputArr);
-        }
-    }
-
-    public function testRunWithSSH(): void
-    {
-        $config = $this->getConfig();
-        $config['parameters']['db']['ssh'] = [
-            'enabled' => true,
-            'keys' => [
-                '#private' => $this->getPrivateKey(),
-                'public' => $this->getPublicKey(),
-            ],
-            'user' => 'root',
-            'sshHost' => 'sshproxy',
-        ];
-
-        $app = $this->createApplication($config);
-        $result = $app->run();
-
-        $expectedCsvFile = new CsvReader($this->dataDir . '/pgsql/escaping.csv');
-        $outputCsvFile = new CsvReader(
-            $this->dataDir . '/out/tables/' . $result['imported'][0]['outputTable'] . '.csv'
-        );
-        $outputManifestFile = $this->dataDir . '/out/tables/' . $result['imported'][0]['outputTable'] . '.csv.manifest';
-        $this->assertFileExists($outputManifestFile);
-
-        $outputManifest = json_decode((string) file_get_contents($outputManifestFile), true);
-        $this->assertEquals(['funnycol', 'sadcol'], $outputManifest['columns']);
-        $this->assertEquals(['funnycol', 'sadcol'], $outputManifest['primary_key']);
-
-        $this->assertEquals('success', $result['status']);
-
-        $outputArr = iterator_to_array($outputCsvFile);
-        $expectedArr = iterator_to_array($expectedCsvFile);
-        for ($i = 1; $i < count($expectedArr); $i++) {
-            $this->assertContains($expectedArr[$i], $outputArr);
+        $this->connection = PdoTestConnection::createConnection();
+        $this->removeAllTables();
+        $this->closeSshTunnels();
+        $fs = new Filesystem();
+        if (!$fs->exists($this->dataDir)) {
+            $fs->mkdir($this->dataDir . '/out/tables');
         }
     }
 
     public function testRunPDOEmptyTable(): void
     {
-        $config = $this->getConfigRow(self::DRIVER);
+        $this->createTypesTable();
+        $this->generateTypesRows();
+
+        $config = $this->getRowConfig();
         $config['parameters']['forceFallback'] = true;
-        $config['parameters']['table']['tableName'] = 'empty_table';
+        $config['parameters']['table']['tableName'] = 'types';
 
-        $app = $this->createApplication($config);
-
+        $app = new PgsqlApplication($config, new Logger(), [], $this->dataDir);
         $result = $app->run();
+
         $this->assertEquals('success', $result['status']);
-    }
-
-    public function testTestConnection(): void
-    {
-        $config = $this->getConfig();
-        $config['action'] = 'testConnection';
-        $app = $this->createApplication($config);
-
-        $result = $app->run();
-        $this->assertEquals('success', $result['status']);
-    }
-
-    public function testInvalidCredentialsTestConnection(): void
-    {
-        $config = $this->getConfig();
-        $config['action'] = 'testConnection';
-
-        $config['parameters']['db']['user'] = 'fakeguy';
-        $app = $this->createApplication($config);
-
-        try {
-            $app->run();
-            $this->fail('Invalid credentials should throw exception');
-        } catch (UserException $exception) {
-            $this->assertStringStartsWith('Connection failed', $exception->getMessage());
-        }
-    }
-
-    public function testInvalidCredentialsAppRun(): void
-    {
-        $config = $this->getConfig();
-        $config['parameters']['db']['#password'] = 'fakepass';
-
-        $app = $this->createApplication($config);
-        try {
-            $app->run();
-            $this->fail('Invalid credentials should throw exception');
-        } catch (UserException $exception) {
-            $this->assertStringStartsWith('Error connecting', $exception->getMessage());
-        }
-    }
-
-    public function testGetTables(): void
-    {
-        $config = $this->getConfig();
-        $config['action'] = 'getTables';
-        unset($config['parameters']['tables']);
-        $app = $this->createApplication($config);
-
-        $result = $app->run();
-        $this->assertArrayHasKey('status', $result);
-        $this->assertArrayHasKey('tables', $result);
-        $this->assertCount(5, $result['tables']);
-
-        $expectedData = [
-            [
-                'name' => 'empty_table',
-                'schema' => 'public',
-                'columns' => [
-                    [
-                        'name' => 'integer',
-                        'type' => 'integer',
-                        'primaryKey' => false,
-                    ],
-                    [
-                        'name' => 'date',
-                        'type' => 'date',
-                        'primaryKey' => false,
-                    ],
-                ],
-            ],
-            [
-                'name' => 'escaping',
-                'schema' => 'public',
-                'columns' =>
-                    [
-                        [
-                            'name' => '_funnycol',
-                            'type' => 'character varying',
-                            'primaryKey' => true,
-                        ],
-                        [
-                            'name' => '_sadcol',
-                            'type' => 'character varying',
-                            'primaryKey' => true,
-                        ],
-                    ],
-            ],
-            [
-                'name' => 'types',
-                'schema' => 'public',
-                'columns' =>
-                    [
-                        [
-                            'name' => 'character',
-                            'type' => 'character varying',
-                            'primaryKey' => true,
-                        ],
-                        [
-                            'name' => 'integer',
-                            'type' => 'integer',
-                            'primaryKey' => false,
-                        ],
-                        [
-                            'name' => 'decimal',
-                            'type' => 'numeric',
-                            'primaryKey' => false,
-                        ],
-                        [
-                            'name' => 'boolean',
-                            'type' => 'boolean',
-                            'primaryKey' => false,
-                        ],
-                        [
-                            'name' => 'date',
-                            'type' => 'date',
-                            'primaryKey' => false,
-                        ],
-                    ],
-            ],
-            [
-                'name' => 'types_fk',
-                'schema' => 'public',
-                'columns' =>
-                    [
-                        [
-                            'name' => 'character',
-                            'type' => 'character varying',
-                            'primaryKey' => false,
-                        ],
-                        [
-                            'name' => 'integer',
-                            'type' => 'integer',
-                            'primaryKey' => false,
-                        ],
-                        [
-                            'name' => 'decimal',
-                            'type' => 'numeric',
-                            'primaryKey' => false,
-                        ],
-                        [
-                            'name' => 'boolean',
-                            'type' => 'boolean',
-                            'primaryKey' => false,
-                        ],
-                        [
-                            'name' => 'date',
-                            'type' => 'date',
-                            'primaryKey' => false,
-                        ],
-                    ],
-            ],
-            [
-                'name' => 'escaping',
-                'schema' => 'testing',
-                'columns' =>
-                    [
-                        [
-                            'name' => '_funnycol',
-                            'type' => 'character varying',
-                            'primaryKey' => true,
-                        ],
-                        [
-                            'name' => '_sadcol',
-                            'type' => 'character varying',
-                            'primaryKey' => true,
-                        ],
-                    ],
-            ],
-        ];
-
-        $this->assertEquals($expectedData, $result['tables']);
     }
 
     public function testManifestMetadata(): void
     {
+        $this->createTypesTable();
+        $this->generateTypesRows();
+        $this->createTypesTable('types_fk', ['character' => 'varchar(123) REFERENCES types (character)']);
+        $this->generateTypesRows('types_fk');
+
         $config = $this->getConfig();
 
-        $config['parameters']['tables'][3] = $config['parameters']['tables'][2];
+        $config['parameters']['tables'][3] = $config['parameters']['tables'][0];
         $config['parameters']['tables'][3]['id'] = 4;
         $config['parameters']['tables'][3]['name'] = 'types_fk';
         $config['parameters']['tables'][3]['outputTable'] = 'in.c-main.types_fk';
@@ -264,10 +71,10 @@ class PgsqlTest extends BaseTest
         $config['parameters']['tables'][3]['table']['tableName'] = 'types_fk';
 
         // use just 2 tables
-        unset($config['parameters']['tables'][0]);
         unset($config['parameters']['tables'][1]);
+        unset($config['parameters']['tables'][2]);
 
-        $app = $this->createApplication($config);
+        $app = new PgsqlApplication($config, new Logger(), [], $this->dataDir);
 
         $result = $app->run();
 
@@ -726,156 +533,16 @@ class PgsqlTest extends BaseTest
         $this->assertEquals($expectedColumnMetadata, $outputManifest['column_metadata']);
     }
 
-    public function testTableColumnsQuery(): void
-    {
-        $config = $this->getConfig();
-
-        // use just 1 table
-        unset($config['parameters']['tables'][0]);
-        unset($config['parameters']['tables'][1]);
-
-        $app = $this->createApplication($config);
-
-        $result = $app->run();
-
-        $expectedCsvFile = new CsvReader($this->dataDir . '/pgsql/types.csv');
-        $outputCsvFile = new CsvReader(
-            $this->dataDir . '/out/tables/' . $result['imported'][0]['outputTable'] . '.csv'
-        );
-        $outputManifestFile = $this->dataDir . '/out/tables/' . $result['imported'][0]['outputTable'] . '.csv.manifest';
-
-        $this->assertEquals('success', $result['status']);
-        $this->assertFileExists($outputManifestFile);
-
-        $outputManifest = json_decode((string) file_get_contents($outputManifestFile), true);
-        $this->assertEquals(['character', 'integer', 'decimal', 'boolean', 'date'], $outputManifest['columns']);
-        $this->assertEquals(['character'], $outputManifest['primary_key']);
-
-        $outputArr = iterator_to_array($outputCsvFile);
-        $expectedArr = iterator_to_array($expectedCsvFile);
-        for ($i = 1; $i < count($expectedArr); $i++) {
-            $this->assertContains($expectedArr[$i], $outputArr);
-        }
-    }
-
-    public function testColumnOrdering(): void
-    {
-        $config = $this->getConfig();
-
-        // use just 1 table
-        unset($config['parameters']['tables'][0]);
-        unset($config['parameters']['tables'][1]);
-        unset($config['parameters']['tables'][2]['columns']);
-
-        $app = $this->createApplication($config);
-        $result = $app->run();
-
-        $this->assertEquals('success', $result['status']);
-
-        $expectedCsvFile = new CsvReader($this->dataDir . '/pgsql/types.csv');
-        $outputCsvFile = new CsvReader(
-            $this->dataDir . '/out/tables/' . $result['imported'][0]['outputTable'] . '.csv'
-        );
-        $outputManifestFile = $this->dataDir . '/out/tables/' . $result['imported'][0]['outputTable'] . '.csv.manifest';
-        $outputManifest = json_decode((string) file_get_contents($outputManifestFile), true);
-        // check that the manifest has the correct column ordering
-        $this->assertEquals(['character', 'integer', 'decimal', 'boolean', 'date'], $outputManifest['columns']);
-
-        // check the data
-        $expectedData = iterator_to_array($expectedCsvFile);
-        $outputData = iterator_to_array($outputCsvFile);
-
-        $this->assertCount(4, $outputData);
-        foreach ($outputData as $rowNum => $line) {
-            // assert timestamp
-            $this->assertNotFalse(strtotime($line[3]));
-            $this->assertEquals($line[1], $expectedData[$rowNum + 1][1]);
-            $this->assertEquals($line[2], $expectedData[$rowNum + 1][2]);
-        }
-    }
-
-    public function testThousandsOfTablesGetTables(): void
-    {
-        // $this->markTestSkipped('No need to run this test every time.');
-        $testStartTime = time();
-        $numberOfSchemas = 10;
-        $numberOfTablesPerSchema = 100;
-        $numberOfColumnsPerTable = 50;
-        $maximumRunTime = 15;
-
-        $processes = [];
-        for ($i = 0; $i < $numberOfSchemas; $i++) {
-            $processes[] = $this->createDbProcess(sprintf('DROP SCHEMA IF EXISTS testschema_%d CASCADE', $i));
-        }
-
-        // gen columns
-        $columnsSql = '';
-        for ($columnCount = 0; $columnCount < $numberOfColumnsPerTable; $columnCount++) {
-            $columnsSql .= sprintf(', "col_%d" VARCHAR(50) NOT NULL DEFAULT \'\'', $columnCount);
-        }
-
-        for ($schemaCount = 0; $schemaCount < $numberOfSchemas; $schemaCount++) {
-            $processes[] = $this->createDbProcess(sprintf('CREATE SCHEMA testschema_%d', $schemaCount));
-            for ($tableCount = 0; $tableCount < $numberOfTablesPerSchema; $tableCount++) {
-                $processes[] = $this->createDbProcess(
-                    sprintf(
-                        'CREATE TABLE testschema_%d.testtable_%d (ID SERIAL%s, PRIMARY KEY (ID))',
-                        $schemaCount,
-                        $tableCount,
-                        $columnsSql
-                    )
-                );
-            }
-        }
-        $this->runProcesses($processes);
-        $dbBuildTime = time() - $testStartTime;
-        echo "\nTest DB built in  " . $dbBuildTime . " seconds.\n";
-
-        $config = $this->getConfig();
-        unset($config['parameters']['tables']);
-        $config['action'] = 'getTables';
-
-        $jobStartTime = time();
-        $result = $this->createApplication($config)->run();
-        $this->assertEquals('success', $result['status']);
-        $runTime = time() - $jobStartTime;
-
-        echo "\nThe tables were fetched in " . $runTime . " seconds.\n";
-        $this->assertLessThan($maximumRunTime, $runTime);
-        $processes = [];
-        for ($i = 0; $i < $numberOfSchemas; $i++) {
-            $processes[] = $this->createDbProcess(sprintf('DROP SCHEMA IF EXISTS testschema_%d CASCADE', $i));
-        }
-        $this->runProcesses($processes);
-        $entireTime = time() - $testStartTime;
-        echo "\nComplete test finished in  " . $entireTime . " seconds.\n";
-    }
-
-    public function testBadQuery(): void
-    {
-        $config = $this->getConfig();
-
-        // use just 1 table
-        unset($config['parameters']['tables'][0]);
-        unset($config['parameters']['tables'][1]);
-        unset($config['parameters']['tables'][2]['columns']);
-        unset($config['parameters']['tables'][2]['table']);
-        $config['parameters']['tables'][2]['query'] = 'SELECT %%% FROM types';
-
-        $this->expectException(UserException::class);
-        $this->expectExceptionMessage('Error executing "types": SQLSTATE[42601]:');
-
-        $app = $this->createApplication($config);
-        $app->run();
-    }
-
     public function testEmptyPrimaryKeyString(): void
     {
-        $config = $this->getConfigRow(self::DRIVER);
+        $this->createTypesTable();
+        $this->generateTypesRows();
+
+        $config = $this->getRowConfig();
 
         $config['parameters']['primaryKey'] = [''];
 
-        $app = $this->createApplication($config);
+        $app = new PgsqlApplication($config, new Logger(), [], $this->dataDir);
         $result = $app->run();
 
         $this->assertArrayHasKey('status', $result);
