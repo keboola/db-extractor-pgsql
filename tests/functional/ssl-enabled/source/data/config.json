@@ -13,9 +13,9 @@
       "database": "%env(string:PGSQL_DB_DATABASE)%",
       "ssl": {
         "enabled": true,
-        "ca": "ca.pem",
-        "cert": "client-cert.pem",
-        "key": "client-key.pem"
+        "ca": "%env(string:SSL_CA)%",
+        "cert": "%env(string:SSL_CERT)%",
+        "key": "%env(string:SSL_KEY)%"
       }
     },
     "extractor_class": "PGSQL"
