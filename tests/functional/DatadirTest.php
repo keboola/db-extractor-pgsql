@@ -73,11 +73,6 @@ class DatadirTest extends DatadirTestCase
         $this->testProjectDir = $this->getTestFileDir() . '/' . $this->dataName();
         $this->testTempDir = $this->temp->getTmpFolder();
 
-        $configContent = file_get_contents($this->testProjectDir . '/source/data/config.json');
-
-        $config = json_decode((string) $configContent, true);
-        preg_match('/%env\(string:([A-Z_]+)\)%/', $config['parameters']['db']['host'], $hostEnv);
-
         $this->connection = PdoTestConnection::createConnection();
         $this->removeAllTables();
         $this->closeSshTunnels();
