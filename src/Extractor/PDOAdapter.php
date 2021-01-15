@@ -170,7 +170,8 @@ class PDOAdapter
             }
             $innerStatement = null;
             $stmt = null;
-            throw $e;
+            $message = preg_replace('/exdbcursor([0-9]+)/', 'exdbcursor', $e->getMessage());
+            throw new PDOException((string) $message, 0, $e->getPrevious());
         }
         return $output;
     }

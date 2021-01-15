@@ -1,0 +1,6 @@
+Connecting to pgsql:host=%s;port=5432;dbname=postgres;
+Found database server version: %d
+Exporting to in.c-main.auto-increment-timestamp
+Executing query 'auto-increment-timestamp' via \copy ...
+Successfully exported 0 rows.
+Extractor finished successfully.

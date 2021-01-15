@@ -1,0 +1,27 @@
+{
+  "parameters": {
+    "name": "sales",
+    "query": "SELECT * FROM escaping",
+    "outputTable": "in.c-main.escaping",
+    "db": {
+      "host": "%env(string:PGSQL_DB_HOST)%",
+      "port": "%env(string:PGSQL_DB_PORT)%",
+      "user": "%env(string:PGSQL_DB_USER)%",
+      "#password": "%env(string:PGSQL_DB_PASSWORD)%",
+      "database": "%env(string:PGSQL_DB_DATABASE)%",
+      "ssh": {
+        "enabled": true,
+        "keys": {
+          "#private": "%env(string:SSH_PRIVATE_KEY)%",
+          "public": "%env(string:SSH_PUBLIC_KEY)%"
+        },
+        "user": "root",
+        "sshHost": "sshproxy",
+        "remoteHost": "%env(string:PGSQL_DB_HOST)%",
+        "remotePort": "%env(string:PGSQL_DB_PORT)%",
+        "localPort": "1234"
+      }
+    },
+    "extractor_class": "PGSQL"
+  }
+}
