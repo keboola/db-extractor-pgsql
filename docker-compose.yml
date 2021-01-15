@@ -105,6 +105,7 @@ services:
     volumes:
       - ssh-keys:/root/.ssh
       - .:/code
+      - ./data:/data
       - ./tests/data/ssl/certs:/ssl-cert
     links:
       - pgsql
