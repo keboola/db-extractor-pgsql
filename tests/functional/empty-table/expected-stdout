@@ -1,0 +1,5 @@
+Connecting to pgsql:host=%s;port=5432;dbname=postgres;
+Exporting to in.c-main.escaping
+Executing query 'sales' via \copy ...
+Successfully exported 0 rows.
+Extractor finished successfully.

@@ -1,0 +1,19 @@
+{
+  "parameters": {
+    "id": 3,
+    "enabled": true,
+    "name": "auto-increment-timestamp",
+    "outputTable": "in.c-main.auto-increment-timestamp",
+    "incremental": true,
+    "incrementalFetchingColumn": "_Weir%d I-D",
+    "primaryKey": ["_Weir%d I-D"],
+    "query": "SELECT * FROM auto_increment_timestamp",
+    "db": {
+      "host": "%env(string:PGSQL_DB_HOST)%",
+      "port": "%env(string:PGSQL_DB_PORT)%",
+      "user": "%env(string:PGSQL_DB_USER)%",
+      "#password": "%env(string:PGSQL_DB_PASSWORD)%",
+      "database": "%env(string:PGSQL_DB_DATABASE)%"
+    }
+  }
+}

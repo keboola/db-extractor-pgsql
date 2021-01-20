@@ -1,0 +1,7 @@
+Connecting to pgsql:host=%s;port=5432;dbname=postgres;
+Exporting to in.c-main.bool_consistency_test
+Executing query 'types' via PDO ...
+Fetching data...
+Extraction completed. Fetched 4 rows.
+Found database server version: %d
+Extractor finished successfully.

@@ -1,0 +1,1 @@
+Error connecting to DB: SQLSTATE[08006] [7] FATAL:  password authentication failed for user "fakeguy" FATAL:  password authentication failed for user "fakeguy"

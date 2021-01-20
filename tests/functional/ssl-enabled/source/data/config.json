@@ -1,0 +1,22 @@
+{
+  "parameters": {
+    "name": "sales",
+    "query": "SELECT * FROM sales",
+    "outputTable": "in.c-main.sales",
+    "incremental": false,
+    "primaryKey": null,
+    "db": {
+      "host": "%env(string:PGSQL_DB_HOST)%",
+      "port": "%env(string:PGSQL_DB_PORT)%",
+      "user": "%env(string:PGSQL_DB_USER)%",
+      "#password": "%env(string:PGSQL_DB_PASSWORD)%",
+      "database": "%env(string:PGSQL_DB_DATABASE)%",
+      "ssl": {
+        "enabled": true,
+        "ca": "%env(string:SSL_CA)%",
+        "cert": "%env(string:SSL_CERT)%",
+        "key": "%env(string:SSL_KEY)%"
+      }
+    }
+  }
+}

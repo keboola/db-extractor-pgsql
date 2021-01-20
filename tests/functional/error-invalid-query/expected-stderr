@@ -1,0 +1,2 @@
+Error executing "sales": SQLSTATE[42703]: Undefined column: 7 ERROR:  column "something" does not exist LINE 1: DECLARE exdbcursor CURSOR FOR SELECT something, fa...                                                        ^
+

@@ -1,0 +1,19 @@
+{
+  "parameters": {
+    "name": "types",
+    "outputTable": "in.c-main.bool_consistency_test",
+    "forceFallback": true,
+    "useConsistentFallbackBooleanStyle": true,
+    "table":{
+      "tableName": "types",
+      "schema": "public"
+    },
+    "db": {
+      "host": "%env(string:PGSQL_DB_HOST)%",
+      "port": "%env(string:PGSQL_DB_PORT)%",
+      "user": "%env(string:PGSQL_DB_USER)%",
+      "#password": "%env(string:PGSQL_DB_PASSWORD)%",
+      "database": "%env(string:PGSQL_DB_DATABASE)%"
+    }
+  }
+}

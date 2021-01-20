@@ -1,8 +1,8 @@
 ARG version
 FROM postgres:${version}
 
-COPY tests/data/ssl/certs/server.crt /ssl-cert/
-COPY tests/data/ssl/certs/server.key /ssl-cert/
+COPY tests/ssl-certs/server.crt /ssl-cert/
+COPY tests/ssl-certs/server.key /ssl-cert/
 
 RUN chmod 700 -R /ssl-cert/
 RUN chown postgres:postgres -R /ssl-cert/

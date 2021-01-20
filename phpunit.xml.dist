@@ -9,8 +9,16 @@
          stopOnFailure="false"
          bootstrap="vendor/autoload.php">
 
-    <testsuite name="DB Extractor PgSQL Test Suite">
-        <directory>tests/phpunit</directory>
-    </testsuite>
-
+    <testsuites>
+        <testsuite name="unit">
+            <directory>tests/phpunit</directory>
+            <exclude>tests/phpunit/PerformanceTest.php</exclude>
+        </testsuite>
+        <testsuite name="functional">
+            <directory>tests/functional</directory>
+        </testsuite>
+        <testsuite name="perf">
+            <file>tests/phpunit/PerformanceTest.php</file>
+        </testsuite>
+    </testsuites>
 </phpunit>

@@ -11,6 +11,7 @@ use Keboola\DbExtractor\PgsqlApplication;
 require __DIR__ . '/../vendor/autoload.php';
 
 $logger = new Logger();
+$logger->setupAsyncActionLogging();
 
 try {
     $dataFolder = getenv('KBC_DATADIR') === false ? '/data/' : (string) getenv('KBC_DATADIR');

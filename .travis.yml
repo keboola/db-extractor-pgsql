@@ -5,13 +5,28 @@ language: bash
 services:
   - docker
 
-install:
+before_install:
   - docker-compose -v
   - docker-compose build
-  - docker-compose run --rm app
-  - docker-compose run --rm app9
-  - docker-compose run --rm app10
-  - docker-compose run --rm app11
+
+jobs:
+  include:
+    - stage: Latest PostgreSQL server
+      install:
+        - docker-compose run --rm wait
+        - docker-compose run --rm app
+    - stage: PostgreSQL version 9
+      install:
+        - docker-compose run --rm wait9
+        - docker-compose run --rm app9
+    - stage: PostgreSQL version 10
+      install:
+        - docker-compose run --rm wait10
+        - docker-compose run --rm app10
+    - stage: PostgreSQL version 11
+      install:
+        - docker-compose run --rm wait11
+        - docker-compose run --rm app11
 
 script:
   - docker pull quay.io/keboola/developer-portal-cli-v2:latest
