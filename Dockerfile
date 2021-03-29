@@ -20,11 +20,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev \
     postgresql \
     postgresql-contrib \
+    libicu-dev \
     && rm -r /var/lib/apt/lists/* \
     && sed -i 's/^# *\(en_US.UTF-8\)/\1/' /etc/locale.gen \
     && locale-gen \
     && chmod +x /tmp/composer-install.sh \
     && /tmp/composer-install.sh
+
+RUN docker-php-ext-configure intl \
+    && docker-php-ext-install intl
 
 ENV LANGUAGE=en_US.UTF-8
 ENV LANG=en_US.UTF-8

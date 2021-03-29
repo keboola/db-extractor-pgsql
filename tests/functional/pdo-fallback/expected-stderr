@@ -1,0 +1,1 @@
+Export by "Copy" adapter failed: ERROR:  syntax error at end of input LINE 1: ...ng' ) TO STDOUT WITH CSV HEADER DELIMITER ',' FORCE QUOTE *;%s

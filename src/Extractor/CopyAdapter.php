@@ -5,29 +5,47 @@ declare(strict_types=1);
 namespace Keboola\DbExtractor\Extractor;
 
 use Keboola\Csv\CsvReader;
+use Keboola\DbExtractor\Adapter\ExportAdapter;
+use Keboola\DbExtractor\Adapter\Query\DefaultQueryFactory;
+use Keboola\DbExtractor\Adapter\ValueObject\ExportResult;
 use Keboola\DbExtractor\Configuration\PgsqlExportConfig;
 use Keboola\DbExtractor\Exception\CopyAdapterConnectionException;
 use Keboola\DbExtractor\Exception\CopyAdapterException;
 use Keboola\DbExtractor\Exception\CopyAdapterQueryException;
+use Keboola\DbExtractor\Exception\InvalidArgumentException;
+use Keboola\DbExtractor\Exception\UserException;
 use Keboola\DbExtractorConfig\Configuration\ValueObject\DatabaseConfig;
 use Keboola\DbExtractorConfig\Configuration\ValueObject\ExportConfig;
 use Keboola\Temp\Temp;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Process\Process;
 
-class CopyAdapter
+class CopyAdapter implements ExportAdapter
 {
-    private LoggerInterface $logger;
+    protected LoggerInterface $logger;
 
-    private DatabaseConfig $databaseConfig;
+    protected PgSQLDbConnection $connection;
+
+    protected DatabaseConfig $databaseConfig;
+
+    protected DefaultQueryFactory $queryFactory;
+
+    protected PgSQLMetadataProvider $metadataProvider;
 
     private array $state;
 
-    public function __construct(LoggerInterface $logger, DatabaseConfig $databaseConfig, array $state)
-    {
+    public function __construct(
+        LoggerInterface $logger,
+        PgSQLDbConnection $connection,
+        DatabaseConfig $databaseConfig,
+        DefaultQueryFactory $queryFactory,
+        PgSQLMetadataProvider $metadataProvider
+    ) {
         $this->logger = $logger;
+        $this->connection = $connection;
         $this->databaseConfig = $databaseConfig;
-        $this->state = $state;
+        $this->queryFactory = $queryFactory;
+        $this->metadataProvider = $metadataProvider;
     }
 
     public function testConnection(): void
@@ -39,21 +57,60 @@ class CopyAdapter
         }
     }
 
-    public function export(
+    public function getName(): string
+    {
+        return 'Copy';
+    }
+
+    public function export(ExportConfig $exportConfig, string $csvFilePath): ExportResult
+    {
+        if (!$exportConfig instanceof PgsqlExportConfig) {
+            throw new InvalidArgumentException('PgsqlExportConfig expected.');
+        }
+
+        if ($exportConfig->getForceFallback()) {
+            throw new CopyAdapterException('Forcing extractor to use PDO fallback fetching');
+        }
+
+        $query = $exportConfig->hasQuery() ? $exportConfig->getQuery() : $this->createSimpleQuery($exportConfig);
+
+        try {
+            return $this->queryAndProcess(
+                $query,
+                $exportConfig,
+                $csvFilePath
+            );
+        } catch (CopyAdapterException $pdoError) {
+            @unlink($csvFilePath);
+            throw new UserException($pdoError->getMessage());
+        }
+    }
+
+    protected function createSimpleQuery(ExportConfig $exportConfig): string
+    {
+        return $this->queryFactory->create($exportConfig, $this->connection);
+    }
+
+    public function queryAndProcess(
         string $query,
         PgsqlExportConfig $exportConfig,
-        MetadataProvider $metadataProvider,
         string $csvPath
-    ): array {
-        $result = $this->runCopyQuery($query, $exportConfig, $csvPath);
-        if (!$exportConfig->hasQuery() && isset($result['lastFetchedRow'])) {
-            $result['lastFetchedRow'] = $this->getLastFetchedValue(
-                $exportConfig,
-                $metadataProvider,
-                $result['lastFetchedRow']
-            );
+    ): ExportResult {
+        $copyCommand = sprintf(
+            $exportConfig->hasQuery() ? // include header?
+                "\COPY (%s) TO '%s' WITH CSV HEADER DELIMITER ',' FORCE QUOTE *;" :
+                "\COPY (%s) TO '%s' WITH CSV DELIMITER ',' FORCE QUOTE *;",
+            rtrim($query, '; '),
+            $csvPath
+        );
+
+        try {
+            $this->runQuery($copyCommand, null);
+        } catch (CopyAdapterException $e) {
+            throw new CopyAdapterQueryException($e->getMessage(), 0, $e);
         }
-        return $result;
+
+        return $this->analyseOutput($csvPath, $exportConfig);
     }
 
     protected function runQuery(string $sql, ?float $timeout): void
@@ -102,27 +159,10 @@ class CopyAdapter
         }
     }
 
-    protected function runCopyQuery(string $query, PgsqlExportConfig $exportConfig, string $csvPath): array
-    {
-        $copyCommand = sprintf(
-            $exportConfig->hasQuery() ? // include header?
-                "\COPY (%s) TO '%s' WITH CSV HEADER DELIMITER ',' FORCE QUOTE *;" :
-                "\COPY (%s) TO '%s' WITH CSV DELIMITER ',' FORCE QUOTE *;",
-            rtrim($query, '; '),
-            $csvPath
-        );
-
-        try {
-            $this->runQuery($copyCommand, null);
-        } catch (CopyAdapterException $e) {
-            throw new CopyAdapterQueryException($e->getMessage(), 0, $e);
-        }
-
-        return $this->analyseOutput($csvPath, $exportConfig);
-    }
-
-    private function analyseOutput(string $csvPath, ExportConfig $exportConfig): array
-    {
+    private function analyseOutput(
+        string $csvPath,
+        ExportConfig $exportConfig
+    ): ExportResult {
         // Get the number of written rows and lastFetchedValue
         $numRows = 0;
         $lastFetchedRow = null;
@@ -140,21 +180,28 @@ class CopyAdapter
             $numRows++;
         }
         $this->logger->info(sprintf('Successfully exported %d rows.', $numRows));
-        $output = ['rows' => $numRows];
+        $incrementalLastFetchedValue = null;
         if ($exportConfig->isIncrementalFetching() && $lastFetchedRow) {
-            $output['lastFetchedRow'] = $lastFetchedRow;
+            $incrementalLastFetchedValue = $this->getLastFetchedValue(
+                $exportConfig,
+                $lastFetchedRow
+            );
         }
-        return $output;
+
+        return new ExportResult(
+            $csvPath,
+            $numRows,
+            $incrementalLastFetchedValue
+        );
     }
 
     private function getLastFetchedValue(
-        PgsqlExportConfig $exportConfig,
-        MetadataProvider $metadataProvider,
+        ExportConfig $exportConfig,
         array $lastExportedRow
     ): string {
         $columns = $exportConfig->hasColumns() ?
             $exportConfig->getColumns() :
-            $metadataProvider->getTable($exportConfig->getTable())->getColumns()->getNames();
+            $this->metadataProvider->getTable($exportConfig->getTable())->getColumns()->getNames();
 
         $columnIndex = array_search($exportConfig->getIncrementalFetchingColumn(), $columns);
         if ($columnIndex === false) {

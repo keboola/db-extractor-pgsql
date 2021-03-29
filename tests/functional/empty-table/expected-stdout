@@ -1,5 +1,5 @@
-Connecting to pgsql:host=%s;port=5432;dbname=postgres;
-Exporting to in.c-main.escaping
-Executing query 'sales' via \copy ...
+Creating PDO connection to "pgsql:host=%s;port=5432;dbname=postgres;".
+Exporting "sales" to "in.c-main.escaping".
+Exporting by "Copy" adapter.
 Successfully exported 0 rows.
 Extractor finished successfully.

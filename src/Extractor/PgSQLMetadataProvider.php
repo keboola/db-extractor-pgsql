@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\DbExtractor\Extractor;
 
+use Keboola\DbExtractor\Adapter\Metadata\MetadataProvider;
 use Keboola\DbExtractor\TableResultFormat\Metadata\Builder\ColumnBuilder;
 use Keboola\DbExtractor\TableResultFormat\Metadata\Builder\MetadataBuilder;
 use Keboola\DbExtractor\TableResultFormat\Metadata\Builder\TableBuilder;
@@ -16,15 +17,15 @@ class PgSQLMetadataProvider implements MetadataProvider
 {
     private LoggerInterface $logger;
 
-    private PDOAdapter $pdoAdapter;
+    private PgSQLDbConnection $dbConnection;
 
     /** @var TableCollection[] */
     private array $cache = [];
 
-    public function __construct(LoggerInterface $logger, PDOAdapter $pdoAdapter)
+    public function __construct(LoggerInterface $logger, PgSQLDbConnection $dbConnection)
     {
         $this->logger = $logger;
-        $this->pdoAdapter = $pdoAdapter;
+        $this->dbConnection = $dbConnection;
     }
 
     public function getTable(InputTable $table): Table
@@ -201,11 +202,11 @@ class PgSQLMetadataProvider implements MetadataProvider
                 'c.relname IN (%s) AND ns.nspname IN (%s)',
                 implode(
                     ',',
-                    array_map(fn (InputTable $table) => $this->pdoAdapter->quote($table->getName()), $whitelist)
+                    array_map(fn (InputTable $table) => $this->dbConnection->quote($table->getName()), $whitelist)
                 ),
                 implode(
                     ',',
-                    array_map(fn (InputTable $table) => $this->pdoAdapter->quote($table->getSchema()), $whitelist)
+                    array_map(fn (InputTable $table) => $this->dbConnection->quote($table->getSchema()), $whitelist)
                 )
             );
         }
@@ -216,14 +217,14 @@ class PgSQLMetadataProvider implements MetadataProvider
             'ORDER BY table_schema, table_name, ordinal_position' : 'ORDER BY table_schema, table_name';
 
         // Run query
-        return $this->pdoAdapter->runRetryableQuery(implode(' ', $sql));
+        return $this->dbConnection->query(implode(' ', $sql));
     }
 
 
     private function getDbServerVersion(): int
     {
         $sqlGetVersion = 'SHOW server_version_num;';
-        $version = $this->pdoAdapter->runRetryableQuery($sqlGetVersion);
+        $version = $this->dbConnection->query($sqlGetVersion)->fetchAll();
         $this->logger->info(
             sprintf('Found database server version: %s', $version[0]['server_version_num'])
         );

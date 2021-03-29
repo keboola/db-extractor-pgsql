@@ -1,8 +1,7 @@
-Connecting to pgsql:host=%s;port=5432;dbname=postgres;
-Exporting to in.c-main.escaping
-Executing query 'sales' via \copy ...
-Failed \copy command (will attempt via PDO): ERROR:  syntax error at end of input LINE 1: ...ng' ) TO STDOUT WITH CSV HEADER DELIMITER ',' FORCE QUOTE *;                                                                        ^ 
-Executing query 'sales' via PDO ...
+Creating PDO connection to "pgsql:host=%s;port=5432;dbname=postgres;".
+Exporting "sales" to "in.c-main.escaping".
+Exporting by "Copy" adapter.
+Exporting by "PDO" adapter.
 Fetching data...
 Extraction completed. Fetched 2 rows.
 Extractor finished successfully.
