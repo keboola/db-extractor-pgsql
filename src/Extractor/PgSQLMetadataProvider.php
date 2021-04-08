@@ -226,7 +226,7 @@ class PgSQLMetadataProvider implements MetadataProvider
         $sqlGetVersion = 'SHOW server_version_num;';
         $version = $this->dbConnection->query($sqlGetVersion)->fetchAll();
         $this->logger->info(
-            sprintf('Found database server version: %s', $version[0]['server_version_num'])
+            sprintf('Found database server version: %s.', $version[0]['server_version_num'])
         );
         return (int) $version[0]['server_version_num'];
     }

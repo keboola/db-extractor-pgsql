@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Keboola\DbExtractor\Extractor;
 
+use PDO;
 use Keboola\DbExtractor\Adapter\Connection\DbConnection;
 use Keboola\DbExtractor\Adapter\ExportAdapter;
 use Keboola\DbExtractor\Adapter\FallbackExportAdapter;
 use Keboola\DbExtractor\Adapter\Metadata\MetadataProvider;
 use Keboola\DbExtractor\Adapter\Query\DefaultQueryFactory;
+use Keboola\DbExtractor\Adapter\ResultWriter\DefaultResultWriter;
 use Keboola\DbExtractorConfig\Configuration\ValueObject\DatabaseConfig;
 use Keboola\Temp\Temp;
 use Psr\Log\LoggerInterface;
@@ -17,15 +19,10 @@ use Keboola\Datatype\Definition\GenericStorage;
 use Keboola\DbExtractor\Exception\UserException;
 use Keboola\DbExtractor\TableResultFormat\Exception\ColumnNotFoundException;
 use Keboola\DbExtractorConfig\Configuration\ValueObject\ExportConfig;
-use PDO;
 
 class PgSQL extends BaseExtractor
 {
     public const INCREMENTAL_TYPES = ['INTEGER', 'NUMERIC', 'FLOAT', 'TIMESTAMP'];
-
-    private PDOAdapter $pdoAdapter;
-
-    private CopyAdapter $copyAdapter;
 
     private PgSQLDbConnection $connection;
 
@@ -53,7 +50,7 @@ class PgSQL extends BaseExtractor
         $resultWriter = new PgSQLResultWriter($this->state);
         $simpleQueryFactory = new DefaultQueryFactory($this->state);
 
-        $this->pdoAdapter = new PDOAdapter(
+        $pdoAdapter = new PdoAdapter(
             $this->logger,
             $this->connection,
             $simpleQueryFactory,
@@ -62,8 +59,7 @@ class PgSQL extends BaseExtractor
             $this->state
         );
 
-        $this->copyAdapter = new CopyAdapter(
-            $this->logger,
+        $copyAdapter = new CopyAdapter(
             $this->connection,
             $this->createDatabaseConfig($this->parameters['db']),
             $simpleQueryFactory,
@@ -71,8 +67,8 @@ class PgSQL extends BaseExtractor
         );
 
         return new FallbackExportAdapter($this->logger, [
-            $this->copyAdapter,
-            $this->pdoAdapter,
+            $copyAdapter,
+            $pdoAdapter,
         ]);
     }
 
@@ -132,7 +128,6 @@ class PgSQL extends BaseExtractor
     public function testConnection(): void
     {
         $this->connection->testConnection();
-        $this->copyAdapter->testConnection();
     }
 
     public function validateIncrementalFetching(ExportConfig $exportConfig): void

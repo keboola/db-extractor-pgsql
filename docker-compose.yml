@@ -16,7 +16,7 @@ services:
       - PGSQL_DB_USER=postgres
       - PGSQL_DB_PASSWORD=some password
     volumes:
-      - ssh-keys:/root/.ssh
+      - ssh-keys:/root/.ssh:z
       - ./tests/data/ssl/certs:/ssl-cert
     links:
       - pgsql
@@ -38,7 +38,7 @@ services:
       - PGSQL_DB_USER=postgres
       - PGSQL_DB_PASSWORD=some password
     volumes:
-      - ssh-keys:/root/.ssh
+      - ssh-keys:/root/.ssh:z
       - ./tests/data/ssl/certs:/ssl-cert
     links:
       - pgsql9
@@ -60,7 +60,7 @@ services:
       - PGSQL_DB_USER=postgres
       - PGSQL_DB_PASSWORD=some password
     volumes:
-      - ssh-keys:/root/.ssh
+      - ssh-keys:/root/.ssh:z
       - ./tests/data/ssl/certs:/ssl-cert
     links:
       - pgsql10
@@ -82,7 +82,7 @@ services:
       - PGSQL_DB_USER=postgres
       - PGSQL_DB_PASSWORD=some password
     volumes:
-      - ssh-keys:/root/.ssh
+      - ssh-keys:/root/.ssh:z
       - ./tests/data/ssl/certs:/ssl-cert
     links:
       - pgsql11
@@ -103,7 +103,7 @@ services:
       - PGSQL_DB_USER=postgres
       - PGSQL_DB_PASSWORD=some password
     volumes:
-      - ssh-keys:/root/.ssh
+      - ssh-keys:/root/.ssh:z
       - .:/code
       - ./data:/data
       - ./tests/ssl-certs:/ssl-cert
@@ -149,7 +149,7 @@ services:
   sshproxy:
     image: keboola/db-component-ssh-proxy:latest
     volumes:
-      - ssh-keys:/root/.ssh
+      - ssh-keys:/root/.ssh:z
     links:
       - pgsql
 

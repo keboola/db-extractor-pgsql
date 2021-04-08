@@ -2,6 +2,6 @@ Creating PDO connection to "pgsql:host=%s;port=5432;dbname=postgres;".
 Exporting "sales" to "in.c-main.escaping".
 Exporting by "Copy" adapter.
 Exporting by "PDO" adapter.
-Fetching data...
-Extraction completed. Fetched 2 rows.
+Fetching rows, batch size = 10000 ...
+Exported "2" rows to "in.c-main.escaping".
 Extractor finished successfully.

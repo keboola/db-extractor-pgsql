@@ -1,8 +1,9 @@
 Creating PDO connection to "pgsql:host=%s;port=5432;dbname=postgres;".
 Exporting "types" to "in.c-main.bool_consistency_test".
 Exporting by "Copy" adapter.
+Adapter "Copy" skipped: Disabled in configuration.
 Exporting by "PDO" adapter.
-Fetching data...
-Extraction completed. Fetched 4 rows.
-Found database server version: %d
+Fetching rows, batch size = 10000 ...
+Found database server version: %d.
+Exported "4" rows to "in.c-main.bool_consistency_test".
 Extractor finished successfully.

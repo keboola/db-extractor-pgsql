@@ -12,18 +12,16 @@ use Keboola\DbExtractor\Configuration\PgsqlExportConfig;
 use Keboola\DbExtractor\Exception\CopyAdapterConnectionException;
 use Keboola\DbExtractor\Exception\CopyAdapterException;
 use Keboola\DbExtractor\Exception\CopyAdapterQueryException;
+use Keboola\DbExtractor\Exception\CopyAdapterSkippedException;
 use Keboola\DbExtractor\Exception\InvalidArgumentException;
 use Keboola\DbExtractor\Exception\UserException;
 use Keboola\DbExtractorConfig\Configuration\ValueObject\DatabaseConfig;
 use Keboola\DbExtractorConfig\Configuration\ValueObject\ExportConfig;
 use Keboola\Temp\Temp;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\Process\Process;
 
 class CopyAdapter implements ExportAdapter
 {
-    protected LoggerInterface $logger;
-
     protected PgSQLDbConnection $connection;
 
     protected DatabaseConfig $databaseConfig;
@@ -32,16 +30,12 @@ class CopyAdapter implements ExportAdapter
 
     protected PgSQLMetadataProvider $metadataProvider;
 
-    private array $state;
-
     public function __construct(
-        LoggerInterface $logger,
         PgSQLDbConnection $connection,
         DatabaseConfig $databaseConfig,
         DefaultQueryFactory $queryFactory,
         PgSQLMetadataProvider $metadataProvider
     ) {
-        $this->logger = $logger;
         $this->connection = $connection;
         $this->databaseConfig = $databaseConfig;
         $this->queryFactory = $queryFactory;
@@ -51,7 +45,7 @@ class CopyAdapter implements ExportAdapter
     public function testConnection(): void
     {
         try {
-            $this->runQuery('SELECT 1;', 30);
+            $this->runCopyCommand('SELECT 1;', 30);
         } catch (CopyAdapterException $e) {
             throw new CopyAdapterConnectionException('Failed psql connection: ' . $e->getMessage());
         }
@@ -69,13 +63,13 @@ class CopyAdapter implements ExportAdapter
         }
 
         if ($exportConfig->getForceFallback()) {
-            throw new CopyAdapterException('Forcing extractor to use PDO fallback fetching');
+            throw new CopyAdapterSkippedException('Disabled in configuration.');
         }
 
         $query = $exportConfig->hasQuery() ? $exportConfig->getQuery() : $this->createSimpleQuery($exportConfig);
 
         try {
-            return $this->queryAndProcess(
+            return $this->doExport(
                 $query,
                 $exportConfig,
                 $csvFilePath
@@ -91,7 +85,7 @@ class CopyAdapter implements ExportAdapter
         return $this->queryFactory->create($exportConfig, $this->connection);
     }
 
-    public function queryAndProcess(
+    public function doExport(
         string $query,
         PgsqlExportConfig $exportConfig,
         string $csvPath
@@ -105,7 +99,7 @@ class CopyAdapter implements ExportAdapter
         );
 
         try {
-            $this->runQuery($copyCommand, null);
+            $this->runCopyCommand($copyCommand, null);
         } catch (CopyAdapterException $e) {
             throw new CopyAdapterQueryException($e->getMessage(), 0, $e);
         }
@@ -113,7 +107,7 @@ class CopyAdapter implements ExportAdapter
         return $this->analyseOutput($csvPath, $exportConfig);
     }
 
-    protected function runQuery(string $sql, ?float $timeout): void
+    protected function runCopyCommand(string $sql, ?float $timeout): void
     {
         $command = [];
         $command[] = sprintf('PGPASSWORD=%s', escapeshellarg($this->databaseConfig->getPassword()));
@@ -179,7 +173,7 @@ class CopyAdapter implements ExportAdapter
             }
             $numRows++;
         }
-        $this->logger->info(sprintf('Successfully exported %d rows.', $numRows));
+
         $incrementalLastFetchedValue = null;
         if ($exportConfig->isIncrementalFetching() && $lastFetchedRow) {
             $incrementalLastFetchedValue = $this->getLastFetchedValue(

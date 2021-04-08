@@ -1,3 +1,3 @@
 Export by "Copy" adapter failed: ERROR:  column "something" does not exist LINE 1: COPY  ( SELECT something, fake ) TO STDOUT WITH CSV HEADER D...%s
-Export by "PDO" adapter failed: Error executing: SQLSTATE[42703]: Undefined column: 7 ERROR:  column "something" does not exist LINE 1: DECLARE exdbcursor CURSOR FOR SELECT something, fa...%s
-Error executing: SQLSTATE[42703]: Undefined column: 7 ERROR:  column "something" does not exist LINE 1: DECLARE exdbcursor CURSOR FOR SELECT something, fa...%s
+Export by "PDO" adapter failed: [in.c-main.escaping]: DB query failed: SQLSTATE[42703]: Undefined column: 7 ERROR:  column "something" does not exist%A Tried 5 times.
+[in.c-main.escaping]: DB query failed: SQLSTATE[42703]: Undefined column: 7 ERROR:  column "something" does not exist %A Tried 5 times.

@@ -1,9 +1,9 @@
 Creating PDO connection to "pgsql:host=%s;port=5432;dbname=postgres;".
 Exporting "sales" to "in.c-main.escaping".
 Exporting by "Copy" adapter.
-Successfully exported 8 rows.
+Exported "8" rows to "in.c-main.escaping".
 Exporting "sales" to "in.c-main.sales".
 Exporting by "Copy" adapter.
-Successfully exported 100 rows.
-Found database server version: %d
+Found database server version: %d.
+Exported "100" rows to "in.c-main.sales".
 Extractor finished successfully.
