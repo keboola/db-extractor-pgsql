@@ -1,6 +1,6 @@
-Connecting to pgsql:host=%s;port=5432;dbname=postgres;
-Exporting to in.c-main.types
-Executing query 'types' via \copy ...
-Successfully exported 4 rows.
-Found database server version: %d
+Creating PDO connection to "pgsql:host=%s;port=5432;dbname=postgres;".
+Exporting "types" to "in.c-main.types".
+Exporting by "Copy" adapter.
+Found database server version: %d.
+Exported "4" rows to "in.c-main.types".
 Extractor finished successfully.

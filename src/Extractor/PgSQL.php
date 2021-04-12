@@ -4,27 +4,29 @@ declare(strict_types=1);
 
 namespace Keboola\DbExtractor\Extractor;
 
+use PDO;
+use Keboola\DbExtractor\Adapter\Connection\DbConnection;
+use Keboola\DbExtractor\Adapter\ExportAdapter;
+use Keboola\DbExtractor\Adapter\FallbackExportAdapter;
+use Keboola\DbExtractor\Adapter\Metadata\MetadataProvider;
+use Keboola\DbExtractor\Adapter\Query\DefaultQueryFactory;
+use Keboola\DbExtractor\Adapter\ResultWriter\DefaultResultWriter;
 use Keboola\DbExtractorConfig\Configuration\ValueObject\DatabaseConfig;
-use PDOException;
+use Keboola\Temp\Temp;
 use Psr\Log\LoggerInterface;
-use InvalidArgumentException;
 use Keboola\Datatype\Definition\Exception\InvalidLengthException;
 use Keboola\Datatype\Definition\GenericStorage;
-use Keboola\DbExtractor\Exception\CopyAdapterException;
 use Keboola\DbExtractor\Exception\UserException;
 use Keboola\DbExtractor\TableResultFormat\Exception\ColumnNotFoundException;
 use Keboola\DbExtractorConfig\Configuration\ValueObject\ExportConfig;
-use Keboola\DbExtractor\Configuration\PgsqlExportConfig;
 
 class PgSQL extends BaseExtractor
 {
     public const INCREMENTAL_TYPES = ['INTEGER', 'NUMERIC', 'FLOAT', 'TIMESTAMP'];
 
-    private PDOAdapter $pdoAdapter;
+    private PgSQLDbConnection $connection;
 
-    private CopyAdapter $copyAdapter;
-
-    private ?MetadataProvider $metadataProvider = null;
+    private ?PgSQLMetadataProvider $metadataProvider = null;
 
     public function __construct(array $parameters, array $state, LoggerInterface $logger)
     {
@@ -32,139 +34,100 @@ class PgSQL extends BaseExtractor
         parent::__construct($parameters, $state, $logger);
     }
 
+    /**
+     * @return PgSQLMetadataProvider
+     */
     public function getMetadataProvider(): MetadataProvider
     {
         if (!$this->metadataProvider) {
-            $this->metadataProvider = new PgSQLMetadataProvider($this->logger, $this->pdoAdapter);
+            $this->metadataProvider = new PgSQLMetadataProvider($this->logger, $this->connection);
         }
         return $this->metadataProvider;
     }
 
+    protected function createExportAdapter(): ExportAdapter
+    {
+        $resultWriter = new PgSQLResultWriter($this->state);
+        $simpleQueryFactory = new DefaultQueryFactory($this->state);
+
+        $pdoAdapter = new PdoAdapter(
+            $this->logger,
+            $this->connection,
+            $simpleQueryFactory,
+            $resultWriter,
+            $this->dataDir,
+            $this->state
+        );
+
+        $copyAdapter = new CopyAdapter(
+            $this->connection,
+            $this->createDatabaseConfig($this->parameters['db']),
+            $simpleQueryFactory,
+            $this->getMetadataProvider()
+        );
+
+        return new FallbackExportAdapter($this->logger, [
+            $copyAdapter,
+            $pdoAdapter,
+        ]);
+    }
+
     public function createConnection(DatabaseConfig $databaseConfig): void
     {
-        $this->pdoAdapter = new PDOAdapter($this->logger, $databaseConfig, $this->state);
-        $this->copyAdapter = new CopyAdapter($this->logger, $databaseConfig, $this->state);
+        // convert errors to PDOExceptions
+        $options = [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_TIMEOUT => 60,
+        ];
+
+        $port = $databaseConfig->hasPort() ? $databaseConfig->getPort() : '5432';
+
+        $dsn = sprintf(
+            'pgsql:host=%s;port=%s;dbname=%s;',
+            $databaseConfig->getHost(),
+            $port,
+            $databaseConfig->getDatabase()
+        );
+
+        if ($databaseConfig->hasSSLConnection()) {
+            $dsn .= 'sslmode=require;';
+            $tempDir = new Temp('ssl');
+            $sslConnection = $databaseConfig->getSslConnectionConfig();
+
+            if ($sslConnection->hasCa()) {
+                $dsn .= sprintf(
+                    'sslrootcert="%s";',
+                    SslHelper::createSSLFile($tempDir, $sslConnection->getCa())
+                );
+            }
+
+            if ($sslConnection->hasCert()) {
+                $dsn .= sprintf(
+                    'sslcert="%s";',
+                    SslHelper::createSSLFile($tempDir, $sslConnection->getCert())
+                );
+            }
+
+            if ($sslConnection->hasKey()) {
+                $dsn .= sprintf(
+                    'sslkey="%s";',
+                    SslHelper::createSSLFile($tempDir, $sslConnection->getKey())
+                );
+            }
+        }
+
+        $this->connection = new PgSQLDbConnection(
+            $this->logger,
+            $dsn,
+            $databaseConfig->getUsername(),
+            $databaseConfig->getPassword(),
+            $options
+        );
     }
 
     public function testConnection(): void
     {
-        $this->pdoAdapter->testConnection();
-        $this->copyAdapter->testConnection();
-    }
-
-    public function export(ExportConfig $exportConfig): array
-    {
-        if (!$exportConfig instanceof PgsqlExportConfig) {
-            throw new InvalidArgumentException('PgsqlExportConfig expected.');
-        }
-
-        if ($exportConfig->isIncrementalFetching()) {
-            $this->validateIncrementalFetching($exportConfig);
-        }
-
-        $this->logger->info('Exporting to ' . $exportConfig->getOutputTable());
-        $query = $exportConfig->hasQuery() ? $exportConfig->getQuery() : $this->simpleQuery($exportConfig);
-        $logPrefix = $exportConfig->hasConfigName() ? $exportConfig->getConfigName() : $exportConfig->getOutputTable();
-
-        // Copy adapter
-        $result = null;
-        if ($exportConfig->getForceFallback()) {
-            $this->logger->warning('Forcing extractor to use PDO fallback fetching');
-        } else {
-            $this->logger->info(sprintf("Executing query '%s' via \copy ...", $logPrefix));
-            try {
-                $result = $this->copyAdapter->export(
-                    $query,
-                    $exportConfig,
-                    $this->getMetadataProvider(),
-                    $this->getOutputFilename($exportConfig->getOutputTable())
-                );
-            } catch (CopyAdapterException $e) {
-                @unlink($this->getOutputFilename($exportConfig->getOutputTable()));
-                $this->logger->info('Failed \copy command (will attempt via PDO): ' . $e->getMessage());
-            }
-        }
-
-        // PDO (fallback) adapter
-        if ($result === null) {
-            $this->logger->info(sprintf("Executing query '%s' via PDO ...", $logPrefix));
-            try {
-                $result = $this->pdoAdapter->export(
-                    $query,
-                    $exportConfig,
-                    $this->getOutputFilename($exportConfig->getOutputTable())
-                );
-            } catch (PDOException $pdoError) {
-                throw new UserException(
-                    sprintf('Error executing "%s": %s', $logPrefix, $pdoError->getMessage())
-                );
-            }
-        }
-
-        // Manifest
-        if ($result['rows'] > 0) {
-            $this->createManifest($exportConfig);
-        } else {
-            @unlink($this->getOutputFilename($exportConfig->getOutputTable()));
-            $this->logger->warning(sprintf(
-                'Query returned empty result. Nothing was imported to "%s"',
-                $exportConfig->getOutputTable(),
-            ));
-        }
-
-        // Output state
-        $output = [
-            'outputTable' => $exportConfig->getOutputTable(),
-            'rows' => $result['rows'],
-        ];
-
-        if (!empty($result['lastFetchedRow'])) {
-            $output['state']['lastFetchedRow'] = $result['lastFetchedRow'];
-        }
-
-        return $output;
-    }
-
-    public function simpleQuery(ExportConfig $exportConfig): string
-    {
-        $sql = [];
-
-        if ($exportConfig->hasColumns()) {
-            $sql[] = sprintf('SELECT %s', implode(', ', array_map(
-                fn(string $c) => $this->pdoAdapter->quoteIdentifier($c),
-                $exportConfig->getColumns()
-            )));
-        } else {
-            $sql[] = 'SELECT *';
-        }
-
-        $sql[] = sprintf(
-            'FROM %s.%s',
-            $this->pdoAdapter->quoteIdentifier($exportConfig->getTable()->getSchema()),
-            $this->pdoAdapter->quoteIdentifier($exportConfig->getTable()->getName())
-        );
-
-        if ($exportConfig->isIncrementalFetching() && isset($this->state['lastFetchedRow'])) {
-            $sql[] = sprintf(
-                // intentionally ">=" last row should be included, it is handled by storage deduplication process
-                'WHERE %s >= %s',
-                $this->pdoAdapter->quoteIdentifier($exportConfig->getIncrementalFetchingColumn()),
-                $this->pdoAdapter->quote((string) $this->state['lastFetchedRow'])
-            );
-        }
-
-        if ($exportConfig->isIncrementalFetching()) {
-            $sql[] = sprintf(
-                'ORDER BY %s',
-                $this->pdoAdapter->quoteIdentifier($exportConfig->getIncrementalFetchingColumn())
-            );
-        }
-
-        if ($exportConfig->hasIncrementalFetchingLimit()) {
-            $sql[] = sprintf('LIMIT %d', $exportConfig->getIncrementalFetchingLimit());
-        }
-
-        return implode(' ', $sql);
+        $this->connection->testConnection();
     }
 
     public function validateIncrementalFetching(ExportConfig $exportConfig): void
@@ -208,14 +171,14 @@ class PgSQL extends BaseExtractor
 
     public function getMaxOfIncrementalFetchingColumn(ExportConfig $exportConfig): ?string
     {
-        $result = $this->pdoAdapter->runRetryableQuery(sprintf(
+        $result = $this->connection->query(sprintf(
             'SELECT MAX(%s) as %s FROM %s.%s',
-            $this->pdoAdapter->quoteIdentifier($exportConfig->getIncrementalFetchingColumn()),
-            $this->pdoAdapter->quoteIdentifier($exportConfig->getIncrementalFetchingColumn()),
-            $this->pdoAdapter->quoteIdentifier($exportConfig->getTable()->getSchema()),
-            $this->pdoAdapter->quoteIdentifier($exportConfig->getTable()->getName())
-        ));
+            $this->connection->quoteIdentifier($exportConfig->getIncrementalFetchingColumn()),
+            $this->connection->quoteIdentifier($exportConfig->getIncrementalFetchingColumn()),
+            $this->connection->quoteIdentifier($exportConfig->getTable()->getSchema()),
+            $this->connection->quoteIdentifier($exportConfig->getTable()->getName())
+        ), DbConnection::DEFAULT_MAX_RETRIES)->fetchAll();
 
-        return count($result) > 0 ? $result[0][$exportConfig->getIncrementalFetchingColumn()] : null;
+        return count($result) > 0 ? (string) $result[0][$exportConfig->getIncrementalFetchingColumn()] : null;
     }
 }
