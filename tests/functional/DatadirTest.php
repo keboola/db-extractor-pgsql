@@ -6,16 +6,16 @@ namespace Keboola\DbExtractor\FunctionalTests;
 
 use Keboola\DatadirTests\DatadirTestCase;
 use Keboola\DbExtractor\TraitTests\CloseSshTunnelsTrait;
+use Keboola\DbExtractor\TraitTests\PdoTestConnectionTrait;
 use Keboola\DbExtractor\TraitTests\RemoveAllTablesTrait;
 use PDO;
 use RuntimeException;
-use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
-use Symfony\Component\Process\Process;
 use \Throwable;
 
 class DatadirTest extends DatadirTestCase
 {
+    use PdoTestConnectionTrait;
     use RemoveAllTablesTrait;
     use CloseSshTunnelsTrait;
 
@@ -55,7 +55,7 @@ class DatadirTest extends DatadirTestCase
         $this->testProjectDir = $this->getTestFileDir() . '/' . $this->dataName();
         $this->testTempDir = $this->temp->getTmpFolder();
 
-        $this->connection = PdoTestConnection::createConnection();
+        $this->connection = $this->createTestConnection();
         $this->removeAllTables();
         $this->closeSshTunnels();
 

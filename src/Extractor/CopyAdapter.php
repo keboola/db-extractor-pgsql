@@ -90,16 +90,18 @@ class CopyAdapter implements ExportAdapter
         PgsqlExportConfig $exportConfig,
         string $csvPath
     ): ExportResult {
-        $copyCommand = sprintf(
-            $exportConfig->hasQuery() ? // include header?
-                "\COPY (%s) TO '%s' WITH CSV HEADER DELIMITER ',' FORCE QUOTE *;" :
-                "\COPY (%s) TO '%s' WITH CSV DELIMITER ',' FORCE QUOTE *;",
-            rtrim($query, '; '),
-            $csvPath
-        );
+        $sql =
+            '\encoding UTF8;'.
+            sprintf(
+                $exportConfig->hasQuery() ? // include header?
+                    "\COPY (%s) TO '%s' WITH CSV HEADER DELIMITER ',' FORCE QUOTE *;" :
+                    "\COPY (%s) TO '%s' WITH CSV DELIMITER ',' FORCE QUOTE *;",
+                rtrim($query, '; '),
+                $csvPath
+            );
 
         try {
-            $this->runCopyCommand($copyCommand, null);
+            $this->runCopyCommand($sql, null);
         } catch (CopyAdapterException $e) {
             throw new CopyAdapterQueryException($e->getMessage(), 0, $e);
         }
@@ -112,11 +114,12 @@ class CopyAdapter implements ExportAdapter
         $command = [];
         $command[] = sprintf('PGPASSWORD=%s', escapeshellarg($this->databaseConfig->getPassword()));
         $command[] = 'psql';
+        $command[] = '-v ON_ERROR_STOP=1';
         $command[] = sprintf('-h %s', escapeshellarg($this->databaseConfig->getHost()));
         $command[] = sprintf('-p %s', escapeshellarg($this->databaseConfig->getPort()));
         $command[] = sprintf('-U %s', escapeshellarg($this->databaseConfig->getUsername()));
         $command[] = sprintf('-d %s', escapeshellarg($this->databaseConfig->getDatabase()));
-        $command[] = sprintf('-w -c %s', escapeshellarg($sql));
+        $command[] = sprintf('-w');
 
         if ($this->databaseConfig->hasSSLConnection()) {
             $command[] = '--set=sslmode=require';
@@ -146,6 +149,7 @@ class CopyAdapter implements ExportAdapter
         }
 
         $process = Process::fromShellCommandline(implode(' ', $command));
+        $process->setInput($sql); // send SQL to STDIN
         $process->setTimeout($timeout); // null => allow it to run for as long as it needs
         $process->run();
         if ($process->getExitCode() !== 0) {

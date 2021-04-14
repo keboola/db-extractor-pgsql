@@ -5,4 +5,4 @@ tests/phpunit/data
 .DS_Store
 .env
 .phpunit.result.cache
-data/
+/phpunut/data/

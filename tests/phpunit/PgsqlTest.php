@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Keboola\DbExtractor\Tests;
 
 use Keboola\Component\Logger;
-use Keboola\DbExtractor\FunctionalTests\PdoTestConnection;
 use Keboola\DbExtractor\PgsqlApplication;
 use Keboola\DbExtractor\Tests\Traits\ConfigTrait;
 use Keboola\DbExtractor\TraitTests\CloseSshTunnelsTrait;
+use Keboola\DbExtractor\TraitTests\PdoTestConnectionTrait;
 use Keboola\DbExtractor\TraitTests\RemoveAllTablesTrait;
 use Keboola\DbExtractor\TraitTests\Tables\EscapingTableTrait;
 use Keboola\DbExtractor\TraitTests\Tables\TypesTableTrait;
@@ -18,6 +18,7 @@ use Symfony\Component\Filesystem\Filesystem;
 
 class PgsqlTest extends TestCase
 {
+    use PdoTestConnectionTrait;
     use ConfigTrait;
     use RemoveAllTablesTrait;
     use CloseSshTunnelsTrait;
@@ -30,7 +31,7 @@ class PgsqlTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->connection = PdoTestConnection::createConnection();
+        $this->connection = $this->createTestConnection();
         $this->removeAllTables();
         $this->closeSshTunnels();
         $fs = new Filesystem();

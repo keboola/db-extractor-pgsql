@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Keboola\DbExtractor\Tests\Traits;
 
-use Keboola\DbExtractor\FunctionalTests\PdoTestConnection;
+use Keboola\DbExtractor\TraitTests\DbConfigTrait;
 
 trait ConfigTrait
 {
+    use DbConfigTrait;
+
     private function getConfig(): array
     {
         $configTemplate = <<<JSON
@@ -57,7 +59,7 @@ trait ConfigTrait
 }
 JSON;
         return json_decode(
-            sprintf($configTemplate, json_encode(PdoTestConnection::getDbConfigArray())),
+            sprintf($configTemplate, json_encode($this->getDbConfigArray())),
             true
         );
     }
@@ -80,7 +82,7 @@ JSON;
 }
 JSON;
         return json_decode(
-            sprintf($configTemplate, json_encode(PdoTestConnection::getDbConfigArray())),
+            sprintf($configTemplate, json_encode($this->getDbConfigArray())),
             true
         );
     }
@@ -107,7 +109,7 @@ JSON;
 }
 JSON;
         return json_decode(
-            sprintf($configTemplate, json_encode(PdoTestConnection::getDbConfigArray())),
+            sprintf($configTemplate, json_encode($this->getDbConfigArray())),
             true
         );
     }

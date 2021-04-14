@@ -114,7 +114,7 @@ services:
   pgsql: &mainPgsql
     build:
       args:
-        version: alpine
+        version: latest
       context: .
       dockerfile: Dockerfile-pgsql
     command: -c ssl=on -c ssl_cert_file=/ssl-cert/server.crt -c ssl_key_file=/ssl-cert/server.key
@@ -126,7 +126,7 @@ services:
     <<: *mainPgsql
     build:
       args:
-        version: 9-alpine
+        version: 9
       context: .
       dockerfile: Dockerfile-pgsql
 
@@ -134,7 +134,7 @@ services:
     <<: *mainPgsql
     build:
       args:
-        version: 10-alpine
+        version: 10
       context: .
       dockerfile: Dockerfile-pgsql
 
@@ -142,7 +142,7 @@ services:
     <<: *mainPgsql
     build:
       args:
-        version: 11-alpine
+        version: 11
       context: .
       dockerfile: Dockerfile-pgsql
 
