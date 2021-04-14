@@ -52,7 +52,7 @@ trait InsertRowsTrait
                     $values
                 ));
             } catch (Throwable $e) {
-                throw new UserException($e->getMessage(), $e->getCode(), $e);
+                throw new UserException($e->getMessage(), (int) $e->getCode(), $e);
             }
         }
     }

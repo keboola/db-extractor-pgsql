@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Keboola\DbExtractor\Tests;
 
 use Keboola\Component\Logger;
-use Keboola\DbExtractor\FunctionalTests\PdoTestConnection;
 use Keboola\DbExtractor\PgsqlApplication;
 use Keboola\DbExtractor\Tests\Traits\ConfigTrait;
+use Keboola\DbExtractor\TraitTests\PdoTestConnectionTrait;
 use Keboola\DbExtractor\TraitTests\RemoveAllTablesTrait;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;
@@ -17,6 +17,7 @@ class PerformanceTest extends TestCase
 {
     use ConfigTrait;
     use RemoveAllTablesTrait;
+    use PdoTestConnectionTrait;
 
     protected string $dataDir = __DIR__ . '/../data';
 
@@ -25,10 +26,10 @@ class PerformanceTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
-        $this->connection = PdoTestConnection::createConnection();
+        $this->connection = $this->createTestConnection();
         $this->removeAllTables();
 
-        $connection = PdoTestConnection::createConnection();
+        $connection = $this->createTestConnection();
 
         $sql = [];
         $sql[] = 'CREATE TABLE IF NOT EXISTS t_0000 (';

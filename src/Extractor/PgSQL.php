@@ -10,7 +10,6 @@ use Keboola\DbExtractor\Adapter\ExportAdapter;
 use Keboola\DbExtractor\Adapter\FallbackExportAdapter;
 use Keboola\DbExtractor\Adapter\Metadata\MetadataProvider;
 use Keboola\DbExtractor\Adapter\Query\DefaultQueryFactory;
-use Keboola\DbExtractor\Adapter\ResultWriter\DefaultResultWriter;
 use Keboola\DbExtractorConfig\Configuration\ValueObject\DatabaseConfig;
 use Keboola\Temp\Temp;
 use Psr\Log\LoggerInterface;
@@ -74,55 +73,8 @@ class PgSQL extends BaseExtractor
 
     public function createConnection(DatabaseConfig $databaseConfig): void
     {
-        // convert errors to PDOExceptions
-        $options = [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_TIMEOUT => 60,
-        ];
-
-        $port = $databaseConfig->hasPort() ? $databaseConfig->getPort() : '5432';
-
-        $dsn = sprintf(
-            'pgsql:host=%s;port=%s;dbname=%s;',
-            $databaseConfig->getHost(),
-            $port,
-            $databaseConfig->getDatabase()
-        );
-
-        if ($databaseConfig->hasSSLConnection()) {
-            $dsn .= 'sslmode=require;';
-            $tempDir = new Temp('ssl');
-            $sslConnection = $databaseConfig->getSslConnectionConfig();
-
-            if ($sslConnection->hasCa()) {
-                $dsn .= sprintf(
-                    'sslrootcert="%s";',
-                    SslHelper::createSSLFile($tempDir, $sslConnection->getCa())
-                );
-            }
-
-            if ($sslConnection->hasCert()) {
-                $dsn .= sprintf(
-                    'sslcert="%s";',
-                    SslHelper::createSSLFile($tempDir, $sslConnection->getCert())
-                );
-            }
-
-            if ($sslConnection->hasKey()) {
-                $dsn .= sprintf(
-                    'sslkey="%s";',
-                    SslHelper::createSSLFile($tempDir, $sslConnection->getKey())
-                );
-            }
-        }
-
-        $this->connection = new PgSQLDbConnection(
-            $this->logger,
-            $dsn,
-            $databaseConfig->getUsername(),
-            $databaseConfig->getPassword(),
-            $options
-        );
+        $factory = new PgSQLConnectionFactory($this->logger);
+        $this->connection = $factory->create($databaseConfig);
     }
 
     public function testConnection(): void
