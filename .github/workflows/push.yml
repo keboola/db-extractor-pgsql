@@ -19,20 +19,20 @@ jobs:
           docker -v
       - name: Build image
         run: |
-          docker-compose build
+          docker build -t $APP_IMAGE .
       - name: Run test - Latest PostgreSQL server
         run: |
           docker-compose run --rm wait
           docker-compose run --rm app
-      - name: PostgreSQL version 9
+      - name: Run test - PostgreSQL version 9
         run: |
           docker-compose run --rm wait9
           docker-compose run --rm app9
-      - name: PostgreSQL version 10
+      - name: Run test - PostgreSQL version 10
         run: |
           docker-compose run --rm wait10
           docker-compose run --rm app10
-      - name: PostgreSQL version 11
+      - name: Run test - PostgreSQL version 11
         run: |
           docker-compose run --rm wait11
           docker-compose run --rm app11
