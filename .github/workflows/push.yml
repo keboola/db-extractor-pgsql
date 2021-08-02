@@ -11,34 +11,46 @@ env:
   KBC_TEST_PROJECT_URL: "https://connection.keboola.com/admin/projects/2703/dashboard"
   KBC_STORAGE_TOKEN: ${{ secrets.KBC_STORAGE_TOKEN }}
 jobs:
-  Build:
+  Tests_Latest_PostgreSQL:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out the repo
-        uses: actions/checkout@v2
-      - name: Print Docker version
-        run: |
-          docker -v
-      - name: Build image
-        run: |
-          docker login --username "$DOCKERHUB_USER" --password "$DOCKERHUB_TOKEN"
-          docker build -t $APP_IMAGE .
       - name: Run test - Latest PostgreSQL server
         run: |
           docker-compose run --rm wait
           docker-compose run --rm app
+  Tests_PostgreSQL_9:
+    runs-on: ubuntu-latest
+    steps:
       - name: Run test - PostgreSQL version 9
         run: |
           docker-compose run --rm wait9
           docker-compose run --rm app9
+  Tests_PostgreSQL_10:
+    runs-on: ubuntu-latest
+    steps:
       - name: Run test - PostgreSQL version 10
         run: |
           docker-compose run --rm wait10
           docker-compose run --rm app10
+  Tests_PostgreSQL_11:
+    runs-on: ubuntu-latest
+    steps:
       - name: Run test - PostgreSQL version 11
         run: |
           docker-compose run --rm wait11
           docker-compose run --rm app11
+  Push_to_ECR_and_deploy:
+    needs:
+      - Tests_Latest_PostgreSQL
+      - Tests_PostgreSQL_9
+      - Tests_PostgreSQL_10
+      - Tests_PostgreSQL_11
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build image
+        run: |
+          docker login --username "$DOCKERHUB_USER" --password "$DOCKERHUB_TOKEN"
+          docker build -t $APP_IMAGE .
       - name: Push image to ECR
         run: |
           docker pull quay.io/keboola/developer-portal-cli-v2:latest
