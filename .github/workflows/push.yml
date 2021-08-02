@@ -28,6 +28,7 @@ jobs:
         uses: actions/checkout@v2
       - name: Run test - Latest PostgreSQL server
         run: |
+          docker-compose build app
           docker-compose run --rm wait
           docker-compose run --rm app
   Tests_PostgreSQL_9:
@@ -38,6 +39,7 @@ jobs:
         uses: actions/checkout@v2
       - name: Run test - PostgreSQL version 9
         run: |
+          docker-compose build app9
           docker-compose run --rm wait9
           docker-compose run --rm app9
   Tests_PostgreSQL_10:
@@ -48,6 +50,7 @@ jobs:
         uses: actions/checkout@v2
       - name: Run test - PostgreSQL version 10
         run: |
+          docker-compose build app10
           docker-compose run --rm wait10
           docker-compose run --rm app10
   Tests_PostgreSQL_11:
@@ -58,6 +61,7 @@ jobs:
         uses: actions/checkout@v2
       - name: Run test - PostgreSQL version 11
         run: |
+          docker-compose build app11
           docker-compose run --rm wait11
           docker-compose run --rm app11
   Push_to_ECR_and_deploy:
