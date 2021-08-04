@@ -37,6 +37,13 @@ ENV LC_ALL=en_US.UTF-8
 # PDO pgsql
 RUN docker-php-ext-install pdo pdo_pgsql pgsql
 
+# Fix SSL configuration to be compatible with older servers
+RUN \
+    # https://wiki.debian.org/ContinuousIntegration/TriagingTips/openssl-1.1.1
+    sed -i 's/CipherString\s*=.*/CipherString = DEFAULT@SECLEVEL=1/g' /etc/ssl/openssl.cnf \
+    # https://stackoverflow.com/questions/53058362/openssl-v1-1-1-ssl-choose-client-version-unsupported-protocol
+    && sed -i 's/MinProtocol\s*=.*/MinProtocol = TLSv1/g' /etc/ssl/openssl.cnf
+
 ## Composer - deps always cached unless changed
 # First copy only composer files
 COPY composer.* /code/

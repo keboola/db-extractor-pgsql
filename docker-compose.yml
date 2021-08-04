@@ -17,7 +17,7 @@ services:
       - PGSQL_DB_PASSWORD=some password
     volumes:
       - ssh-keys:/root/.ssh:z
-      - ./tests/data/ssl/certs:/ssl-cert
+      - ./tests/ssl-certs:/ssl-cert:z
     links:
       - pgsql
       - sshproxy
@@ -39,7 +39,7 @@ services:
       - PGSQL_DB_PASSWORD=some password
     volumes:
       - ssh-keys:/root/.ssh:z
-      - ./tests/data/ssl/certs:/ssl-cert
+      - ./tests/ssl-certs:/ssl-cert:z
     links:
       - pgsql9
       - sshproxy
@@ -61,7 +61,7 @@ services:
       - PGSQL_DB_PASSWORD=some password
     volumes:
       - ssh-keys:/root/.ssh:z
-      - ./tests/data/ssl/certs:/ssl-cert
+      - ./tests/ssl-certs:/ssl-cert:z
     links:
       - pgsql10
       - sshproxy
@@ -83,7 +83,7 @@ services:
       - PGSQL_DB_PASSWORD=some password
     volumes:
       - ssh-keys:/root/.ssh:z
-      - ./tests/data/ssl/certs:/ssl-cert
+      - ./tests/ssl-certs:/ssl-cert:z
     links:
       - pgsql11
       - sshproxy
@@ -106,7 +106,7 @@ services:
       - ssh-keys:/root/.ssh:z
       - .:/code
       - ./data:/data
-      - ./tests/ssl-certs:/ssl-cert
+      - ./tests/ssl-certs:/ssl-cert:z
     links:
       - pgsql
       - sshproxy

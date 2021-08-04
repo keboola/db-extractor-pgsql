@@ -115,38 +115,8 @@ class CopyAdapter implements ExportAdapter
         $command[] = sprintf('PGPASSWORD=%s', escapeshellarg($this->databaseConfig->getPassword()));
         $command[] = 'psql';
         $command[] = '-v ON_ERROR_STOP=1';
-        $command[] = sprintf('-h %s', escapeshellarg($this->databaseConfig->getHost()));
-        $command[] = sprintf('-p %s', escapeshellarg($this->databaseConfig->getPort()));
-        $command[] = sprintf('-U %s', escapeshellarg($this->databaseConfig->getUsername()));
-        $command[] = sprintf('-d %s', escapeshellarg($this->databaseConfig->getDatabase()));
-        $command[] = sprintf('-w');
-
-        if ($this->databaseConfig->hasSSLConnection()) {
-            $command[] = '--set=sslmode=require';
-            $tempDir = new Temp('ssl');
-            $sslConnection = $this->databaseConfig->getSslConnectionConfig();
-
-            if ($sslConnection->hasCa()) {
-                $command[] = sprintf(
-                    '--set=sslrootcert="%s"',
-                    SslHelper::createSSLFile($tempDir, $sslConnection->getCa())
-                );
-            }
-
-            if ($sslConnection->hasCert()) {
-                $command[] = sprintf(
-                    '--set=sslcert="%s"',
-                    SslHelper::createSSLFile($tempDir, $sslConnection->getCert())
-                );
-            }
-
-            if ($sslConnection->hasKey()) {
-                $command[] = sprintf(
-                    '--set=sslkey="%s"',
-                    SslHelper::createSSLFile($tempDir, $sslConnection->getKey())
-                );
-            }
-        }
+        $command[] = '-w';
+        $command[] = escapeshellarg(PgSQLDsnFactory::createForCli($this->databaseConfig));
 
         $process = Process::fromShellCommandline(implode(' ', $command));
         $process->setInput($sql); // send SQL to STDIN

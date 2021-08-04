@@ -26,42 +26,7 @@ class PgSQLConnectionFactory
             PDO::ATTR_TIMEOUT => 60,
         ];
 
-        $port = $databaseConfig->hasPort() ? $databaseConfig->getPort() : '5432';
-
-        $dsn = sprintf(
-            'pgsql:host=%s;port=%s;dbname=%s;',
-            $databaseConfig->getHost(),
-            $port,
-            $databaseConfig->getDatabase()
-        );
-
-        if ($databaseConfig->hasSSLConnection()) {
-            $dsn .= 'sslmode=require;';
-            $tempDir = new Temp('ssl');
-            $sslConnection = $databaseConfig->getSslConnectionConfig();
-
-            if ($sslConnection->hasCa()) {
-                $dsn .= sprintf(
-                    'sslrootcert="%s";',
-                    SslHelper::createSSLFile($tempDir, $sslConnection->getCa())
-                );
-            }
-
-            if ($sslConnection->hasCert()) {
-                $dsn .= sprintf(
-                    'sslcert="%s";',
-                    SslHelper::createSSLFile($tempDir, $sslConnection->getCert())
-                );
-            }
-
-            if ($sslConnection->hasKey()) {
-                $dsn .= sprintf(
-                    'sslkey="%s";',
-                    SslHelper::createSSLFile($tempDir, $sslConnection->getKey())
-                );
-            }
-        }
-
+        $dsn = 'pgsql:' . PgSQLDsnFactory::createForPdo($databaseConfig);
         return new PgSQLDbConnection(
             $this->logger,
             $dsn,
