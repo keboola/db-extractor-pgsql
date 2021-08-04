@@ -1,5 +1,6 @@
 vendor/
 .idea/
+/data*
 composer.phar
 tests/phpunit/data
 .DS_Store
