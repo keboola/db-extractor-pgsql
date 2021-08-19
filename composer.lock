@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8a63d8dbac9fb8903e5e432c07a81497",
+    "content-hash": "7709370a38a66a878173c1a9810b9e47",
     "packages": [
         {
             "name": "doctrine/instantiator",
@@ -290,16 +290,16 @@
         },
         {
             "name": "keboola/db-extractor-config",
-            "version": "1.4.7",
+            "version": "1.6.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/db-extractor-config.git",
-                "reference": "7f866b55d3214370e200934f5a6aa5231334d623"
+                "reference": "3a6ee17208c719181ac80d5d3b3178dcd6e725a6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/db-extractor-config/zipball/7f866b55d3214370e200934f5a6aa5231334d623",
-                "reference": "7f866b55d3214370e200934f5a6aa5231334d623",
+                "url": "https://api.github.com/repos/keboola/db-extractor-config/zipball/3a6ee17208c719181ac80d5d3b3178dcd6e725a6",
+                "reference": "3a6ee17208c719181ac80d5d3b3178dcd6e725a6",
                 "shasum": ""
             },
             "require": {
@@ -309,7 +309,7 @@
             },
             "require-dev": {
                 "ext-json": "*",
-                "keboola/coding-standard": ">=9.0",
+                "keboola/coding-standard": ">=13.0",
                 "php-parallel-lint/php-parallel-lint": "^1.2",
                 "phpstan/phpstan": "^0.12.14",
                 "phpunit/phpunit": "^9.1"
@@ -326,9 +326,9 @@
             ],
             "description": "Config definition for database extractor",
             "support": {
-                "source": "https://github.com/keboola/db-extractor-config/tree/1.4.7"
+                "source": "https://github.com/keboola/db-extractor-config/tree/1.6.0"
             },
-            "time": "2020-07-30T12:12:44+00:00"
+            "time": "2021-08-19T07:56:35+00:00"
         },
         {
             "name": "keboola/db-extractor-ssh-tunnel",
