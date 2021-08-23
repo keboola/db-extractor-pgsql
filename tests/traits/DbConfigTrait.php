@@ -8,20 +8,31 @@ use Keboola\DbExtractorConfig\Configuration\ValueObject\DatabaseConfig;
 
 trait DbConfigTrait
 {
-    public function getDbConfigArray(): array
+    public static function getDbConfigArray(bool $ssl = false): array
     {
-        return [
-            'host' => (string) getenv('PGSQL_DB_HOST'),
+        $config = [
+            'host' => $ssl ? (string) getenv('PGSQL_DB_SSL_HOST') : (string) getenv('PGSQL_DB_HOST'),
             'port' => (string) getenv('PGSQL_DB_PORT'),
             'user' => (string) getenv('PGSQL_DB_USER'),
             '#password' => (string) getenv('PGSQL_DB_PASSWORD'),
             'database' => (string) getenv('PGSQL_DB_DATABASE'),
         ];
+
+        if ($ssl) {
+            $config['ssl'] = [
+                'enabled' => true,
+                'ca' => (string) getenv('SSL_CA'),
+                'cert' => (string) getenv('SSL_CERT'),
+                '#key' => (string) getenv('SSL_KEY'),
+            ];
+        }
+
+        return $config;
     }
 
-    public function createDbConfig(): DatabaseConfig
+    public static function createDbConfig(bool $ssl = false): DatabaseConfig
     {
-        $dbConfig = $this->getDbConfigArray();
+        $dbConfig = self::getDbConfigArray($ssl);
         return DatabaseConfig::fromArray($dbConfig);
     }
 }

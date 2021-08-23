@@ -1,12 +1,8 @@
 {
+  "action": "testConnection",
   "parameters": {
-    "name": "sales",
-    "query": "SELECT * FROM sales",
-    "outputTable": "in.c-main.sales",
-    "incremental": false,
-    "primaryKey": null,
     "db": {
-      "host": "%env(string:PGSQL_DB_SSL_HOST)%",
+      "host": "%env(string:PGSQL_DB_SSL_HOST_BAD_CN)%",
       "port": "%env(string:PGSQL_DB_PORT)%",
       "user": "%env(string:PGSQL_DB_USER)%",
       "#password": "%env(string:PGSQL_DB_PASSWORD)%",
@@ -15,7 +11,7 @@
         "enabled": true,
         "ca": "%env(string:SSL_CA)%",
         "cert": "%env(string:SSL_CERT)%",
-        "key": "%env(string:SSL_KEY)%"
+        "#key": "%env(string:SSL_KEY)%"
       }
     }
   }

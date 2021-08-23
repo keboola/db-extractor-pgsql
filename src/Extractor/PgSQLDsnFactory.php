@@ -50,10 +50,16 @@ class PgSQLDsnFactory
         $dsn['dbname'] = $dbConfig->getDatabase();
 
         if ($dbConfig->hasSSLConnection()) {
+            $tempDir = new Temp('ssl');
             $sslConnection = $dbConfig->getSslConnectionConfig();
 
-            $dsn['sslmode'] = 'require';
-            $tempDir = new Temp('ssl');
+            if ($sslConnection->isIgnoreCertificateCn()) {
+                $dsn['sslmode'] = 'require';
+            } else if ($sslConnection->isVerifyServerCert()) {
+                $dsn['sslmode'] = 'verify-full';
+            } else {
+                $dsn['sslmode'] = 'verify-ca';
+            }
 
             if ($sslConnection->hasCa()) {
                 $dsn['sslrootcert'] = SslHelper::createSSLFile($tempDir, $sslConnection->getCa());
