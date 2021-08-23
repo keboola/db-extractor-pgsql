@@ -59,7 +59,7 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v2
       - name: Pull image from ECR
-        uses: keboola/action-pull-from-ecr@implementation
+        uses: keboola/action-pull-from-ecr@master
         with:
           vendor: ${{ env.KBC_DEVELOPERPORTAL_VENDOR }}
           app_id: ${{ env.KBC_DEVELOPERPORTAL_APP }}
@@ -79,7 +79,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Run KBC test jobs
-        uses: keboola/action-run-configs-parallel@implementation
+        uses: keboola/action-run-configs-parallel@master
         with:
           token: ${{ env.KBC_STORAGE_TOKEN }}
           componentId: ${{ env.KBC_DEVELOPERPORTAL_APP }}
