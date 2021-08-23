@@ -12,8 +12,8 @@ RUN \
 RUN localedef -i cs_CZ -c -f ISO-8859-2 -A /usr/share/locale/locale.alias cs_CZ.ISO-8859-2
 ENV LANG cs_CZ.ISO-8859-2
 
-COPY tests/ssl-certs/server.crt /ssl-cert/
-COPY tests/ssl-certs/server.key /ssl-cert/
+COPY certificates/server.crt /ssl-cert/
+COPY certificates/server.key /ssl-cert/
 
 RUN chmod 700 -R /ssl-cert/
 RUN chown postgres:postgres -R /ssl-cert/

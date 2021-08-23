@@ -1,157 +1,40 @@
-version: "2"
+version: "3"
 services:
-  app:
+  app: &app
     build: .
-    image: keboola/ex-db-pgsql
+    image: keboola/db-extractor-pgsql
     command: composer ci
     environment:
-      - EXTERNAL_PG_HOST
-      - EXTERNAL_PG_PORT
-      - EXTERNAL_PG_DATABASE
-      - EXTERNAL_PG_USER
-      - EXTERNAL_PG_PASSWORD
       - PGSQL_DB_HOST=pgsql
       - PGSQL_DB_PORT=5432
       - PGSQL_DB_DATABASE=postgres
       - PGSQL_DB_USER=postgres
       - PGSQL_DB_PASSWORD=some password
     volumes:
-      - ssh-keys:/root/.ssh:z
-      - ./tests/ssl-certs:/ssl-cert:z
+      - ./docker/pgsql/certificates:/ssl-cert:z
+      - ssh-keys:/root/.ssh:ro
     links:
       - pgsql
-      - sshproxy
-
-  app9:
-    build: .
-    image: keboola/ex-db-pgsql9
-    command: composer ci
-    environment:
-      - EXTERNAL_PG_HOST
-      - EXTERNAL_PG_PORT
-      - EXTERNAL_PG_DATABASE
-      - EXTERNAL_PG_USER
-      - EXTERNAL_PG_PASSWORD
-      - PGSQL_DB_HOST=pgsql9
-      - PGSQL_DB_PORT=5432
-      - PGSQL_DB_DATABASE=postgres
-      - PGSQL_DB_USER=postgres
-      - PGSQL_DB_PASSWORD=some password
-    volumes:
-      - ssh-keys:/root/.ssh:z
-      - ./tests/ssl-certs:/ssl-cert:z
-    links:
-      - pgsql9
-      - sshproxy
-
-  app10:
-    build: .
-    image: keboola/ex-db-pgsql10
-    command: composer ci
-    environment:
-      - EXTERNAL_PG_HOST
-      - EXTERNAL_PG_PORT
-      - EXTERNAL_PG_DATABASE
-      - EXTERNAL_PG_USER
-      - EXTERNAL_PG_PASSWORD
-      - PGSQL_DB_HOST=pgsql10
-      - PGSQL_DB_PORT=5432
-      - PGSQL_DB_DATABASE=postgres
-      - PGSQL_DB_USER=postgres
-      - PGSQL_DB_PASSWORD=some password
-    volumes:
-      - ssh-keys:/root/.ssh:z
-      - ./tests/ssl-certs:/ssl-cert:z
-    links:
-      - pgsql10
-      - sshproxy
-
-  app11:
-    build: .
-    image: keboola/ex-db-pgsql11
-    command: composer ci
-    environment:
-      - EXTERNAL_PG_HOST
-      - EXTERNAL_PG_PORT
-      - EXTERNAL_PG_DATABASE
-      - EXTERNAL_PG_USER
-      - EXTERNAL_PG_PASSWORD
-      - PGSQL_DB_HOST=pgsql11
-      - PGSQL_DB_PORT=5432
-      - PGSQL_DB_DATABASE=postgres
-      - PGSQL_DB_USER=postgres
-      - PGSQL_DB_PASSWORD=some password
-    volumes:
-      - ssh-keys:/root/.ssh:z
-      - ./tests/ssl-certs:/ssl-cert:z
-    links:
-      - pgsql11
       - sshproxy
 
   dev:
-    image: keboola/ex-db-pgsql
-    command: composer ci
-    environment:
-      - EXTERNAL_PG_HOST
-      - EXTERNAL_PG_PORT
-      - EXTERNAL_PG_DATABASE
-      - EXTERNAL_PG_USER
-      - EXTERNAL_PG_PASSWORD
-      - PGSQL_DB_HOST=pgsql
-      - PGSQL_DB_PORT=5432
-      - PGSQL_DB_DATABASE=postgres
-      - PGSQL_DB_USER=postgres
-      - PGSQL_DB_PASSWORD=some password
+    <<: *app
     volumes:
-      - ssh-keys:/root/.ssh:z
       - .:/code
       - ./data:/data
-      - ./tests/ssl-certs:/ssl-cert:z
-    links:
-      - pgsql
-      - sshproxy
+      - ./docker/pgsql/certificates:/ssl-cert:z
+      - ssh-keys:/root/.ssh:ro,z
 
-  pgsql: &mainPgsql
+  pgsql:
     build:
       args:
-        version: latest
-      context: .
-      dockerfile: Dockerfile-pgsql
+        version: ${PGSQL_VERSION}
+      context: ./docker/pgsql
+    image: keboola/pgsql-test
     command: -c ssl=on -c ssl_cert_file=/ssl-cert/server.crt -c ssl_key_file=/ssl-cert/server.key
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=some password
-
-  pgsql9:
-    <<: *mainPgsql
-    build:
-      args:
-        version: 9
-      context: .
-      dockerfile: Dockerfile-pgsql
-
-  pgsql10:
-    <<: *mainPgsql
-    build:
-      args:
-        version: 10
-      context: .
-      dockerfile: Dockerfile-pgsql
-
-  pgsql11:
-    <<: *mainPgsql
-    build:
-      args:
-        version: 11
-      context: .
-      dockerfile: Dockerfile-pgsql
-
-  sshproxy:
-    image: keboola/db-component-ssh-proxy:latest
-    volumes:
-      - ssh-keys:/root/.ssh:z
-    links:
-      - pgsql
 
   wait:
     image: waisbrot/wait
@@ -161,29 +44,12 @@ services:
       - TARGETS=pgsql:5432
       - TIMEOUT=200
 
-  wait9:
-    image: waisbrot/wait
-    depends_on:
-      - pgsql9
-    environment:
-      - TARGETS=pgsql9:5432
-      - TIMEOUT=200
-
-  wait10:
-    image: waisbrot/wait
-    depends_on:
-      - pgsql10
-    environment:
-      - TARGETS=pgsql10:5432
-      - TIMEOUT=200
-
-  wait11:
-    image: waisbrot/wait
-    depends_on:
-      - pgsql11
-    environment:
-      - TARGETS=pgsql11:5432
-      - TIMEOUT=200
+  sshproxy:
+    image: keboola/db-component-ssh-proxy:latest
+    volumes:
+      - ssh-keys:/root/.ssh:z
+    links:
+      - pgsql
 
 volumes:
   ssh-keys:
