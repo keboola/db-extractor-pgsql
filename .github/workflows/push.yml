@@ -11,7 +11,16 @@ env:
   KBC_TEST_PROJECT_URL: "https://connection.keboola.com/admin/projects/2703/dashboard"
   KBC_STORAGE_TOKEN: ${{ secrets.KBC_STORAGE_TOKEN }}
 jobs:
-  Tests_Latest_PostgreSQL:
+  test-build-latest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      - name: Login to Docker
+        run: docker login --username "$DOCKERHUB_USER" --password "$DOCKERHUB_TOKEN"
+      - name: Build docker image
+        run: docker-compose build app
+  test-pgsql-latest:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
@@ -23,7 +32,7 @@ jobs:
           docker-compose build app
           docker-compose run --rm wait
           docker-compose run --rm app
-  Tests_PostgreSQL_9:
+  test-pgsql-9:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
@@ -35,7 +44,7 @@ jobs:
           docker-compose build app9
           docker-compose run --rm wait9
           docker-compose run --rm app9
-  Tests_PostgreSQL_10:
+  test-pgsql-10:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
@@ -47,7 +56,7 @@ jobs:
           docker-compose build app10
           docker-compose run --rm wait10
           docker-compose run --rm app10
-  Tests_PostgreSQL_11:
+  test-pgsql-11:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
@@ -59,7 +68,7 @@ jobs:
           docker-compose build app11
           docker-compose run --rm wait11
           docker-compose run --rm app11
-  Push_to_ECR_and_deploy:
+  deploy:
     needs:
       - Tests_Latest_PostgreSQL
       - Tests_PostgreSQL_9

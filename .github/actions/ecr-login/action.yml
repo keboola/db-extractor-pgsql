@@ -1,0 +1,12 @@
+name: ECR login
+description: Login to ECR with generated credentials
+runs:
+  using: "composite"
+  steps:
+    - name: ECR login
+      shell: bash
+      run: |
+        docker pull -q quay.io/keboola/developer-portal-cli-v2:latest
+        export ECR_URL=`docker run --rm -e KBC_DEVELOPERPORTAL_USERNAME -e KBC_DEVELOPERPORTAL_PASSWORD -e KBC_DEVELOPERPORTAL_URL quay.io/keboola/developer-portal-cli-v2:latest ecr:get-repository $KBC_DEVELOPERPORTAL_VENDOR $KBC_DEVELOPERPORTAL_APP`
+        eval $(docker run --rm -e KBC_DEVELOPERPORTAL_USERNAME -e KBC_DEVELOPERPORTAL_PASSWORD -e KBC_DEVELOPERPORTAL_URL quay.io/keboola/developer-portal-cli-v2:latest ecr:get-login $KBC_DEVELOPERPORTAL_VENDOR $KBC_DEVELOPERPORTAL_APP)
+        echo "ECR_URL=${ECR_URL}" >> $GITHUB_ENV
