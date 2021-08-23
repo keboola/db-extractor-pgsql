@@ -30,7 +30,7 @@ then
         -e KBC_DEVELOPERPORTAL_USERNAME \
         -e KBC_DEVELOPERPORTAL_PASSWORD \
         quay.io/keboola/developer-portal-cli-v2:latest \
-        update-app-repository ${KBC_DEVELOPERPORTAL_VENDOR} ${KBC_DEVELOPERPORTAL_APP} ${GITHUB_TAG} ecr ${REPOSITORY}
+        update-app-repository ${KBC_DEVELOPERPORTAL_VENDOR} ${KBC_DEVELOPERPORTAL_APP} ${GITHUB_TAG} ecr ${ECR_URL}
 else
     echo "Skipping deployment to KBC, tag ${GITHUB_TAG} is not allowed."
 fi

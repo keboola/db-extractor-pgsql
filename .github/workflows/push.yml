@@ -1,99 +1,115 @@
 name: GitHub Actions
-on: [push]
+on: [ push ]
+concurrency: ci-${{ github.ref }} # to avoid tag collisions in the ECR
 env:
+  # Test image, must be same in the docker-compose.yml if used
   APP_IMAGE: keboola/db-extractor-pgsql
+  # Developer portal login
   KBC_DEVELOPERPORTAL_VENDOR: "keboola"
   KBC_DEVELOPERPORTAL_APP: "keboola.ex-db-pgsql"
   KBC_DEVELOPERPORTAL_USERNAME: "keboola+github_actions_db_extractor_pgsql"
   KBC_DEVELOPERPORTAL_PASSWORD: ${{ secrets.KBC_DEVELOPERPORTAL_PASSWORD }}
+  # DockerHub login
   DOCKERHUB_USER: "keboolabot"
   DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-  KBC_TEST_PROJECT_URL: "https://connection.keboola.com/admin/projects/2703/dashboard"
+  # Test KBC project
   KBC_STORAGE_TOKEN: ${{ secrets.KBC_STORAGE_TOKEN }}
+  KBC_TEST_PROJECT_URL: "https://connection.keboola.com/admin/projects/2703/dashboard"
+  KBC_TEST_PROJECT_CONFIGS: "285843250 287599200" # space separated list
 jobs:
-  test-build-latest:
+  build:
     runs-on: ubuntu-latest
+    outputs:
+      app_image_tag: ${{ steps.tag.outputs.app_image_tag }}
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
-      - name: Login to Docker
-        run: docker login --username "$DOCKERHUB_USER" --password "$DOCKERHUB_TOKEN"
-      - name: Build docker image
-        run: docker-compose build app
-  test-pgsql-latest:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out the repo
-        uses: actions/checkout@v2
-      - name: Login to Docker
-        run: docker login --username "$DOCKERHUB_USER" --password "$DOCKERHUB_TOKEN"
-      - name: Run test - Latest PostgreSQL server
+      - name: Print Docker version
         run: |
-          docker-compose build app
-          docker-compose run --rm wait
-          docker-compose run --rm app
-  test-pgsql-9:
+          docker -v
+      - name: Docker login
+        run: docker login --username "$DOCKERHUB_USER" --password "$DOCKERHUB_TOKEN"
+      - name: Build image
+        run: docker build -t $APP_IMAGE .
+      - name: Image tag
+        id: tag
+        run: |
+          TAG="${GITHUB_REF##*/}"
+          echo "Using tag '$TAG'"
+          echo "::set-output name=app_image_tag::$TAG"
+      - name: Push image to ECR
+        uses: keboola/action-push-to-ecr@master
+        with:
+          vendor: ${{ env.KBC_DEVELOPERPORTAL_VENDOR }}
+          app_id: ${{ env.KBC_DEVELOPERPORTAL_APP }}
+          username: ${{ env.KBC_DEVELOPERPORTAL_USERNAME }}
+          password: ${{ env.KBC_DEVELOPERPORTAL_PASSWORD }}
+          tag: ${{ steps.tag.outputs.app_image_tag }}
+          push_latest: true
+          source_image: ${{ env.APP_IMAGE}}
+
+  tests:
+    needs: build
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        pgsql: [latest, 9, 10, 11]
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
-      - name: Login to Docker
-        run: docker login --username "$DOCKERHUB_USER" --password "$DOCKERHUB_TOKEN"
-      - name: Run test - PostgreSQL version 9
+      - name: Pull image from ECR
+        uses: keboola/action-pull-from-ecr@implementation
+        with:
+          vendor: ${{ env.KBC_DEVELOPERPORTAL_VENDOR }}
+          app_id: ${{ env.KBC_DEVELOPERPORTAL_APP }}
+          username: ${{ env.KBC_DEVELOPERPORTAL_USERNAME }}
+          password: ${{ env.KBC_DEVELOPERPORTAL_PASSWORD }}
+          tag: ${{ needs.build.outputs.app_image_tag }}
+          target_image: ${{ env.APP_IMAGE}}
+          tag_as_latest: true
+      - name: Run tests
         run: |
-          docker-compose build app9
-          docker-compose run --rm wait9
-          docker-compose run --rm app9
-  test-pgsql-10:
+          export PGSQL_VERSION="${{ matrix.pgsql }}"
+          docker-compose run wait
+          docker-compose run app
+
+  tests-in-kbc:
+    needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Check out the repo
-        uses: actions/checkout@v2
-      - name: Login to Docker
-        run: docker login --username "$DOCKERHUB_USER" --password "$DOCKERHUB_TOKEN"
-      - name: Run test - PostgreSQL version 10
-        run: |
-          docker-compose build app10
-          docker-compose run --rm wait10
-          docker-compose run --rm app10
-  test-pgsql-11:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out the repo
-        uses: actions/checkout@v2
-      - name: Login to Docker
-        run: docker login --username "$DOCKERHUB_USER" --password "$DOCKERHUB_TOKEN"
-      - name: Run test - PostgreSQL version 11
-        run: |
-          docker-compose build app11
-          docker-compose run --rm wait11
-          docker-compose run --rm app11
+      - name: Run KBC test jobs
+        uses: keboola/action-run-configs-parallel@implementation
+        with:
+          token: ${{ env.KBC_STORAGE_TOKEN }}
+          componentId: ${{ env.KBC_DEVELOPERPORTAL_APP }}
+          tag: ${{ needs.build.outputs.app_image_tag }}
+          configs: ${{ env.KBC_TEST_PROJECT_CONFIGS }}
+
   deploy:
     needs:
-      - Tests_Latest_PostgreSQL
-      - Tests_PostgreSQL_9
-      - Tests_PostgreSQL_10
-      - Tests_PostgreSQL_11
+      - tests
+      - tests-in-kbc
     runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
     steps:
-      - name: Check out the repo
-        uses: actions/checkout@v2
-      - name: Login to Docker
-        run: docker login --username "$DOCKERHUB_USER" --password "$DOCKERHUB_TOKEN"
-      - name: Build Image
-        run: docker build -t $APP_IMAGE .
-      - name: Push image to ECR
+      - name: Check tag is a semantic version.
         run: |
-          docker pull quay.io/keboola/developer-portal-cli-v2:latest
-          export REPOSITORY=`docker run --rm -e KBC_DEVELOPERPORTAL_USERNAME -e KBC_DEVELOPERPORTAL_PASSWORD -e KBC_DEVELOPERPORTAL_URL quay.io/keboola/developer-portal-cli-v2:latest ecr:get-repository $KBC_DEVELOPERPORTAL_VENDOR $KBC_DEVELOPERPORTAL_APP`
-          docker tag $APP_IMAGE:latest $REPOSITORY:test
-          eval $(docker run --rm -e KBC_DEVELOPERPORTAL_USERNAME -e KBC_DEVELOPERPORTAL_PASSWORD -e KBC_DEVELOPERPORTAL_URL quay.io/keboola/developer-portal-cli-v2:latest ecr:get-login $KBC_DEVELOPERPORTAL_VENDOR $KBC_DEVELOPERPORTAL_APP)
-          docker push $REPOSITORY:test
-          docker pull quay.io/keboola/syrup-cli:latest
-      - name: Run KBC test jobs
-        run: |
-          docker run --rm -e KBC_STORAGE_TOKEN quay.io/keboola/syrup-cli:latest run-job $KBC_DEVELOPERPORTAL_APP 285843250 master
-          docker run --rm -e KBC_STORAGE_TOKEN quay.io/keboola/syrup-cli:latest run-job $KBC_DEVELOPERPORTAL_APP 287599200 master
-      - name: Deploy
-        if: startsWith(github.ref, 'refs/tags/')
-        run: ./deploy.sh
+          if echo "$TAG" | grep -c '^v\?[0-9]\+\.[0-9]\+\.[0-9]\+$'
+          then
+              echo "UPDATE_TAG=true" >> $GITHUB_ENV
+          else
+              echo "UPDATE_TAG=false" >> $GITHUB_ENV
+              echo "Skipping deployment to KBC, tag $TAG is not allowed."
+          fi
+        env:
+          TAG: ${{ needs.build.outputs.app_image_tag }}
+      - name: Set tag in the Deloper Portal
+        if: ${{ env.UPDATE_TAG == 'true' }}
+        uses: keboola/action-set-tag-developer-portal@master
+        with:
+          vendor: ${{ env.KBC_DEVELOPERPORTAL_VENDOR }}
+          app_id: ${{ env.KBC_DEVELOPERPORTAL_APP }}
+          username: ${{ env.KBC_DEVELOPERPORTAL_USERNAME }}
+          password: ${{ env.KBC_DEVELOPERPORTAL_PASSWORD }}
+          tag: ${{ needs.build.outputs.app_image_tag }}
