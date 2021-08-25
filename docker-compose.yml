@@ -6,6 +6,8 @@ services:
     command: composer ci
     environment:
       - PGSQL_DB_HOST=pgsql
+      - PGSQL_DB_SSL_HOST=pgsql-ssl
+      - PGSQL_DB_SSL_HOST_BAD_CN=pgsql-ssl-bad-cn
       - PGSQL_DB_PORT=5432
       - PGSQL_DB_DATABASE=postgres
       - PGSQL_DB_USER=postgres
@@ -15,6 +17,8 @@ services:
       - ssh-keys:/root/.ssh:ro
     links:
       - pgsql
+      - pgsql-ssl
+      - pgsql-ssl:pgsql-ssl-bad-cn
       - sshproxy
 
   dev:
@@ -25,23 +29,32 @@ services:
       - ./docker/pgsql/certificates:/ssl-cert:z
       - ssh-keys:/root/.ssh:ro,z
 
-  pgsql:
+  pgsql: &pgsql
     build:
       args:
         version: ${PGSQL_VERSION}
       context: ./docker/pgsql
-    image: keboola/pgsql-test
-    command: -c ssl=on -c ssl_cert_file=/ssl-cert/server.crt -c ssl_key_file=/ssl-cert/server.key
+    image: keboola/pgsql-test:${PGSQL_VERSION}
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=some password
+
+  pgsql-ssl:
+    <<: *pgsql
+    build:
+      args:
+        version: ${PGSQL_VERSION}
+      context: ./docker/pgsql
+    image: keboola/pgsql-ssl-test:${PGSQL_VERSION}
+    command: -c hba_file=/etc/postgresql/pg_hba_ssl.conf -c ssl=on -c ssl_ca_file=/ssl-cert/ca-cert.pem -c ssl_cert_file=/ssl-cert/server-cert.pem -c ssl_key_file=/ssl-cert/server-key.pem
 
   wait:
     image: waisbrot/wait
     depends_on:
       - pgsql
+      - pgsql-ssl
     environment:
-      - TARGETS=pgsql:5432
+      - TARGETS=pgsql:5432,pgsql-ssl:5432
       - TIMEOUT=200
 
   sshproxy:
@@ -50,6 +63,7 @@ services:
       - ssh-keys:/root/.ssh:z
     links:
       - pgsql
+      - pgsql-ssl
 
 volumes:
   ssh-keys:

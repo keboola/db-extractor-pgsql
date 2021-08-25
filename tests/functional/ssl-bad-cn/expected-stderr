@@ -1,0 +1,1 @@
+Connection failed: 'Error connecting to DB: SQLSTATE[08006] [7] server certificate for "pgsql-ssl" does not match host name "pgsql-ssl-bad-cn"'

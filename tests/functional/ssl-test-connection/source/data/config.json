@@ -2,7 +2,7 @@
   "action": "testConnection",
   "parameters": {
     "db": {
-      "host": "%env(string:PGSQL_DB_HOST)%",
+      "host": "%env(string:PGSQL_DB_SSL_HOST)%",
       "port": "%env(string:PGSQL_DB_PORT)%",
       "user": "%env(string:PGSQL_DB_USER)%",
       "#password": "%env(string:PGSQL_DB_PASSWORD)%",
