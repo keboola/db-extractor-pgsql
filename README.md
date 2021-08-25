@@ -1,6 +1,5 @@
 # PostgreSQL DB Extractor
-
-[![Build Status](https://travis-ci.com/keboola/db-extractor-pgsql.svg?branch=master)](https://travis-ci.com/keboola/db-extractor-pgsql)
+[![GitHub Actions](https://github.com/keboola/db-extractor-pgsql/actions/workflows/push.yml/badge.svg)](https://github.com/keboola/db-extractor-pgsql/actions/workflows/push.yml)
 
 
 ## Example configuration
