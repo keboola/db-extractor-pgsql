@@ -58,7 +58,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        pgsql: [latest, 9, 10, 11]
+        pgsql: [latest, 9, 10, 11, 12, 13]
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
