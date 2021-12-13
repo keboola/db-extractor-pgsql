@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Keboola\DbExtractor\Extractor;
 
+use Keboola\DbExtractor\Adapter\ValueObject\QueryMetadata;
 use Throwable;
 use PDO;
 use PDOStatement;
 use PDOException;
 use Iterator;
-use Keboola\DbExtractor\Exception\NotImplementedException;
 use Keboola\DbExtractor\Adapter\ValueObject\QueryResult;
 use Psr\Log\LoggerInterface;
 
@@ -29,11 +29,15 @@ class CursorQueryResult implements QueryResult
 
     private PDOStatement $batchStmt;
 
-    public function __construct(PDO $pdo, LoggerInterface $logger, string $query)
+    protected QueryMetadata $queryMetadata;
+
+    public function __construct(PDO $pdo, LoggerInterface $logger, string $query, QueryMetadata $queryMetadata)
     {
         $this->pdo = $pdo;
         $this->logger = $logger;
         $this->query = $query;
+        $this->queryMetadata = $queryMetadata;
+
         $this->cursorName = 'exdbcursor' . intval(microtime(true));
 
         // Start transaction and create cursor
@@ -138,5 +142,15 @@ class CursorQueryResult implements QueryResult
                 $this->logger->info(sprintf('Fetched "%d" rows so far.', $allRows));
             }
         }
+    }
+
+    public function getQuery(): string
+    {
+        return $this->query;
+    }
+
+    public function getMetadata(): QueryMetadata
+    {
+        return $this->queryMetadata;
     }
 }

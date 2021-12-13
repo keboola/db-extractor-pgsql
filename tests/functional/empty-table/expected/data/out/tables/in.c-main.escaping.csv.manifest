@@ -1,0 +1,96 @@
+{
+    "destination": "in.c-main.escaping",
+    "incremental": false,
+    "metadata": [
+        {
+            "key": "KBC.name",
+            "value": "escaping"
+        },
+        {
+            "key": "KBC.sanitizedName",
+            "value": "escaping"
+        },
+        {
+            "key": "KBC.schema",
+            "value": "public"
+        },
+        {
+            "key": "KBC.type",
+            "value": "table"
+        }
+    ],
+    "column_metadata": {
+        "col1": [
+            {
+                "key": "KBC.datatype.type",
+                "value": "text"
+            },
+            {
+                "key": "KBC.datatype.nullable",
+                "value": true
+            },
+            {
+                "key": "KBC.datatype.basetype",
+                "value": "STRING"
+            },
+            {
+                "key": "KBC.sourceName",
+                "value": "col1"
+            },
+            {
+                "key": "KBC.sanitizedName",
+                "value": "col1"
+            },
+            {
+                "key": "KBC.primaryKey",
+                "value": false
+            },
+            {
+                "key": "KBC.uniqueKey",
+                "value": false
+            },
+            {
+                "key": "KBC.ordinalPosition",
+                "value": 1
+            }
+        ],
+        "col2": [
+            {
+                "key": "KBC.datatype.type",
+                "value": "text"
+            },
+            {
+                "key": "KBC.datatype.nullable",
+                "value": true
+            },
+            {
+                "key": "KBC.datatype.basetype",
+                "value": "STRING"
+            },
+            {
+                "key": "KBC.sourceName",
+                "value": "col2"
+            },
+            {
+                "key": "KBC.sanitizedName",
+                "value": "col2"
+            },
+            {
+                "key": "KBC.primaryKey",
+                "value": false
+            },
+            {
+                "key": "KBC.uniqueKey",
+                "value": false
+            },
+            {
+                "key": "KBC.ordinalPosition",
+                "value": 2
+            }
+        ]
+    },
+    "columns": [
+        "col1",
+        "col2"
+    ]
+}

@@ -17,7 +17,6 @@ use Keboola\DbExtractor\Exception\InvalidArgumentException;
 use Keboola\DbExtractor\Exception\UserException;
 use Keboola\DbExtractorConfig\Configuration\ValueObject\DatabaseConfig;
 use Keboola\DbExtractorConfig\Configuration\ValueObject\ExportConfig;
-use Keboola\Temp\Temp;
 use Symfony\Component\Process\Process;
 
 class CopyAdapter implements ExportAdapter
@@ -106,7 +105,7 @@ class CopyAdapter implements ExportAdapter
             throw new CopyAdapterQueryException($e->getMessage(), 0, $e);
         }
 
-        return $this->analyseOutput($csvPath, $exportConfig);
+        return $this->analyseOutput($csvPath, $exportConfig, $query);
     }
 
     protected function runCopyCommand(string $sql, ?float $timeout): void
@@ -129,7 +128,8 @@ class CopyAdapter implements ExportAdapter
 
     private function analyseOutput(
         string $csvPath,
-        ExportConfig $exportConfig
+        ExportConfig $exportConfig,
+        string $query
     ): ExportResult {
         // Get the number of written rows and lastFetchedValue
         $numRows = 0;
@@ -147,6 +147,9 @@ class CopyAdapter implements ExportAdapter
             }
             $numRows++;
         }
+        if ($this->hasCsvHeader($exportConfig)) {
+            $numRows--;
+        }
 
         $incrementalLastFetchedValue = null;
         if ($exportConfig->isIncrementalFetching() && $lastFetchedRow) {
@@ -159,6 +162,8 @@ class CopyAdapter implements ExportAdapter
         return new ExportResult(
             $csvPath,
             $numRows,
+            $this->connection->createQueryMetadata($query),
+            $this->hasCsvHeader($exportConfig),
             $incrementalLastFetchedValue
         );
     }
@@ -180,5 +185,11 @@ class CopyAdapter implements ExportAdapter
         }
 
         return $lastExportedRow[$columnIndex];
+    }
+
+    private function hasCsvHeader(ExportConfig $exportConfig): bool
+    {
+        // If header is present in the CSV file, there are no columns metadata in the manifest.
+        return $exportConfig->hasQuery();
     }
 }
