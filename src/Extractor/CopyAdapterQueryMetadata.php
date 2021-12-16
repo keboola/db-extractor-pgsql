@@ -25,7 +25,7 @@ class CopyAdapterQueryMetadata implements QueryMetadata
     public function getColumns(): ColumnCollection
     {
         if ($this->columns === null) {
-            $sql = sprintf('SELECT * FROM (%s) AS x LIMIT 0', $this->query);
+            $sql = sprintf('SELECT * FROM (%s) AS x LIMIT 0', rtrim($this->query, ';'));
             $stmt = $this->connection->getConnection()->prepare($sql);
             $stmt->execute();
             $this->columns = (new PdoQueryMetadata($stmt))->getColumns();
