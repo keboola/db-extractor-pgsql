@@ -4,7 +4,7 @@
       {
         "id": 1,
         "name": "sales",
-        "query": "SELECT * FROM escaping",
+        "query": "SELECT * FROM escaping;",
         "outputTable": "in.c-main.escaping",
         "incremental": false,
         "primaryKey": null,

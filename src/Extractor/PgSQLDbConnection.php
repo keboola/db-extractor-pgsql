@@ -56,6 +56,10 @@ class PgSQLDbConnection extends PdoConnection
 
     protected function doQueryWithCursor(string $query): CursorQueryResult
     {
-        return new CursorQueryResult($this->pdo, $this->logger, $query);
+        return new CursorQueryResult(
+            $this->pdo,
+            $this->logger,
+            $query
+        );
     }
 }
