@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\DbExtractor\Extractor;
 
+use Keboola\DbExtractor\Adapter\PDO\PdoQueryMetadata;
 use Keboola\DbExtractor\Adapter\ValueObject\QueryMetadata;
 use Throwable;
 use PDO;
@@ -31,12 +32,11 @@ class CursorQueryResult implements QueryResult
 
     protected QueryMetadata $queryMetadata;
 
-    public function __construct(PDO $pdo, LoggerInterface $logger, string $query, QueryMetadata $queryMetadata)
+    public function __construct(PDO $pdo, LoggerInterface $logger, string $query)
     {
         $this->pdo = $pdo;
         $this->logger = $logger;
         $this->query = $query;
-        $this->queryMetadata = $queryMetadata;
 
         $this->cursorName = 'exdbcursor' . intval(microtime(true));
 
@@ -53,6 +53,7 @@ class CursorQueryResult implements QueryResult
                 self::BATCH_SIZE,
                 $this->cursorName
             ));
+            $this->queryMetadata = new PdoQueryMetadata($this->batchStmt);
         } catch (PDOException $e) {
             $this->closeCursor();
             $message = preg_replace('/exdbcursor([0-9]+)/', 'exdbcursor', $e->getMessage());

@@ -92,9 +92,7 @@ class CopyAdapter implements ExportAdapter
         $sql =
             '\encoding UTF8;'.
             sprintf(
-                $exportConfig->hasQuery() ? // include header?
-                    "\COPY (%s) TO '%s' WITH CSV HEADER DELIMITER ',' FORCE QUOTE *;" :
-                    "\COPY (%s) TO '%s' WITH CSV DELIMITER ',' FORCE QUOTE *;",
+                "\COPY (%s) TO '%s' WITH CSV DELIMITER ',' FORCE QUOTE *;",
                 rtrim($query, '; '),
                 $csvPath
             );
@@ -147,9 +145,6 @@ class CopyAdapter implements ExportAdapter
             }
             $numRows++;
         }
-        if ($this->hasCsvHeader($exportConfig)) {
-            $numRows--;
-        }
 
         $incrementalLastFetchedValue = null;
         if ($exportConfig->isIncrementalFetching() && $lastFetchedRow) {
@@ -162,8 +157,8 @@ class CopyAdapter implements ExportAdapter
         return new ExportResult(
             $csvPath,
             $numRows,
-            $this->connection->createQueryMetadata($query),
-            $this->hasCsvHeader($exportConfig),
+            new CopyAdapterQueryMetadata($this->connection, $query),
+            false,
             $incrementalLastFetchedValue
         );
     }
@@ -185,11 +180,5 @@ class CopyAdapter implements ExportAdapter
         }
 
         return $lastExportedRow[$columnIndex];
-    }
-
-    private function hasCsvHeader(ExportConfig $exportConfig): bool
-    {
-        // If header is present in the CSV file, there are no columns metadata in the manifest.
-        return $exportConfig->hasQuery();
     }
 }

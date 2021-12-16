@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\DbExtractor\Extractor;
 
-use Keboola\DbExtractor\Adapter\PDO\PdoQueryMetadata;
 use Keboola\DbExtractor\Adapter\ValueObject\ExportResult;
-use Keboola\DbExtractor\Adapter\ValueObject\QueryMetadata;
-use PDOStatement;
 use Throwable;
 use Keboola\DbExtractor\Adapter\PDO\PdoConnection;
 use Keboola\DbExtractor\Adapter\ValueObject\QueryResult;
@@ -38,14 +35,6 @@ class PgSQLDbConnection extends PdoConnection
         );
     }
 
-    public function createQueryMetadata(string $query): QueryMetadata
-    {
-        /** @var PDOStatement $stmt */
-        $stmt = $this->pdo->prepare($query);
-        $stmt->execute();
-        return new PdoQueryMetadata($stmt);
-    }
-
     protected function queryReconnectOnError(string $query, bool $useCursor = false): QueryResult
     {
         try {
@@ -70,8 +59,7 @@ class PgSQLDbConnection extends PdoConnection
         return new CursorQueryResult(
             $this->pdo,
             $this->logger,
-            $query,
-            $this->createQueryMetadata($query)
+            $query
         );
     }
 }

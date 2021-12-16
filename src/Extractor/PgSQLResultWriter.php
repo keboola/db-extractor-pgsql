@@ -38,4 +38,8 @@ class PgSQLResultWriter extends DefaultResultWriter
 
         parent::writeRow($row, $csvWriter);
     }
+    protected function hasCsvHeader(ExportConfig $exportConfig): bool
+    {
+        return false;
+    }
 }

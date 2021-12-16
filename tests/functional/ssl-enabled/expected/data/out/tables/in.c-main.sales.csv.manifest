@@ -1,4 +1,18 @@
 {
     "destination": "in.c-main.sales",
-    "incremental": false
+    "incremental": false,
+    "columns": [
+        "usergender",
+        "usercity",
+        "usersentiment",
+        "zipcode",
+        "sku",
+        "createdat",
+        "category",
+        "price",
+        "county",
+        "countycode",
+        "userstate",
+        "categorygroup"
+    ]
 }
