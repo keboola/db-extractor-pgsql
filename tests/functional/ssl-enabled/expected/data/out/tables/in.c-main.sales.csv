@@ -1,4 +1,3 @@
-usergender,usercity,usersentiment,zipcode,sku,createdat,category,price,county,countycode,userstate,categorygroup
 "Female","Mize","-1","39153","ZD111318","2013-09-23 22:38:29","Cameras","708","Smith","28129","Mississippi","Electronics"
 "Male","The Lakes","1","89124","ZD111402","2013-09-23 22:38:30","Televisions","1546","Clark","32003","Nevada","Electronics"
 "Male","Baldwin","1","21020","ZD111483","2013-09-23 22:38:31","Loose Stones","1262","Baltimore","24005","Maryland","Jewelry"

@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace Keboola\DbExtractor\Extractor;
 
-use PDO;
 use Keboola\DbExtractor\Adapter\Connection\DbConnection;
 use Keboola\DbExtractor\Adapter\ExportAdapter;
 use Keboola\DbExtractor\Adapter\FallbackExportAdapter;
 use Keboola\DbExtractor\Adapter\Metadata\MetadataProvider;
 use Keboola\DbExtractor\Adapter\Query\DefaultQueryFactory;
 use Keboola\DbExtractorConfig\Configuration\ValueObject\DatabaseConfig;
-use Keboola\Temp\Temp;
 use Psr\Log\LoggerInterface;
 use Keboola\Datatype\Definition\Exception\InvalidLengthException;
 use Keboola\Datatype\Definition\GenericStorage;
@@ -25,23 +23,18 @@ class PgSQL extends BaseExtractor
 
     private PgSQLDbConnection $connection;
 
-    private ?PgSQLMetadataProvider $metadataProvider = null;
-
-    public function __construct(array $parameters, array $state, LoggerInterface $logger)
+    public function __construct(array $parameters, array $state, LoggerInterface $logger, string $action)
     {
         $parameters['db']['ssh']['compression'] = true;
-        parent::__construct($parameters, $state, $logger);
+        parent::__construct($parameters, $state, $logger, $action);
     }
 
     /**
      * @return PgSQLMetadataProvider
      */
-    public function getMetadataProvider(): MetadataProvider
+    public function createMetadataProvider(): MetadataProvider
     {
-        if (!$this->metadataProvider) {
-            $this->metadataProvider = new PgSQLMetadataProvider($this->logger, $this->connection);
-        }
-        return $this->metadataProvider;
+        return new PgSQLMetadataProvider($this->logger, $this->connection);
     }
 
     protected function createExportAdapter(): ExportAdapter
@@ -132,5 +125,12 @@ class PgSQL extends BaseExtractor
         ), DbConnection::DEFAULT_MAX_RETRIES)->fetchAll();
 
         return count($result) > 0 ? (string) $result[0][$exportConfig->getIncrementalFetchingColumn()] : null;
+    }
+
+    public function getMetadataProvider(): PgSQLMetadataProvider
+    {
+        /** @var PgSQLMetadataProvider $metadataProvider */
+        $metadataProvider = $this->metadataProvider;
+        return $metadataProvider;
     }
 }

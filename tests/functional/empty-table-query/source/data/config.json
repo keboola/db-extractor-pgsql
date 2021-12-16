@@ -1,10 +1,7 @@
 {
   "parameters": {
     "name": "escaping",
-    "table": {
-      "schema": "public",
-      "tableName": "escaping"
-    },
+    "query": "SELECT * FROM escaping",
     "outputTable": "in.c-main.escaping",
     "db": {
       "host": "%env(string:PGSQL_DB_HOST)%",
