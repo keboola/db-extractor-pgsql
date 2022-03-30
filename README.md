@@ -31,7 +31,7 @@
           "incremental": false,
           "enabled": true,
           "primaryKey": null,
-          "forceFallback": false, // use PDO instead of of COPY statement
+          "forceFallback": false, // use PDO export directly
           "useConsistentFallbackBooleanStyle": false // convert boolean values to t/f when using PDO statement
         }
       ]
