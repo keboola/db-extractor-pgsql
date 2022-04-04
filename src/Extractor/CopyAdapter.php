@@ -89,14 +89,16 @@ class CopyAdapter implements ExportAdapter
         PgsqlExportConfig $exportConfig,
         string $csvPath
     ): ExportResult {
+        $viewName = uniqid();
         $sql =
-            '\encoding UTF8;'.
+            '\encoding UTF8'. PHP_EOL .
+            'CREATE TEMP VIEW "' . $viewName . '" AS ' . $query .';' . PHP_EOL .
             sprintf(
-                "\COPY (%s) TO '%s' WITH CSV DELIMITER ',' FORCE QUOTE *;",
-                rtrim($query, '; '),
+                "\COPY (%s) TO '%s' WITH CSV DELIMITER ',' FORCE QUOTE *",
+                'SELECT * FROM "' . $viewName . '"',
                 $csvPath
-            );
-
+            ) . PHP_EOL .
+            'DROP VIEW "' . $viewName . '"';
         try {
             $this->runCopyCommand($sql, null);
         } catch (CopyAdapterException $e) {

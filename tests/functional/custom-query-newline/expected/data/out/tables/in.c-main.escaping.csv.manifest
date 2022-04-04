@@ -2,8 +2,7 @@
     "destination": "in.c-main.escaping",
     "incremental": false,
     "columns": [
-        "table_schema",
-        "table_name",
-        "table_type"
-    ]
+            "col1",
+            "col2"
+        ]
 }

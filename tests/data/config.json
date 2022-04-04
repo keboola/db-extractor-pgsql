@@ -1,0 +1,1 @@
+{"parameters":{"db":{"user":"postgres","#password":"some password","host":"pgsql","port":"5432","database":"postgres"},"data_dir":"\/code\/tests\/Keboola\/Extractor\/..\/..\/data","extractor_class":"PgSQL","tableListFilter":{"listColumns":false,"tablesToList":[{"tableName":"types_fk","schema":"public"}]}},"action":"getTables"}
