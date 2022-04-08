@@ -1,0 +1,34 @@
+{
+  "parameters": {
+    "tables": [
+      {
+        "id": 1,
+        "name": "sales",
+        "query": "SELECT * FROM escaping;",
+        "outputTable": "in.c-main.escaping",
+        "incremental": false,
+        "primaryKey": null,
+        "enabled": true
+      },
+      {
+        "id": 2,
+        "enabled": true,
+        "name": "sales",
+        "outputTable": "in.c-main.sales",
+        "incremental": false,
+        "primaryKey": null,
+        "table": {
+          "schema": "public",
+          "tableName": "sales"
+        }
+      }
+    ],
+    "db": {
+      "host": "%env(string:PGSQL_DB_HOST)%",
+      "port": "%env(string:PGSQL_DB_PORT)%",
+      "user": "%env(string:PGSQL_DB_RO_USER)%",
+      "#password": "%env(string:PGSQL_DB_RO_PASSWORD)%",
+      "database": "%env(string:PGSQL_DB_DATABASE)%"
+    }
+  }
+}
