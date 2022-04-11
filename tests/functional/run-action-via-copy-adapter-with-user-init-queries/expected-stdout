@@ -1,0 +1,7 @@
+Creating PDO connection to "pgsql:host=%s;port=5432;dbname=postgres;".
+Exporting "sales" to "in.c-main.sales".
+Exporting by "Copy" adapter.
+Running query "INSERT INTO sales VALUES ('Female','Las Vegas','0','92124','ZD111132','2022-03-24 12:22:28','Business','12','Clark County','89119','Nevada','Electronics')".
+Found database server version: %d.
+Exported "101" rows to "in.c-main.sales".
+Extractor finished successfully.

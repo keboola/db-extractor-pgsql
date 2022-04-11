@@ -17,6 +17,7 @@ use Keboola\DbExtractor\Exception\InvalidArgumentException;
 use Keboola\DbExtractor\Exception\UserException;
 use Keboola\DbExtractorConfig\Configuration\ValueObject\DatabaseConfig;
 use Keboola\DbExtractorConfig\Configuration\ValueObject\ExportConfig;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Process\Process;
 
 class CopyAdapter implements ExportAdapter
@@ -29,16 +30,20 @@ class CopyAdapter implements ExportAdapter
 
     protected PgSQLMetadataProvider $metadataProvider;
 
+    protected LoggerInterface $logger;
+
     public function __construct(
         PgSQLDbConnection $connection,
         DatabaseConfig $databaseConfig,
         DefaultQueryFactory $queryFactory,
-        PgSQLMetadataProvider $metadataProvider
+        PgSQLMetadataProvider $metadataProvider,
+        LoggerInterface $logger
     ) {
         $this->connection = $connection;
         $this->databaseConfig = $databaseConfig;
         $this->queryFactory = $queryFactory;
         $this->metadataProvider = $metadataProvider;
+        $this->logger = $logger;
     }
 
     public function testConnection(): void
@@ -68,12 +73,15 @@ class CopyAdapter implements ExportAdapter
         $query = $exportConfig->hasQuery() ? $exportConfig->getQuery() : $this->createSimpleQuery($exportConfig);
 
         try {
+            $this->runUserInitQueries();
+
             return $this->doExport(
                 $query,
                 $exportConfig,
                 $csvFilePath
             );
         } catch (CopyAdapterException $pdoError) {
+            $this->logger->info($pdoError->getMessage());
             @unlink($csvFilePath);
             throw new UserException($pdoError->getMessage());
         }
@@ -110,7 +118,7 @@ class CopyAdapter implements ExportAdapter
         }
 
         try {
-            $this->runPsqlProcess($sql, null);
+            $this->runCopyCommand($sql, null);
         } catch (CopyAdapterException $e) {
             throw new CopyAdapterQueryException($e->getMessage(), 0, $e);
         }
@@ -195,6 +203,14 @@ class CopyAdapter implements ExportAdapter
         }
 
         return $lastExportedRow[$columnIndex];
+    }
+
+    protected function runUserInitQueries(): void
+    {
+        foreach ($this->databaseConfig->getInitQueries() as $initQuery) {
+            $this->logger->info(sprintf('Running query "%s".', $initQuery));
+            $this->runPsqlProcess($initQuery, 0);
+        }
     }
 
     protected function canUserCreateView(): bool

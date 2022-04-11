@@ -55,7 +55,8 @@ class PgSQL extends BaseExtractor
             $this->connection,
             $this->createDatabaseConfig($this->parameters['db']),
             $simpleQueryFactory,
-            $this->getMetadataProvider()
+            $this->getMetadataProvider(),
+            $this->logger
         );
 
         return new FallbackExportAdapter($this->logger, [
