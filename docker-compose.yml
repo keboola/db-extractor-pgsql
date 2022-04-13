@@ -12,6 +12,8 @@ services:
       - PGSQL_DB_DATABASE=postgres
       - PGSQL_DB_USER=postgres
       - PGSQL_DB_PASSWORD=some password
+      - PGSQL_DB_RO_USER=readonly_user
+      - PGSQL_DB_RO_PASSWORD=password
     volumes:
       - ./docker/pgsql/certificates:/ssl-cert:z
       - ssh-keys:/root/.ssh:ro
@@ -35,6 +37,8 @@ services:
         version: ${PGSQL_VERSION}
       context: ./docker/pgsql
     image: keboola/pgsql-test:${PGSQL_VERSION}
+    volumes:
+      - ./docker/pgsql/init.sql:/docker-entrypoint-initdb.d/init.sql
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=some password

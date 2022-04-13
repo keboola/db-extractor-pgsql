@@ -44,7 +44,7 @@ class CopyAdapter implements ExportAdapter
     public function testConnection(): void
     {
         try {
-            $this->runCopyCommand('SELECT 1;', 30);
+            $this->runPsqlProcess('SELECT 1;', 30);
         } catch (CopyAdapterException $e) {
             throw new CopyAdapterConnectionException('Failed psql connection: ' . $e->getMessage());
         }
@@ -89,18 +89,28 @@ class CopyAdapter implements ExportAdapter
         PgsqlExportConfig $exportConfig,
         string $csvPath
     ): ExportResult {
-        $viewName = uniqid();
-        $sql =
-            '\encoding UTF8'. PHP_EOL .
-            'CREATE TEMP VIEW "' . $viewName . '" AS ' . $query .';' . PHP_EOL .
-            sprintf(
-                "\COPY (%s) TO '%s' WITH CSV DELIMITER ',' FORCE QUOTE *",
-                'SELECT * FROM "' . $viewName . '"',
+        $trimmedQuery = rtrim($query, '; ');
+        $sql = '\encoding UTF8' . PHP_EOL;
+
+        if ($this->canUserCreateView() && !$this->isTransactionReadOnly()) {
+            $viewName = uniqid();
+            $sql .= 'CREATE TEMP VIEW "' . $viewName . '" AS ' . $trimmedQuery . ';' . PHP_EOL .
+                sprintf(
+                    "\COPY (%s) TO '%s' WITH CSV DELIMITER ',' FORCE QUOTE *;",
+                    'SELECT * FROM "' . $viewName . '"',
+                    $csvPath
+                ) . PHP_EOL .
+                'DROP VIEW "' . $viewName . '";';
+        } else {
+            $sql .= sprintf(
+                "\COPY (%s) TO '%s' WITH CSV DELIMITER ',' FORCE QUOTE *;",
+                $trimmedQuery,
                 $csvPath
-            ) . PHP_EOL .
-            'DROP VIEW "' . $viewName . '"';
+            );
+        }
+
         try {
-            $this->runCopyCommand($sql, null);
+            $this->runPsqlProcess($sql, null);
         } catch (CopyAdapterException $e) {
             throw new CopyAdapterQueryException($e->getMessage(), 0, $e);
         }
@@ -108,13 +118,14 @@ class CopyAdapter implements ExportAdapter
         return $this->analyseOutput($csvPath, $exportConfig, $query);
     }
 
-    protected function runCopyCommand(string $sql, ?float $timeout): void
+    protected function runPsqlProcess(string $sql, ?float $timeout): string
     {
         $command = [];
         $command[] = sprintf('PGPASSWORD=%s', escapeshellarg($this->databaseConfig->getPassword()));
         $command[] = 'psql';
         $command[] = '-v ON_ERROR_STOP=1';
         $command[] = '-w';
+        $command[] = '-t';
         $command[] = escapeshellarg(PgSQLDsnFactory::createForCli($this->databaseConfig));
 
         $process = Process::fromShellCommandline(implode(' ', $command));
@@ -124,6 +135,8 @@ class CopyAdapter implements ExportAdapter
         if ($process->getExitCode() !== 0) {
             throw new CopyAdapterException($process->getErrorOutput());
         }
+
+        return trim($process->getOutput());
     }
 
     private function analyseOutput(
@@ -182,5 +195,29 @@ class CopyAdapter implements ExportAdapter
         }
 
         return $lastExportedRow[$columnIndex];
+    }
+
+    protected function canUserCreateView(): bool
+    {
+        try {
+            return $this->runPsqlProcess(
+                'SELECT has_schema_privilege(current_schema(), \'CREATE\');',
+                null
+            ) === 't';
+        } catch (CopyAdapterException $e) {
+            throw new CopyAdapterQueryException($e->getMessage(), 0, $e);
+        }
+    }
+
+    protected function isTransactionReadOnly(): bool
+    {
+        try {
+            return $this->runPsqlProcess(
+                'SHOW transaction_read_only;',
+                null
+            ) === 'on';
+        } catch (CopyAdapterException $e) {
+            throw new CopyAdapterQueryException($e->getMessage(), 0, $e);
+        }
     }
 }
