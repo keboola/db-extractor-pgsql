@@ -4,14 +4,9 @@
       {
         "id": 1,
         "enabled": true,
-        "name": "sales",
-        "outputTable": "in.c-main.sales",
-        "incremental": false,
-        "primaryKey": null,
-        "table": {
-          "schema": "public",
-          "tableName": "sales"
-        }
+        "name": "timezone",
+        "query": "SELECT current_setting('TIMEZONE');",
+        "outputTable": "in.c-main.timezone"
       }
     ],
     "db": {
@@ -21,7 +16,7 @@
       "#password": "%env(string:PGSQL_DB_PASSWORD)%",
       "database": "%env(string:PGSQL_DB_DATABASE)%",
       "initQueries": [
-        "INSERT INTO sales VALUES ('Female','Las Vegas','0','92124','ZD111132','2022-03-24 12:22:28','Business','12','Clark County','89119','Nevada','Electronics')"
+        "SET SESSION timezone TO 'Asia/Manila';"
       ]
     }
   }

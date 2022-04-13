@@ -1,0 +1,7 @@
+{
+    "destination": "in.c-main.timezone",
+    "incremental": false,
+    "columns": [
+        "current_setting"
+    ]
+}
