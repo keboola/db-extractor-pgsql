@@ -1,0 +1,5 @@
+Creating PDO connection to "pgsql:host=%s;port=5432;dbname=postgres;".
+Exporting "timezone" to "in.c-main.timezone".
+Exporting by "Copy" adapter.
+Exported "1" rows to "in.c-main.timezone".
+Extractor finished successfully.

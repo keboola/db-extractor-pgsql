@@ -1,0 +1,23 @@
+{
+  "parameters": {
+    "tables": [
+      {
+        "id": 1,
+        "enabled": true,
+        "name": "timezone",
+        "query": "SELECT current_setting('TIMEZONE');",
+        "outputTable": "in.c-main.timezone"
+      }
+    ],
+    "db": {
+      "host": "%env(string:PGSQL_DB_HOST)%",
+      "port": "%env(string:PGSQL_DB_PORT)%",
+      "user": "%env(string:PGSQL_DB_USER)%",
+      "#password": "%env(string:PGSQL_DB_PASSWORD)%",
+      "database": "%env(string:PGSQL_DB_DATABASE)%",
+      "initQueries": [
+        "SET SESSION timezone TO 'Asia/Manila';"
+      ]
+    }
+  }
+}
