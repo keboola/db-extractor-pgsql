@@ -93,7 +93,6 @@ class CopyAdapter implements ExportAdapter
         $sql = '\encoding UTF8' . PHP_EOL .
             implode(PHP_EOL, $this->databaseConfig->getInitQueries()) . PHP_EOL;
 
-
         if ($this->canUserCreateView() && !$this->isTransactionReadOnly()) {
             $viewName = uniqid();
             $sql .= 'CREATE TEMP VIEW "' . $viewName . '" AS ' . $trimmedQuery . ';' . PHP_EOL .
