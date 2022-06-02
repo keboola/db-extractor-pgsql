@@ -42,3 +42,7 @@
 - Clone the repository.
 - Create `.env` file with `PHSQL_VERSION=latest`.
 - Run `docker-compose build`.
+
+## License
+
+MIT licensed, see [LICENSE](./LICENSE) file.
