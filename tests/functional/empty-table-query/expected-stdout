@@ -1,4 +1,3 @@
 Creating PDO connection to "pgsql:host=%s;port=5432;dbname=postgres;".
 Exporting "escaping" to "in.c-main.escaping".
 Exporting by "Copy" adapter.
-Extractor finished successfully.

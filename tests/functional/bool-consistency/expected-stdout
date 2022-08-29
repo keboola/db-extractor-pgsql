@@ -6,4 +6,3 @@ Exporting by "PDO" adapter.
 Fetching rows, batch size = 10000 ...
 Found database server version: %d.
 Exported "4" rows to "in.c-main.bool_consistency_test".
-Extractor finished successfully.

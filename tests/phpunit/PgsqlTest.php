@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\DbExtractor\Tests;
 
+use Keboola\Component\JsonHelper;
 use Keboola\Component\Logger;
 use Keboola\DbExtractor\PgsqlApplication;
 use Keboola\DbExtractor\Tests\Traits\ConfigTrait;
@@ -12,9 +13,12 @@ use Keboola\DbExtractor\TraitTests\PdoTestConnectionTrait;
 use Keboola\DbExtractor\TraitTests\RemoveAllTablesTrait;
 use Keboola\DbExtractor\TraitTests\Tables\EscapingTableTrait;
 use Keboola\DbExtractor\TraitTests\Tables\TypesTableTrait;
+use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;
 use \PDO;
+use Psr\Log\Test\TestLogger;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Finder\Finder;
 
 class PgsqlTest extends TestCase
 {
@@ -38,6 +42,7 @@ class PgsqlTest extends TestCase
         if (!$fs->exists($this->dataDir)) {
             $fs->mkdir($this->dataDir . '/out/tables');
         }
+        putenv('KBC_DATADIR=' . $this->dataDir);
     }
 
     public function testRunPDOEmptyTable(): void
@@ -49,10 +54,13 @@ class PgsqlTest extends TestCase
         $config['parameters']['forceFallback'] = true;
         $config['parameters']['table']['tableName'] = 'types';
 
-        $app = new PgsqlApplication($config, new Logger(), [], $this->dataDir);
-        $result = $app->run();
+        JsonHelper::writeFile($this->dataDir . '/config.json', $config);
+        $logger = new TestLogger();
 
-        $this->assertEquals('success', $result['status']);
+        $app = new PgsqlApplication($logger);
+        $app->execute();
+
+        Assert::assertTrue($logger->hasInfo('Exported "4" rows to "in.c-main.types".'));
     }
 
     public function testManifestMetadata(): void
@@ -75,11 +83,13 @@ class PgsqlTest extends TestCase
         unset($config['parameters']['tables'][1]);
         unset($config['parameters']['tables'][2]);
 
-        $app = new PgsqlApplication($config, new Logger(), [], $this->dataDir);
+        JsonHelper::writeFile($this->dataDir . '/config.json', $config);
+        $logger = new TestLogger();
 
-        $result = $app->run();
+        $app = new PgsqlApplication($logger);
+        $app->execute();
 
-        $expectedTableMetadata[0] = [
+        $expectedTableMetadata['in.c-main.types.csv.manifest'] = [
             [
                 'key' => 'KBC.name',
                 'value' => 'types',
@@ -97,7 +107,7 @@ class PgsqlTest extends TestCase
                 'value' => 'table',
             ],
         ];
-        $expectedColumnMetadata[0] = [
+        $expectedColumnMetadata['in.c-main.types.csv.manifest'] = [
             'character' =>
                 [
                     [
@@ -294,7 +304,7 @@ class PgsqlTest extends TestCase
             ],
         ];
 
-        $expectedTableMetadata[1] = [
+        $expectedTableMetadata['in.c-main.types_fk.csv.manifest'] = [
             [
                 'key' => 'KBC.name',
                 'value' => 'types_fk',
@@ -312,7 +322,7 @@ class PgsqlTest extends TestCase
                 'value' => 'table',
             ],
         ];
-        $expectedColumnMetadata[1] = [
+        $expectedColumnMetadata['in.c-main.types_fk.csv.manifest'] = [
             'character' =>
                 [
                     [
@@ -510,13 +520,19 @@ class PgsqlTest extends TestCase
             ],
         ];
 
-        foreach ($result['imported'] as $i => $outputArray) {
-            $filenameManifest = $this->dataDir . '/out/tables/' . $outputArray['outputTable'] . '.csv.manifest';
+        $finder = new Finder();
+        $manifestFiles = $finder->in($this->dataDir . '/out/tables/')->name('*.manifest')->files();
+
+        foreach ($manifestFiles as $manifestFile) {
             $outputManifest = json_decode(
-                (string) file_get_contents($filenameManifest),
+                (string) file_get_contents($manifestFile->getPathname()),
                 true
             );
-            $this->assertManifestMetadata($outputManifest, $expectedTableMetadata[$i], $expectedColumnMetadata[$i]);
+            $this->assertManifestMetadata(
+                $outputManifest,
+                $expectedTableMetadata[$manifestFile->getFilename()],
+                $expectedColumnMetadata[$manifestFile->getFilename()]
+            );
         }
     }
 
@@ -543,11 +559,13 @@ class PgsqlTest extends TestCase
 
         $config['parameters']['primaryKey'] = [''];
 
-        $app = new PgsqlApplication($config, new Logger(), [], $this->dataDir);
-        $result = $app->run();
+        JsonHelper::writeFile($this->dataDir . '/config.json', $config);
+        $logger = new TestLogger();
 
-        $this->assertArrayHasKey('status', $result);
-        $this->assertEquals('success', $result['status']);
+        $app = new PgsqlApplication($logger);
+        $app->execute();
+
+        Assert::assertTrue($logger->hasInfo('Exported "4" rows to "in.c-main.types".'));
     }
 
     public function getPrivateKey(): string

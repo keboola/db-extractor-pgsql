@@ -11,26 +11,22 @@ use Keboola\DbExtractorConfig\Config;
 use Keboola\DbExtractorConfig\Configuration\ActionConfigRowDefinition;
 use Keboola\DbExtractorConfig\Configuration\ConfigDefinition;
 use Keboola\DbExtractorConfig\Configuration\GetTablesListFilterDefinition;
-use Keboola\DbExtractorConfig\Configuration\NodeDefinition\TableNodesDecorator;
 use Keboola\DbExtractorConfig\Configuration\ValueObject\ExportConfig;
-use Psr\Log\LoggerInterface;
 
 class PgsqlApplication extends Application
 {
-    public function __construct(array $config, LoggerInterface $logger, array $state, string $dataDir)
+    protected function loadConfig(): void
     {
-        $config['parameters']['data_dir'] = $dataDir;
+        $config = $this->getRawConfig();
+        $action = $config['action'] ?? 'run';
+
         $config['parameters']['extractor_class'] = 'PgSQL';
+        $config['parameters']['data_dir'] = $this->getDataDir();
 
-        parent::__construct($config, $logger, $state);
-    }
-
-    public function buildConfig(array $config): void
-    {
-        if ($this['action'] === 'getTables') {
+        if ($action === 'getTables') {
             $this->config = new Config($config, new GetTablesListFilterDefinition());
         } elseif ($this->isRowConfiguration($config)) {
-            if ($this['action'] === 'run') {
+            if ($action === 'run') {
                 $this->config = new Config(
                     $config,
                     new PgsqlConfigRowDefinition(null, null, null, new PgsqlTableNodeDecorator())

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\DbExtractor\Tests;
 
+use Keboola\Component\JsonHelper;
 use Keboola\Component\Logger;
 use Keboola\DbExtractor\PgsqlApplication;
 use Keboola\DbExtractor\Tests\Traits\ConfigTrait;
@@ -12,6 +13,7 @@ use Keboola\DbExtractor\TraitTests\RemoveAllTablesTrait;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;
 use \PDO;
+use Psr\Log\Test\TestLogger;
 
 class PerformanceTest extends TestCase
 {
@@ -30,6 +32,8 @@ class PerformanceTest extends TestCase
         $this->removeAllTables();
 
         $connection = $this->createTestConnection();
+
+        putenv('KBC_DATADIR=' . $this->dataDir);
 
         $sql = [];
         $sql[] = 'CREATE TABLE IF NOT EXISTS t_0000 (';
@@ -57,8 +61,14 @@ class PerformanceTest extends TestCase
         $config['action'] = 'getTables';
 
         $start = microtime(true);
-        $app = new PgsqlApplication($config, new Logger(), [], $this->dataDir);
-        $result = $app->run();
+        JsonHelper::writeFile($this->dataDir . '/config.json', $config);
+        $logger = new TestLogger();
+
+        ob_start();
+        $app = new PgsqlApplication($logger);
+        $app->execute();
+        $result = json_decode(ob_get_contents(), true);
+        ob_end_clean();
         $end = microtime(true);
         $duration = $end-$start;
 
