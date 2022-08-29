@@ -67,7 +67,7 @@ class PerformanceTest extends TestCase
         ob_start();
         $app = new PgsqlApplication($logger);
         $app->execute();
-        $result = json_decode(ob_get_contents(), true);
+        $result = json_decode((string) ob_get_contents(), true);
         ob_end_clean();
         $end = microtime(true);
         $duration = $end-$start;
