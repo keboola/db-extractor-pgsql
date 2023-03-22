@@ -6,7 +6,9 @@ namespace Keboola\DbExtractor\Extractor;
 
 use Keboola\DbExtractor\Adapter\PDO\PdoQueryMetadata;
 use Keboola\DbExtractor\Adapter\ValueObject\QueryMetadata;
+use Keboola\DbExtractor\Exception\UserException;
 use Keboola\DbExtractor\TableResultFormat\Metadata\ValueObject\ColumnCollection;
+use PDOException;
 
 class CopyAdapterQueryMetadata implements QueryMetadata
 {
@@ -28,7 +30,11 @@ class CopyAdapterQueryMetadata implements QueryMetadata
             $sql = sprintf('SELECT * FROM (%s) AS x LIMIT 0', rtrim($this->query, ';'));
             $stmt = $this->connection->getConnection()->prepare($sql);
             $stmt->execute();
-            $this->columns = (new PdoQueryMetadata($stmt))->getColumns();
+            try {
+                $this->columns = (new PdoQueryMetadata($stmt))->getColumns();
+            } catch (PDOException $e) {
+                throw new UserException($e->getMessage(), 0, $e);
+            }
         }
         return $this->columns;
     }
