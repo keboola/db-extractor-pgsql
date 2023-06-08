@@ -10,6 +10,7 @@ use Keboola\DbExtractor\Adapter\FallbackExportAdapter;
 use Keboola\DbExtractor\Adapter\Metadata\MetadataProvider;
 use Keboola\DbExtractor\Adapter\Query\DefaultQueryFactory;
 use Keboola\DbExtractorConfig\Configuration\ValueObject\DatabaseConfig;
+use Keboola\DbExtractorConfig\Configuration\ValueObject\InputTable;
 use Psr\Log\LoggerInterface;
 use Keboola\Datatype\Definition\Exception\InvalidLengthException;
 use Keboola\Datatype\Definition\GenericStorage;
@@ -75,12 +76,27 @@ class PgSQL extends BaseExtractor
         $this->connection->testConnection();
     }
 
+    public function getTables(): array
+    {
+        $loadColumns = $this->parameters['tableListFilter']['listColumns'] ?? true;
+        $loadSystemColumns = $this->parameters['tableListFilter']['includeSystemColumns'] ?? false;
+        $whiteList = array_map(
+            function (array $table) {
+                return new InputTable($table['tableName'], $table['schema']);
+            },
+            $this->parameters['tableListFilter']['tablesToList'] ?? []
+        );
+
+        $tables = $this->getMetadataProvider()->listTables($whiteList, $loadColumns, $loadSystemColumns);
+        return $this->getGetTablesSerializer()->serialize($tables);
+    }
+
     public function validateIncrementalFetching(ExportConfig $exportConfig): void
     {
         try {
             $column = $this
                 ->getMetadataProvider()
-                ->getTable($exportConfig->getTable())
+                ->getTable($exportConfig->getTable(), true)
                 ->getColumns()
                 ->getByName($exportConfig->getIncrementalFetchingColumn());
         } catch (ColumnNotFoundException $e) {

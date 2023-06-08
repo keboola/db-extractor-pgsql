@@ -28,10 +28,10 @@ class PgSQLMetadataProvider implements MetadataProvider
         $this->dbConnection = $dbConnection;
     }
 
-    public function getTable(InputTable $table): Table
+    public function getTable(InputTable $table, bool $includeSystemColumns = false): Table
     {
         return $this
-            ->listTables([$table])
+            ->listTables([$table], true, $includeSystemColumns)
             ->getByNameAndSchema($table->getName(), $table->getSchema());
     }
 
@@ -39,8 +39,11 @@ class PgSQLMetadataProvider implements MetadataProvider
      * @param array|InputTable[] $whitelist
      * @param bool $loadColumns if false, columns metadata are NOT loaded, useful if there are a lot of tables
      */
-    public function listTables(array $whitelist = [], bool $loadColumns = true): TableCollection
-    {
+    public function listTables(
+        array $whitelist = [],
+        bool $loadColumns = true,
+        bool $includeSystemColumns = false
+    ): TableCollection {
         // Return cached value if present
         $cacheKey = md5(serialize(func_get_args()));
         if (isset($this->cache[$cacheKey])) {
@@ -57,7 +60,7 @@ class PgSQLMetadataProvider implements MetadataProvider
         $tableRequiredProperties = ['schema'];
         $columnRequiredProperties= ['ordinalPosition', 'nullable'];
         $builder = MetadataBuilder::create($tableRequiredProperties, $columnRequiredProperties);
-        foreach ($this->queryTablesAndColumns($whitelist, $loadColumns) as $data) {
+        foreach ($this->queryTablesAndColumns($whitelist, $loadColumns, $includeSystemColumns) as $data) {
             // Table data
             $tableId = $data['table_schema'] . '.' . $data['table_name'];
             if (!array_key_exists($tableId, $tableBuilders)) {
@@ -134,8 +137,11 @@ class PgSQLMetadataProvider implements MetadataProvider
     /**
      * @param array|InputTable[] $whitelist
      */
-    private function queryTablesAndColumns(array $whitelist, bool $loadColumns): iterable
-    {
+    private function queryTablesAndColumns(
+        array $whitelist,
+        bool $loadColumns,
+        bool $includeSystemColumns = false
+    ): iterable {
         $sql = [];
 
         // Select --------
@@ -192,7 +198,9 @@ class PgSQLMetadataProvider implements MetadataProvider
             $where[] = 'NOT a.attisdropped';
 
             // Exclude system columns
-            $where[] = 'a.attnum > 0';
+            if ($includeSystemColumns === false) {
+                $where[] = 'a.attnum > 0';
+            }
         } else {
             $where[] = "c.relkind IN ('r', 'S', 't', 'v', 'm', 'f', 'p')";
         }
