@@ -2,3 +2,4 @@ Creating PDO connection to "pgsql:host=%s;port=5432;dbname=postgres;".
 Found database server version: %d.
 Exporting "auto-increment-timestamp" to "in.c-main.auto-increment-timestamp".
 Exporting by "Copy" adapter.
+Found database server version: %d.
