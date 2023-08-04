@@ -16,4 +16,6 @@ return function (DatadirTest $test): void {
     // special table
     $manager->createEscapingTable();
     $manager->generateEscapingRows();
+
+    $test->getConnection()->exec('CREATE SEQUENCE my_sequence START 1;');
 };
