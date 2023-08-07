@@ -197,12 +197,15 @@ class PgSQLMetadataProvider implements MetadataProvider
             // Exclude dropped columns
             $where[] = 'NOT a.attisdropped';
 
+            // Exclude sequences
+            $where[] = "c.relkind != 'S'";
+
             // Exclude system columns
             if ($includeSystemColumns === false) {
                 $where[] = 'a.attnum > 0';
             }
         } else {
-            $where[] = "c.relkind IN ('r', 'S', 't', 'v', 'm', 'f', 'p')";
+            $where[] = "c.relkind IN ('r', 't', 'v', 'm', 'f', 'p')";
         }
 
         if ($whitelist) {
