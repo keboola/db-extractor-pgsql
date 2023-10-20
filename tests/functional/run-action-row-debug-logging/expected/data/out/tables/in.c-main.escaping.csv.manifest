@@ -1,0 +1,8 @@
+{
+    "destination": "in.c-main.escaping",
+    "incremental": false,
+    "columns": [
+        "col1",
+        "col2"
+    ]
+}

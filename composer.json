@@ -12,13 +12,13 @@
     "require": {
         "php": "^7.4",
         "ext-PDO": "*",
-        "keboola/csv": "^2.1",
-        "keboola/db-extractor-adapter": "^1.8",
-        "keboola/db-extractor-common": "^16.0",
+        "keboola/csv": "^3.2",
+        "keboola/db-extractor-adapter": "^1.10",
+        "keboola/db-extractor-common": "^16.1",
         "keboola/db-extractor-config": "^1.13",
         "keboola/db-extractor-table-format": "^3.1.1",
         "keboola/php-component": "^9.1",
-        "keboola/php-datatypes": "^4.8",
+        "keboola/php-datatypes": "^6.0",
         "keboola/php-temp": "^2.0",
         "symfony/config": "^5.0",
         "symfony/process": "^5.0"
@@ -26,7 +26,7 @@
     "require-dev": {
         "ext-json": "*",
         "keboola/coding-standard": ">=9.0.0",
-        "keboola/datadir-tests": "^5.2",
+        "keboola/datadir-tests": "^5.6",
         "phpstan/phpstan": "^0.12.14",
         "phpunit/phpunit": "^9.0"
     },

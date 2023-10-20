@@ -37,6 +37,7 @@ class PgSQLDbConnection extends PdoConnection
 
     protected function queryReconnectOnError(string $query, bool $useCursor = false): QueryResult
     {
+        $this->logger->debug(sprintf('Running query "%s".', $query));
         try {
             return $this->doQuery($query, $useCursor);
         } catch (Throwable $e) {

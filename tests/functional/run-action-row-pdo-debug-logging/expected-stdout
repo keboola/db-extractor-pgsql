@@ -1,0 +1,10 @@
+[%s] DEBUG: Component initialization completed [] []
+Creating PDO connection to "pgsql:host=%s;port=5432;dbname=postgres;".
+Exporting "sales" to "in.c-main.escaping".
+Exporting by "Copy" adapter.
+Adapter "Copy" skipped: Disabled in configuration.
+Exporting by "PDO" adapter.
+[%s] DEBUG: Running query "SELECT * FROM escaping". [] []
+Fetching rows, batch size = 10000 ...
+[%s] DEBUG: Running query "SELECT 1". [] []
+Exported "7" rows to "in.c-main.escaping".

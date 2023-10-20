@@ -50,6 +50,7 @@ class DatadirTest extends DatadirTestCase
     protected function setUp(): void
     {
         parent::setUp();
+        putenv('KBC_COMPONENT_RUN_MODE=run');
 
         // Test dir, eg. "/code/tests/functional/full-load-ok"
         $this->testProjectDir = $this->getTestFileDir() . '/' . $this->dataName();
