@@ -17,6 +17,7 @@ use Keboola\DbExtractor\Exception\InvalidArgumentException;
 use Keboola\DbExtractor\Exception\UserException;
 use Keboola\DbExtractorConfig\Configuration\ValueObject\DatabaseConfig;
 use Keboola\DbExtractorConfig\Configuration\ValueObject\ExportConfig;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Process\Process;
 
 class CopyAdapter implements ExportAdapter
@@ -29,16 +30,20 @@ class CopyAdapter implements ExportAdapter
 
     protected PgSQLMetadataProvider $metadataProvider;
 
+    protected LoggerInterface $logger;
+
     public function __construct(
         PgSQLDbConnection $connection,
         DatabaseConfig $databaseConfig,
         DefaultQueryFactory $queryFactory,
-        PgSQLMetadataProvider $metadataProvider
+        PgSQLMetadataProvider $metadataProvider,
+        LoggerInterface $logger
     ) {
         $this->connection = $connection;
         $this->databaseConfig = $databaseConfig;
         $this->queryFactory = $queryFactory;
         $this->metadataProvider = $metadataProvider;
+        $this->logger = $logger;
     }
 
     public function testConnection(): void
@@ -121,6 +126,7 @@ class CopyAdapter implements ExportAdapter
 
     protected function runPsqlProcess(string $sql, ?float $timeout): string
     {
+        $this->logger->debug(sprintf('Running query: "%s".', $sql));
         $command = [];
         $command[] = sprintf('PGPASSWORD=%s', escapeshellarg($this->databaseConfig->getPassword()));
         $command[] = 'psql';
