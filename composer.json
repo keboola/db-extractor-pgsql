@@ -12,7 +12,7 @@
     "require": {
         "php": "^8.2",
         "ext-PDO": "*",
-        "keboola/csv": "^4.0",
+        "keboola/csv": "^3.2",
         "keboola/db-extractor-adapter": "^1.13",
         "keboola/db-extractor-common": "^16.2",
         "keboola/db-extractor-config": "^1.14",
@@ -25,10 +25,12 @@
     },
     "require-dev": {
         "ext-json": "*",
+        "cweagans/composer-patches": "^1.7",
         "keboola/coding-standard": "^15.0",
         "keboola/datadir-tests": "^5.6",
         "phpstan/phpstan": "^1.10",
-        "phpunit/phpunit": "^9.0"
+        "phpunit/phpunit": "^9.0",
+        "symplify/vendor-patches": "^11.2"
     },
     "autoload": {
         "psr-4": {
@@ -67,7 +69,15 @@
     "config": {
         "sort-packages": true,
         "allow-plugins": {
-            "dealerdirect/phpcodesniffer-composer-installer": true
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "cweagans/composer-patches": true
+        }
+    },
+    "extra": {
+        "patches": {
+            "keboola/csv": [
+                "patches/keboola-csv-src-csvreader-php.patch"
+            ]
         }
     }
 }
