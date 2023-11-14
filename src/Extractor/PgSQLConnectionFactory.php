@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Keboola\DbExtractor\Extractor;
 
-use PDO;
 use Keboola\DbExtractorConfig\Configuration\ValueObject\DatabaseConfig;
-use Keboola\Temp\Temp;
+use PDO;
 use Psr\Log\LoggerInterface;
 
 class PgSQLConnectionFactory
@@ -35,7 +34,7 @@ class PgSQLConnectionFactory
             $options,
             function (PDO $pdo): void {
                 $pdo->query("SET NAMES 'UTF8';");
-            }
+            },
         );
     }
 }

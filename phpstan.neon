@@ -1,6 +1,6 @@
+includes:
+    - phpstan-baseline.neon
 parameters:
     checkMissingIterableValueType: false
-    excludes_analyse:
-        - src/run.php
     ignoreErrors:
         - '#Cannot call method .* on Symfony\\Component\\Config\\Definition\\Builder\\NodeParentInterface\|null\.#'

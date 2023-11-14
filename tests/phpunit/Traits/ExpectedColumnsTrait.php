@@ -89,7 +89,7 @@ trait ExpectedColumnsTrait
             } else {
                 throw new UserException(sprintf('Unexpected test table %s in schema %s', $table, $schema));
             }
-        } else if ($schema === 'test') {
+        } elseif ($schema === 'test') {
             switch ($table) {
                 case 'sales':
                     return [

@@ -10,24 +10,24 @@
         }
     ],
     "require": {
-        "php": "^7.4",
+        "php": "^8.2",
         "ext-PDO": "*",
-        "keboola/csv": "^3.2",
-        "keboola/db-extractor-adapter": "^1.10",
-        "keboola/db-extractor-common": "^16.1",
-        "keboola/db-extractor-config": "^1.13",
-        "keboola/db-extractor-table-format": "^3.1.1",
-        "keboola/php-component": "^9.1",
-        "keboola/php-datatypes": "^6.0",
+        "keboola/csv": "^4.0",
+        "keboola/db-extractor-adapter": "^1.13",
+        "keboola/db-extractor-common": "^16.2",
+        "keboola/db-extractor-config": "^1.14",
+        "keboola/db-extractor-table-format": "^3.8",
+        "keboola/php-component": "^9.4",
+        "keboola/php-datatypes": "^7.2",
         "keboola/php-temp": "^2.0",
-        "symfony/config": "^5.0",
-        "symfony/process": "^5.0"
+        "symfony/config": "^6.3",
+        "symfony/process": "^5.4"
     },
     "require-dev": {
         "ext-json": "*",
-        "keboola/coding-standard": ">=9.0.0",
+        "keboola/coding-standard": "^15.0",
         "keboola/datadir-tests": "^5.6",
-        "phpstan/phpstan": "^0.12.14",
+        "phpstan/phpstan": "^1.10",
         "phpunit/phpunit": "^9.0"
     },
     "autoload": {
@@ -65,6 +65,9 @@
         ]
     },
     "config": {
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
     }
 }

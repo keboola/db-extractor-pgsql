@@ -24,7 +24,7 @@ trait CreateTableTrait
         $this->connection->prepare(sprintf(
             'CREATE TABLE %s (%s)',
             $this->quoteIdentifier($tableName),
-            implode(', ', $columnsSql)
+            implode(', ', $columnsSql),
         ))->execute();
     }
 }

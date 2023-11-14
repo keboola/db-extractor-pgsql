@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Keboola\DbExtractor\TraitTests;
 
 use Keboola\DbExtractor\Exception\UserException;
-use Throwable;
 use PDO;
+use Throwable;
 
 trait InsertRowsTrait
 {
@@ -38,7 +38,7 @@ trait InsertRowsTrait
                             return $value;
                         }
                         return $this->quote((string) $value);
-                    }, $row)
+                    }, $row),
                 ) .
                 ')';
         }
@@ -49,7 +49,7 @@ trait InsertRowsTrait
                     'INSERT INTO %s (%s) VALUES %s',
                     $this->quoteIdentifier($tableName),
                     implode(', ', $columnsSql),
-                    $values
+                    $values,
                 ));
             } catch (Throwable $e) {
                 throw new UserException($e->getMessage(), (int) $e->getCode(), $e);

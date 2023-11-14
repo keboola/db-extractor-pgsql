@@ -42,7 +42,7 @@ class PgSQLMetadataProvider implements MetadataProvider
     public function listTables(
         array $whitelist = [],
         bool $loadColumns = true,
-        bool $includeSystemColumns = false
+        bool $includeSystemColumns = false,
     ): TableCollection {
         // Return cached value if present
         $cacheKey = md5(serialize(func_get_args()));
@@ -140,7 +140,7 @@ class PgSQLMetadataProvider implements MetadataProvider
     private function queryTablesAndColumns(
         array $whitelist,
         bool $loadColumns,
-        bool $includeSystemColumns = false
+        bool $includeSystemColumns = false,
     ): iterable {
         $sql = [];
 
@@ -213,12 +213,12 @@ class PgSQLMetadataProvider implements MetadataProvider
                 'c.relname IN (%s) AND ns.nspname IN (%s)',
                 implode(
                     ',',
-                    array_map(fn (InputTable $table) => $this->dbConnection->quote($table->getName()), $whitelist)
+                    array_map(fn (InputTable $table) => $this->dbConnection->quote($table->getName()), $whitelist),
                 ),
                 implode(
                     ',',
-                    array_map(fn (InputTable $table) => $this->dbConnection->quote($table->getSchema()), $whitelist)
-                )
+                    array_map(fn (InputTable $table) => $this->dbConnection->quote($table->getSchema()), $whitelist),
+                ),
             );
         }
         $sql[] = 'WHERE ' . implode(' AND ', $where);
@@ -237,7 +237,7 @@ class PgSQLMetadataProvider implements MetadataProvider
         $sqlGetVersion = 'SHOW server_version_num;';
         $version = $this->dbConnection->query($sqlGetVersion)->fetchAll();
         $this->logger->info(
-            sprintf('Found database server version: %s.', $version[0]['server_version_num'])
+            sprintf('Found database server version: %s.', $version[0]['server_version_num']),
         );
         return (int) $version[0]['server_version_num'];
     }

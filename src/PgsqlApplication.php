@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Keboola\DbExtractor;
 
-use Keboola\DbExtractor\Configuration\PgsqlExportConfig;
 use Keboola\DbExtractor\Configuration\PgsqlConfigRowDefinition;
+use Keboola\DbExtractor\Configuration\PgsqlExportConfig;
 use Keboola\DbExtractor\Configuration\PgsqlGetTablesListFilterDefinition;
 use Keboola\DbExtractor\Configuration\PgsqlTableNodeDecorator;
 use Keboola\DbExtractorConfig\Config;
@@ -29,7 +29,7 @@ class PgsqlApplication extends Application
             if ($action === 'run') {
                 $this->config = new Config(
                     $config,
-                    new PgsqlConfigRowDefinition(null, null, null, new PgsqlTableNodeDecorator())
+                    new PgsqlConfigRowDefinition(null, null, null, new PgsqlTableNodeDecorator()),
                 );
             } else {
                 $this->config = new Config($config, new ActionConfigRowDefinition());
@@ -37,7 +37,7 @@ class PgsqlApplication extends Application
         } else {
             $this->config = new Config(
                 $config,
-                new ConfigDefinition(null, null, null, new PgsqlTableNodeDecorator())
+                new ConfigDefinition(null, null, null, new PgsqlTableNodeDecorator()),
             );
         }
     }

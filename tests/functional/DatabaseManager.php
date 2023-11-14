@@ -10,7 +10,7 @@ use Keboola\DbExtractor\TraitTests\Tables\EscapingTableTrait;
 use Keboola\DbExtractor\TraitTests\Tables\SalesTableTrait;
 use Keboola\DbExtractor\TraitTests\Tables\SimpleTableTrait;
 use Keboola\DbExtractor\TraitTests\Tables\TypesTableTrait;
-use \PDO;
+use PDO;
 
 class DatabaseManager
 {
