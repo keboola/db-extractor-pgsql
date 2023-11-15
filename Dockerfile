@@ -44,13 +44,6 @@ RUN \
     # https://stackoverflow.com/questions/53058362/openssl-v1-1-1-ssl-choose-client-version-unsupported-protocol
     && sed -i 's/MinProtocol\s*=.*/MinProtocol = TLSv1/g' /etc/ssl/openssl.cnf
 
-## Composer - deps always cached unless changed
-# First copy only composer files
-COPY composer.* /code/
-
-# Download dependencies, but don't run scripts or init autoloaders as the app is missing
-RUN composer install $COMPOSER_FLAGS --no-scripts --no-autoloader
-
 # Copy rest of the app
 COPY . /code/
 
