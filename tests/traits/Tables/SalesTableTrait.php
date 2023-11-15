@@ -32,7 +32,7 @@ trait SalesTableTrait
                 $tableName,
                 'PK_' . $tableName,
                 'PRIMARY KEY',
-                implode(', ', $primaryKey)
+                implode(', ', $primaryKey),
             );
         }
 
@@ -42,7 +42,7 @@ trait SalesTableTrait
                 'FK_sales_sales2',
                 'FOREIGN KEY',
                 'createdat',
-                'sales(createdat)'
+                'sales(createdat)',
             );
         }
     }

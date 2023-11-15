@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\DbExtractor\TraitTests;
 
-use \PDO;
+use PDO;
 
 trait DropTableTrait
 {
@@ -15,7 +15,7 @@ trait DropTableTrait
     {
         $sql = sprintf(
             'DROP TABLE IF EXISTS %s CASCADE',
-            $this->quoteIdentifier($tableName)
+            $this->quoteIdentifier($tableName),
         );
         $this->connection->query($sql);
     }

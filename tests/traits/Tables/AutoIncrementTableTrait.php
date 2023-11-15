@@ -7,7 +7,7 @@ namespace Keboola\DbExtractor\TraitTests\Tables;
 use Keboola\DbExtractor\TraitTests\AddConstraintTrait;
 use Keboola\DbExtractor\TraitTests\CreateTableTrait;
 use Keboola\DbExtractor\TraitTests\InsertRowsTrait;
-use \PDO;
+use PDO;
 
 trait AutoIncrementTableTrait
 {

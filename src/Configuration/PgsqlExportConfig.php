@@ -31,7 +31,7 @@ class PgsqlExportConfig extends ExportConfig
             $data['retries'],
             // Only in the config row configuration
             $data['forceFallback'] ?? false,
-            $data['useConsistentFallbackBooleanStyle'] ?? false
+            $data['useConsistentFallbackBooleanStyle'] ?? false,
         );
     }
 
@@ -47,7 +47,7 @@ class PgsqlExportConfig extends ExportConfig
         array $primaryKey,
         int $maxRetries,
         bool $forceFallback,
-        bool $replaceBooleans
+        bool $replaceBooleans,
     ) {
         parent::__construct(
             $configId,
@@ -59,7 +59,7 @@ class PgsqlExportConfig extends ExportConfig
             $columns,
             $outputTable,
             $primaryKey,
-            $maxRetries
+            $maxRetries,
         );
         $this->forceFallback = $forceFallback;
         $this->replaceBooleans = $replaceBooleans;

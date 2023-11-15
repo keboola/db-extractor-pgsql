@@ -5,14 +5,13 @@ declare(strict_types=1);
 namespace Keboola\DbExtractor\Tests;
 
 use Keboola\Component\JsonHelper;
-use Keboola\Component\Logger;
 use Keboola\DbExtractor\PgsqlApplication;
 use Keboola\DbExtractor\Tests\Traits\ConfigTrait;
 use Keboola\DbExtractor\TraitTests\PdoTestConnectionTrait;
 use Keboola\DbExtractor\TraitTests\RemoveAllTablesTrait;
+use PDO;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;
-use \PDO;
 use Psr\Log\Test\TestLogger;
 
 class PerformanceTest extends TestCase
@@ -67,7 +66,8 @@ class PerformanceTest extends TestCase
         ob_start();
         $app = new PgsqlApplication($logger);
         $app->execute();
-        $result = json_decode((string) ob_get_contents(), true);
+        /** @var array<array> $result */
+        $result = (array) json_decode((string) ob_get_contents(), true);
         ob_end_clean();
         $end = microtime(true);
         $duration = $end-$start;

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Keboola\DbExtractor\Tests;
 
 use Keboola\Component\JsonHelper;
-use Keboola\Component\Logger;
 use Keboola\DbExtractor\PgsqlApplication;
 use Keboola\DbExtractor\Tests\Traits\ConfigTrait;
 use Keboola\DbExtractor\TraitTests\CloseSshTunnelsTrait;
@@ -13,9 +12,9 @@ use Keboola\DbExtractor\TraitTests\PdoTestConnectionTrait;
 use Keboola\DbExtractor\TraitTests\RemoveAllTablesTrait;
 use Keboola\DbExtractor\TraitTests\Tables\EscapingTableTrait;
 use Keboola\DbExtractor\TraitTests\Tables\TypesTableTrait;
+use PDO;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;
-use \PDO;
 use Psr\Log\Test\TestLogger;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
@@ -524,14 +523,14 @@ class PgsqlTest extends TestCase
         $manifestFiles = $finder->in($this->dataDir . '/out/tables/')->name('*.manifest')->files();
 
         foreach ($manifestFiles as $manifestFile) {
-            $outputManifest = json_decode(
+            $outputManifest = (array) json_decode(
                 (string) file_get_contents($manifestFile->getPathname()),
-                true
+                true,
             );
             $this->assertManifestMetadata(
                 $outputManifest,
                 $expectedTableMetadata[$manifestFile->getFilename()],
-                $expectedColumnMetadata[$manifestFile->getFilename()]
+                $expectedColumnMetadata[$manifestFile->getFilename()],
             );
         }
     }
@@ -539,7 +538,7 @@ class PgsqlTest extends TestCase
     protected function assertManifestMetadata(
         array $outputManifest,
         array $expectedTableMetadata,
-        array $expectedColumnMetadata
+        array $expectedColumnMetadata,
     ): void {
         $this->assertArrayHasKey('destination', $outputManifest);
         $this->assertArrayHasKey('incremental', $outputManifest);

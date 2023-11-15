@@ -32,7 +32,7 @@ trait EscapingTableTrait
                 $tableName,
                 'PK_' . $tableName,
                 'PRIMARY KEY',
-                implode(', ', $primaryKey)
+                implode(', ', $primaryKey),
             );
         }
     }

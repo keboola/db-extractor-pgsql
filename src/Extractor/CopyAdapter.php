@@ -37,7 +37,7 @@ class CopyAdapter implements ExportAdapter
         DatabaseConfig $databaseConfig,
         DefaultQueryFactory $queryFactory,
         PgSQLMetadataProvider $metadataProvider,
-        LoggerInterface $logger
+        LoggerInterface $logger,
     ) {
         $this->connection = $connection;
         $this->databaseConfig = $databaseConfig;
@@ -76,7 +76,7 @@ class CopyAdapter implements ExportAdapter
             return $this->doExport(
                 $query,
                 $exportConfig,
-                $csvFilePath
+                $csvFilePath,
             );
         } catch (CopyAdapterException $pdoError) {
             @unlink($csvFilePath);
@@ -92,7 +92,7 @@ class CopyAdapter implements ExportAdapter
     public function doExport(
         string $query,
         PgsqlExportConfig $exportConfig,
-        string $csvPath
+        string $csvPath,
     ): ExportResult {
         $trimmedQuery = rtrim($query, '; ');
         $sql = '\encoding UTF8' . PHP_EOL .
@@ -104,14 +104,14 @@ class CopyAdapter implements ExportAdapter
                 sprintf(
                     "\COPY (%s) TO '%s' WITH CSV DELIMITER ',' FORCE QUOTE *;",
                     'SELECT * FROM "' . $viewName . '"',
-                    $csvPath
+                    $csvPath,
                 ) . PHP_EOL .
                 'DROP VIEW "' . $viewName . '";';
         } else {
             $sql .= sprintf(
                 "\COPY (%s) TO '%s' WITH CSV DELIMITER ',' FORCE QUOTE *;",
                 $trimmedQuery,
-                $csvPath
+                $csvPath,
             );
         }
 
@@ -149,7 +149,7 @@ class CopyAdapter implements ExportAdapter
     private function analyseOutput(
         string $csvPath,
         ExportConfig $exportConfig,
-        string $query
+        string $query,
     ): ExportResult {
         // Get the number of written rows and lastFetchedValue
         $numRows = 0;
@@ -172,7 +172,7 @@ class CopyAdapter implements ExportAdapter
         if ($exportConfig->isIncrementalFetching() && $lastFetchedRow) {
             $incrementalLastFetchedValue = $this->getLastFetchedValue(
                 $exportConfig,
-                $lastFetchedRow
+                $lastFetchedRow,
             );
         }
 
@@ -181,13 +181,13 @@ class CopyAdapter implements ExportAdapter
             $numRows,
             new CopyAdapterQueryMetadata($this->connection, $query),
             false,
-            $incrementalLastFetchedValue
+            $incrementalLastFetchedValue,
         );
     }
 
     private function getLastFetchedValue(
         ExportConfig $exportConfig,
-        array $lastExportedRow
+        array $lastExportedRow,
     ): string {
         $columns = $exportConfig->hasColumns() ?
             $exportConfig->getColumns() :
@@ -197,7 +197,7 @@ class CopyAdapter implements ExportAdapter
         if ($columnIndex === false) {
             throw new CopyAdapterException(sprintf(
                 'The specified incremental fetching column %s not found in the table',
-                $exportConfig->getIncrementalFetchingColumn()
+                $exportConfig->getIncrementalFetchingColumn(),
             ));
         }
 
@@ -209,7 +209,7 @@ class CopyAdapter implements ExportAdapter
         try {
             return $this->runPsqlProcess(
                 'SELECT has_schema_privilege(current_schema(), \'CREATE\');',
-                null
+                null,
             ) === 't';
         } catch (CopyAdapterException $e) {
             throw new CopyAdapterQueryException($e->getMessage(), 0, $e);
@@ -221,7 +221,7 @@ class CopyAdapter implements ExportAdapter
         try {
             return $this->runPsqlProcess(
                 'SHOW transaction_read_only;',
-                null
+                null,
             ) === 'on';
         } catch (CopyAdapterException $e) {
             throw new CopyAdapterQueryException($e->getMessage(), 0, $e);

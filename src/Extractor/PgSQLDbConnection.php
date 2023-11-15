@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Keboola\DbExtractor\Extractor;
 
-use Keboola\DbExtractor\Adapter\ValueObject\ExportResult;
-use Throwable;
 use Keboola\DbExtractor\Adapter\PDO\PdoConnection;
+use Keboola\DbExtractor\Adapter\ValueObject\ExportResult;
 use Keboola\DbExtractor\Adapter\ValueObject\QueryResult;
+use Throwable;
 
 class PgSQLDbConnection extends PdoConnection
 {
@@ -20,7 +20,7 @@ class PgSQLDbConnection extends PdoConnection
         string $query,
         int $maxRetries,
         callable $processor,
-        bool $useCursor = false
+        bool $useCursor = false,
     ): ExportResult {
         return $this->callWithRetry(
             $maxRetries,
@@ -31,7 +31,7 @@ class PgSQLDbConnection extends PdoConnection
                 // Success of isAlive means that ALL data has been extracted
                 $this->isAlive();
                 return $result;
-            }
+            },
         );
     }
 
@@ -60,7 +60,7 @@ class PgSQLDbConnection extends PdoConnection
         return new CursorQueryResult(
             $this->pdo,
             $this->logger,
-            $query
+            $query,
         );
     }
 }

@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Keboola\DbExtractor\Extractor;
 
+use Keboola\Datatype\Definition\Exception\InvalidLengthException;
+use Keboola\Datatype\Definition\GenericStorage;
 use Keboola\DbExtractor\Adapter\Connection\DbConnection;
 use Keboola\DbExtractor\Adapter\ExportAdapter;
 use Keboola\DbExtractor\Adapter\FallbackExportAdapter;
 use Keboola\DbExtractor\Adapter\Metadata\MetadataProvider;
 use Keboola\DbExtractor\Adapter\Query\DefaultQueryFactory;
-use Keboola\DbExtractorConfig\Configuration\ValueObject\DatabaseConfig;
-use Keboola\DbExtractorConfig\Configuration\ValueObject\InputTable;
-use Psr\Log\LoggerInterface;
-use Keboola\Datatype\Definition\Exception\InvalidLengthException;
-use Keboola\Datatype\Definition\GenericStorage;
 use Keboola\DbExtractor\Exception\UserException;
 use Keboola\DbExtractor\TableResultFormat\Exception\ColumnNotFoundException;
+use Keboola\DbExtractorConfig\Configuration\ValueObject\DatabaseConfig;
 use Keboola\DbExtractorConfig\Configuration\ValueObject\ExportConfig;
+use Keboola\DbExtractorConfig\Configuration\ValueObject\InputTable;
+use Psr\Log\LoggerInterface;
 
 class PgSQL extends BaseExtractor
 {
@@ -49,7 +49,7 @@ class PgSQL extends BaseExtractor
             $simpleQueryFactory,
             $resultWriter,
             $this->dataDir,
-            $this->state
+            $this->state,
         );
 
         $copyAdapter = new CopyAdapter(
@@ -57,7 +57,7 @@ class PgSQL extends BaseExtractor
             $this->createDatabaseConfig($this->parameters['db']),
             $simpleQueryFactory,
             $this->getMetadataProvider(),
-            $this->logger
+            $this->logger,
         );
 
         return new FallbackExportAdapter($this->logger, [
@@ -85,7 +85,7 @@ class PgSQL extends BaseExtractor
             function (array $table) {
                 return new InputTable($table['tableName'], $table['schema']);
             },
-            $this->parameters['tableListFilter']['tablesToList'] ?? []
+            $this->parameters['tableListFilter']['tablesToList'] ?? [],
         );
 
         $tables = $this->getMetadataProvider()->listTables($whiteList, $loadColumns, $loadSystemColumns);
@@ -104,8 +104,8 @@ class PgSQL extends BaseExtractor
             throw new UserException(
                 sprintf(
                     'Column "%s" specified for incremental fetching was not found in the table',
-                    $exportConfig->getIncrementalFetchingColumn()
-                )
+                    $exportConfig->getIncrementalFetchingColumn(),
+                ),
             );
         }
 
@@ -116,8 +116,8 @@ class PgSQL extends BaseExtractor
             throw new UserException(
                 sprintf(
                     'Column "%s" specified for incremental fetching must has numeric or timestamp type.',
-                    $exportConfig->getIncrementalFetchingColumn()
-                )
+                    $exportConfig->getIncrementalFetchingColumn(),
+                ),
             );
         }
 
@@ -138,7 +138,7 @@ class PgSQL extends BaseExtractor
             $this->connection->quoteIdentifier($exportConfig->getIncrementalFetchingColumn()),
             $this->connection->quoteIdentifier($exportConfig->getIncrementalFetchingColumn()),
             $this->connection->quoteIdentifier($exportConfig->getTable()->getSchema()),
-            $this->connection->quoteIdentifier($exportConfig->getTable()->getName())
+            $this->connection->quoteIdentifier($exportConfig->getTable()->getName()),
         ), DbConnection::DEFAULT_MAX_RETRIES)->fetchAll();
 
         return count($result) > 0 ? (string) $result[0][$exportConfig->getIncrementalFetchingColumn()] : null;

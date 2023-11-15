@@ -11,7 +11,7 @@ use Keboola\DbExtractor\TraitTests\RemoveAllTablesTrait;
 use PDO;
 use RuntimeException;
 use Symfony\Component\Finder\Finder;
-use \Throwable;
+use Throwable;
 
 class DatadirTest extends DatadirTestCase
 {

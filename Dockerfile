@@ -1,4 +1,4 @@
-FROM php:7.4-cli
+FROM php:8.2-cli-buster
 
 ARG COMPOSER_FLAGS="--prefer-dist --no-interaction"
 ARG DEBIAN_FRONTEND=noninteractive
@@ -47,6 +47,7 @@ RUN \
 ## Composer - deps always cached unless changed
 # First copy only composer files
 COPY composer.* /code/
+COPY patches /code/patches
 
 # Download dependencies, but don't run scripts or init autoloaders as the app is missing
 RUN composer install $COMPOSER_FLAGS --no-scripts --no-autoloader
@@ -57,4 +58,4 @@ COPY . /code/
 # Run normal composer - all deps are cached already
 RUN composer install $COMPOSER_FLAGS
 
-CMD php /code/src/run.php
+CMD php ./src/run.php

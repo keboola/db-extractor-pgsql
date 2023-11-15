@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Keboola\DbExtractor\Extractor;
 
+use Iterator;
 use Keboola\DbExtractor\Adapter\PDO\PdoQueryMetadata;
 use Keboola\DbExtractor\Adapter\ValueObject\QueryMetadata;
-use Throwable;
-use PDO;
-use PDOStatement;
-use PDOException;
-use Iterator;
 use Keboola\DbExtractor\Adapter\ValueObject\QueryResult;
+use PDO;
+use PDOException;
+use PDOStatement;
 use Psr\Log\LoggerInterface;
+use Throwable;
 
 class CursorQueryResult implements QueryResult
 {
@@ -51,7 +51,7 @@ class CursorQueryResult implements QueryResult
             $this->batchStmt = $this->pdo->prepare(sprintf(
                 'FETCH %d FROM %s',
                 self::BATCH_SIZE,
-                $this->cursorName
+                $this->cursorName,
             ));
             $this->queryMetadata = new PdoQueryMetadata($this->batchStmt);
         } catch (PDOException $e) {

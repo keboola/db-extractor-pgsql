@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace Keboola\DbExtractor\Extractor;
 
-use PDO;
 use Keboola\DbExtractorConfig\Configuration\ValueObject\DatabaseConfig;
 use Keboola\Temp\Temp;
-use Psr\Log\LoggerInterface;
 
 class PgSQLDsnFactory
 {
@@ -55,7 +53,7 @@ class PgSQLDsnFactory
 
             if ($sslConnection->isIgnoreCertificateCn()) {
                 $dsn['sslmode'] = 'require';
-            } else if ($sslConnection->isVerifyServerCert()) {
+            } elseif ($sslConnection->isVerifyServerCert()) {
                 $dsn['sslmode'] = 'verify-full';
             } else {
                 $dsn['sslmode'] = 'verify-ca';
