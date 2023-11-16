@@ -40,7 +40,7 @@
 ### Development
 
 - Clone the repository.
-- Create `.env` file with `PHSQL_VERSION=latest`.
+- Create `.env` file with `PGSQL_VERSION=latest`.
 - Run `docker-compose build`.
 
 ## License
