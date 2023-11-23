@@ -44,6 +44,22 @@ RUN \
     # https://stackoverflow.com/questions/53058362/openssl-v1-1-1-ssl-choose-client-version-unsupported-protocol
     && sed -i 's/MinProtocol\s*=.*/MinProtocol = TLSv1/g' /etc/ssl/openssl.cnf
 
+# Disable PgSQL server side debugging mesages.
+#
+# The database server can generate debug messages and send them to the client.
+# It cannot be configured in PHP, the message goes from libpg -> pgsql extension -> PDO -> PHP STDOUT.
+# Azure Managed PgSQL instances generate "LOG" level messages through this channel.
+# The "LOG" messages then breaks STDOUT of the testConnection synchronous action, it is no more valid JSON.
+#
+# This behavior can be modified via "client_min_messages" setting, default value is "NOTICE" level.
+# The setting can be set via SQL, using "SET LOCAL ...", but that's too late, some messages are logged when creating a new connection.
+# Fortunately, libpq can be configured via "PGOPTIONS" environment variable.
+#
+# Read more:
+# - https://www.postgresql.org/docs/current/config-setting.html#CONFIG-SETTING-SHELL "20.1.4. Parameter Interaction via the Shell"
+# - https://www.postgresql.org/docs/16/runtime-config-client.html "20.11. Client Connection Defaults / client_min_messages"
+ENV PGOPTIONS="-c client_min_messages=ERROR"
+
 ## Composer - deps always cached unless changed
 # First copy only composer files
 COPY composer.* /code/
