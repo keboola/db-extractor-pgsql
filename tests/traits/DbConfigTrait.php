@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\DbExtractor\TraitTests;
 
-use Keboola\DbExtractorConfig\Configuration\ValueObject\DatabaseConfig;
+use Keboola\DbExtractor\Configuration\ValueObject\PgsqlDatabaseConfig;
 
 trait DbConfigTrait
 {
@@ -30,9 +30,9 @@ trait DbConfigTrait
         return $config;
     }
 
-    public static function createDbConfig(bool $ssl = false): DatabaseConfig
+    public static function createDbConfig(bool $ssl = false): PgsqlDatabaseConfig
     {
         $dbConfig = self::getDbConfigArray($ssl);
-        return DatabaseConfig::fromArray($dbConfig);
+        return PgsqlDatabaseConfig::fromArray($dbConfig);
     }
 }

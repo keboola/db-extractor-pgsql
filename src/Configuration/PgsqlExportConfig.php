@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\DbExtractor\Configuration;
 
+use Keboola\DbExtractor\Extractor\CursorQueryResult;
 use Keboola\DbExtractorConfig\Configuration\ValueObject\ExportConfig;
 use Keboola\DbExtractorConfig\Configuration\ValueObject\IncrementalFetchingConfig;
 use Keboola\DbExtractorConfig\Configuration\ValueObject\InputTable;
@@ -15,6 +16,8 @@ class PgsqlExportConfig extends ExportConfig
 
     /** If true, then 1/0 booleans values will be replaced by T/F when PDO fallback is used */
     private bool $replaceBooleans;
+
+    private int $batchSize;
 
     public static function fromArray(array $data): self
     {
@@ -32,6 +35,7 @@ class PgsqlExportConfig extends ExportConfig
             // Only in the config row configuration
             $data['forceFallback'] ?? false,
             $data['useConsistentFallbackBooleanStyle'] ?? false,
+            $data['batchSize'] ?? CursorQueryResult::DEFAULT_BATCH_SIZE,
         );
     }
 
@@ -48,6 +52,7 @@ class PgsqlExportConfig extends ExportConfig
         int $maxRetries,
         bool $forceFallback,
         bool $replaceBooleans,
+        int $batchSize,
     ) {
         parent::__construct(
             $configId,
@@ -63,6 +68,7 @@ class PgsqlExportConfig extends ExportConfig
         );
         $this->forceFallback = $forceFallback;
         $this->replaceBooleans = $replaceBooleans;
+        $this->batchSize = $batchSize;
     }
 
     public function getForceFallback(): bool
@@ -73,5 +79,10 @@ class PgsqlExportConfig extends ExportConfig
     public function getReplaceBooleans(): bool
     {
         return $this->replaceBooleans;
+    }
+
+    public function getBatchSize(): int
+    {
+        return $this->batchSize;
     }
 }

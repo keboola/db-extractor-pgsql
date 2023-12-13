@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Keboola\DbExtractor\Configuration;
+namespace Keboola\DbExtractor\Configuration\NodeDefinition;
 
 use Keboola\DbExtractorConfig\Configuration\NodeDefinition\TableNodesDecorator;
 use Symfony\Component\Config\Definition\Builder\NodeBuilder;
