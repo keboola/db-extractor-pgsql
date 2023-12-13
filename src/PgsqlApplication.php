@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Keboola\DbExtractor;
 
+use Keboola\DbExtractor\Configuration\NodeDefinition\PgsqlTableNodeDecorator;
 use Keboola\DbExtractor\Configuration\PgsqlConfigRowDefinition;
 use Keboola\DbExtractor\Configuration\PgsqlExportConfig;
 use Keboola\DbExtractor\Configuration\PgsqlGetTablesListFilterDefinition;
-use Keboola\DbExtractor\Configuration\PgsqlTableNodeDecorator;
 use Keboola\DbExtractorConfig\Config;
 use Keboola\DbExtractorConfig\Configuration\ActionConfigRowDefinition;
 use Keboola\DbExtractorConfig\Configuration\ConfigDefinition;

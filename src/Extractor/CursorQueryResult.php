@@ -16,13 +16,15 @@ use Throwable;
 
 class CursorQueryResult implements QueryResult
 {
-    public const BATCH_SIZE = 10000;
+    public const DEFAULT_BATCH_SIZE = 10000;
 
     public const LOG_PROGRESS_SECONDS = 60;
 
     private PDO $pdo;
 
     private LoggerInterface $logger;
+
+    private int $batchSize;
 
     private string $query;
 
@@ -32,11 +34,16 @@ class CursorQueryResult implements QueryResult
 
     protected QueryMetadata $queryMetadata;
 
-    public function __construct(PDO $pdo, LoggerInterface $logger, string $query)
-    {
+    public function __construct(
+        PDO $pdo,
+        LoggerInterface $logger,
+        string $query,
+        int $batchSize = self::DEFAULT_BATCH_SIZE,
+    ) {
         $this->pdo = $pdo;
         $this->logger = $logger;
         $this->query = $query;
+        $this->batchSize = $batchSize;
 
         $this->cursorName = 'exdbcursor' . intval(microtime(true));
 
@@ -50,7 +57,7 @@ class CursorQueryResult implements QueryResult
             // Fetch statement is re-used
             $this->batchStmt = $this->pdo->prepare(sprintf(
                 'FETCH %d FROM %s',
-                self::BATCH_SIZE,
+                $this->batchSize,
                 $this->cursorName,
             ));
             $this->queryMetadata = new PdoQueryMetadata($this->batchStmt);
@@ -117,7 +124,7 @@ class CursorQueryResult implements QueryResult
 
     protected function doGetIterator(): Iterator
     {
-        $this->logger->info(sprintf('Fetching rows, batch size = %d ...', self::BATCH_SIZE));
+        $this->logger->info(sprintf('Fetching rows, batch size = %d ...', $this->batchSize));
 
         // Process next batch
         $allRows = 0;
