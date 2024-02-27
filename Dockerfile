@@ -11,16 +11,19 @@ COPY docker/php-prod.ini /usr/local/etc/php/php.ini
 COPY docker/composer-install.sh /tmp/composer-install.sh
 
 # Install dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    git \
-    locales \
-    unzip \
-    ssh \
-    zip \
-    libpq-dev \
-    postgresql \
-    postgresql-contrib \
-    libicu-dev \
+RUN apt-get update && apt-get install -y --no-install-recommends gnupg lsb-release curl \
+    && echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
+    && curl -sL https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
+        git \
+        locales \
+        unzip \
+        ssh \
+        zip \
+        libpq-dev \
+        postgresql-client \
+        libicu-dev \
     && rm -r /var/lib/apt/lists/* \
     && sed -i 's/^# *\(en_US.UTF-8\)/\1/' /etc/locale.gen \
     && locale-gen \

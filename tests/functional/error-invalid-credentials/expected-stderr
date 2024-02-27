@@ -1,1 +1,1 @@
-Error connecting to DB: SQLSTATE[08006] [7] FATAL:  password authentication failed for user "fakeguy"
+Error connecting to DB: SQLSTATE[08006] [7] connection to server at "pgsql" (%s), port 5432 failed: FATAL:  password authentication failed for user "fakeguy"
