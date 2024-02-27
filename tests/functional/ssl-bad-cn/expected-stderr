@@ -1,1 +1,1 @@
-Error connecting to DB: SQLSTATE[08006] [7] server certificate for "pgsql-ssl" does not match host name "pgsql-ssl-bad-cn"
+Error connecting to DB: SQLSTATE[08006] [7] connection to server at "pgsql-ssl-bad-cn" (%s), port 5432 failed: server certificate for "pgsql-ssl" does not match host name "pgsql-ssl-bad-cn"
