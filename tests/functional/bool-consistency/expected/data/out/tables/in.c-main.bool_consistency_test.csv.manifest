@@ -19,12 +19,15 @@
             "value": "table"
         }
     ],
+    "columns": [
+        "character",
+        "integer",
+        "decimal",
+        "boolean",
+        "date"
+    ],
     "column_metadata": {
         "character": [
-            {
-                "key": "KBC.datatype.type",
-                "value": "character varying"
-            },
             {
                 "key": "KBC.datatype.nullable",
                 "value": false
@@ -46,10 +49,6 @@
                 "value": "character"
             },
             {
-                "key": "KBC.primaryKey",
-                "value": true
-            },
-            {
                 "key": "KBC.uniqueKey",
                 "value": false
             },
@@ -59,10 +58,6 @@
             }
         ],
         "integer": [
-            {
-                "key": "KBC.datatype.type",
-                "value": "integer"
-            },
             {
                 "key": "KBC.datatype.nullable",
                 "value": false
@@ -84,10 +79,6 @@
                 "value": "integer"
             },
             {
-                "key": "KBC.primaryKey",
-                "value": false
-            },
-            {
                 "key": "KBC.uniqueKey",
                 "value": false
             },
@@ -97,10 +88,6 @@
             }
         ],
         "decimal": [
-            {
-                "key": "KBC.datatype.type",
-                "value": "numeric"
-            },
             {
                 "key": "KBC.datatype.nullable",
                 "value": false
@@ -126,10 +113,6 @@
                 "value": "decimal"
             },
             {
-                "key": "KBC.primaryKey",
-                "value": false
-            },
-            {
                 "key": "KBC.uniqueKey",
                 "value": false
             },
@@ -139,10 +122,6 @@
             }
         ],
         "boolean": [
-            {
-                "key": "KBC.datatype.type",
-                "value": "boolean"
-            },
             {
                 "key": "KBC.datatype.nullable",
                 "value": false
@@ -164,10 +143,6 @@
                 "value": "boolean"
             },
             {
-                "key": "KBC.primaryKey",
-                "value": false
-            },
-            {
                 "key": "KBC.uniqueKey",
                 "value": false
             },
@@ -177,10 +152,6 @@
             }
         ],
         "date": [
-            {
-                "key": "KBC.datatype.type",
-                "value": "date"
-            },
             {
                 "key": "KBC.datatype.nullable",
                 "value": true
@@ -198,10 +169,6 @@
                 "value": "date"
             },
             {
-                "key": "KBC.primaryKey",
-                "value": false
-            },
-            {
                 "key": "KBC.uniqueKey",
                 "value": false
             },
@@ -210,12 +177,5 @@
                 "value": 5
             }
         ]
-    },
-    "columns": [
-        "character",
-        "integer",
-        "decimal",
-        "boolean",
-        "date"
-    ]
+    }
 }

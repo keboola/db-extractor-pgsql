@@ -14,5 +14,223 @@
         "countycode",
         "userstate",
         "categorygroup"
-    ]
+    ],
+    "column_metadata": {
+        "usergender": [
+            {
+                "key": "KBC.datatype.nullable",
+                "value": true
+            },
+            {
+                "key": "KBC.sourceName",
+                "value": "usergender"
+            },
+            {
+                "key": "KBC.sanitizedName",
+                "value": "usergender"
+            },
+            {
+                "key": "KBC.uniqueKey",
+                "value": false
+            }
+        ],
+        "usercity": [
+            {
+                "key": "KBC.datatype.nullable",
+                "value": true
+            },
+            {
+                "key": "KBC.sourceName",
+                "value": "usercity"
+            },
+            {
+                "key": "KBC.sanitizedName",
+                "value": "usercity"
+            },
+            {
+                "key": "KBC.uniqueKey",
+                "value": false
+            }
+        ],
+        "usersentiment": [
+            {
+                "key": "KBC.datatype.nullable",
+                "value": true
+            },
+            {
+                "key": "KBC.sourceName",
+                "value": "usersentiment"
+            },
+            {
+                "key": "KBC.sanitizedName",
+                "value": "usersentiment"
+            },
+            {
+                "key": "KBC.uniqueKey",
+                "value": false
+            }
+        ],
+        "zipcode": [
+            {
+                "key": "KBC.datatype.nullable",
+                "value": true
+            },
+            {
+                "key": "KBC.sourceName",
+                "value": "zipcode"
+            },
+            {
+                "key": "KBC.sanitizedName",
+                "value": "zipcode"
+            },
+            {
+                "key": "KBC.uniqueKey",
+                "value": false
+            }
+        ],
+        "sku": [
+            {
+                "key": "KBC.datatype.nullable",
+                "value": true
+            },
+            {
+                "key": "KBC.sourceName",
+                "value": "sku"
+            },
+            {
+                "key": "KBC.sanitizedName",
+                "value": "sku"
+            },
+            {
+                "key": "KBC.uniqueKey",
+                "value": false
+            }
+        ],
+        "createdat": [
+            {
+                "key": "KBC.datatype.nullable",
+                "value": true
+            },
+            {
+                "key": "KBC.sourceName",
+                "value": "createdat"
+            },
+            {
+                "key": "KBC.sanitizedName",
+                "value": "createdat"
+            },
+            {
+                "key": "KBC.uniqueKey",
+                "value": false
+            }
+        ],
+        "category": [
+            {
+                "key": "KBC.datatype.nullable",
+                "value": true
+            },
+            {
+                "key": "KBC.sourceName",
+                "value": "category"
+            },
+            {
+                "key": "KBC.sanitizedName",
+                "value": "category"
+            },
+            {
+                "key": "KBC.uniqueKey",
+                "value": false
+            }
+        ],
+        "price": [
+            {
+                "key": "KBC.datatype.nullable",
+                "value": true
+            },
+            {
+                "key": "KBC.sourceName",
+                "value": "price"
+            },
+            {
+                "key": "KBC.sanitizedName",
+                "value": "price"
+            },
+            {
+                "key": "KBC.uniqueKey",
+                "value": false
+            }
+        ],
+        "county": [
+            {
+                "key": "KBC.datatype.nullable",
+                "value": true
+            },
+            {
+                "key": "KBC.sourceName",
+                "value": "county"
+            },
+            {
+                "key": "KBC.sanitizedName",
+                "value": "county"
+            },
+            {
+                "key": "KBC.uniqueKey",
+                "value": false
+            }
+        ],
+        "countycode": [
+            {
+                "key": "KBC.datatype.nullable",
+                "value": true
+            },
+            {
+                "key": "KBC.sourceName",
+                "value": "countycode"
+            },
+            {
+                "key": "KBC.sanitizedName",
+                "value": "countycode"
+            },
+            {
+                "key": "KBC.uniqueKey",
+                "value": false
+            }
+        ],
+        "userstate": [
+            {
+                "key": "KBC.datatype.nullable",
+                "value": true
+            },
+            {
+                "key": "KBC.sourceName",
+                "value": "userstate"
+            },
+            {
+                "key": "KBC.sanitizedName",
+                "value": "userstate"
+            },
+            {
+                "key": "KBC.uniqueKey",
+                "value": false
+            }
+        ],
+        "categorygroup": [
+            {
+                "key": "KBC.datatype.nullable",
+                "value": true
+            },
+            {
+                "key": "KBC.sourceName",
+                "value": "categorygroup"
+            },
+            {
+                "key": "KBC.sanitizedName",
+                "value": "categorygroup"
+            },
+            {
+                "key": "KBC.uniqueKey",
+                "value": false
+            }
+        ]
+    }
 }

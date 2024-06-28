@@ -19,12 +19,22 @@
             "value": "table"
         }
     ],
+    "columns": [
+        "usergender",
+        "usercity",
+        "usersentiment",
+        "zipcode",
+        "sku",
+        "createdat",
+        "category",
+        "price",
+        "county",
+        "countycode",
+        "userstate",
+        "categorygroup"
+    ],
     "column_metadata": {
         "usergender": [
-            {
-                "key": "KBC.datatype.type",
-                "value": "text"
-            },
             {
                 "key": "KBC.datatype.nullable",
                 "value": true
@@ -40,10 +50,6 @@
             {
                 "key": "KBC.sanitizedName",
                 "value": "usergender"
-            },
-            {
-                "key": "KBC.primaryKey",
-                "value": false
             },
             {
                 "key": "KBC.uniqueKey",
@@ -56,10 +62,6 @@
         ],
         "usercity": [
             {
-                "key": "KBC.datatype.type",
-                "value": "text"
-            },
-            {
                 "key": "KBC.datatype.nullable",
                 "value": true
             },
@@ -74,10 +76,6 @@
             {
                 "key": "KBC.sanitizedName",
                 "value": "usercity"
-            },
-            {
-                "key": "KBC.primaryKey",
-                "value": false
             },
             {
                 "key": "KBC.uniqueKey",
@@ -90,10 +88,6 @@
         ],
         "usersentiment": [
             {
-                "key": "KBC.datatype.type",
-                "value": "text"
-            },
-            {
                 "key": "KBC.datatype.nullable",
                 "value": true
             },
@@ -108,10 +102,6 @@
             {
                 "key": "KBC.sanitizedName",
                 "value": "usersentiment"
-            },
-            {
-                "key": "KBC.primaryKey",
-                "value": false
             },
             {
                 "key": "KBC.uniqueKey",
@@ -124,10 +114,6 @@
         ],
         "zipcode": [
             {
-                "key": "KBC.datatype.type",
-                "value": "text"
-            },
-            {
                 "key": "KBC.datatype.nullable",
                 "value": true
             },
@@ -142,10 +128,6 @@
             {
                 "key": "KBC.sanitizedName",
                 "value": "zipcode"
-            },
-            {
-                "key": "KBC.primaryKey",
-                "value": false
             },
             {
                 "key": "KBC.uniqueKey",
@@ -158,10 +140,6 @@
         ],
         "sku": [
             {
-                "key": "KBC.datatype.type",
-                "value": "text"
-            },
-            {
                 "key": "KBC.datatype.nullable",
                 "value": true
             },
@@ -178,10 +156,6 @@
                 "value": "sku"
             },
             {
-                "key": "KBC.primaryKey",
-                "value": false
-            },
-            {
                 "key": "KBC.uniqueKey",
                 "value": false
             },
@@ -191,10 +165,6 @@
             }
         ],
         "createdat": [
-            {
-                "key": "KBC.datatype.type",
-                "value": "character varying"
-            },
             {
                 "key": "KBC.datatype.nullable",
                 "value": false
@@ -216,10 +186,6 @@
                 "value": "createdat"
             },
             {
-                "key": "KBC.primaryKey",
-                "value": true
-            },
-            {
                 "key": "KBC.uniqueKey",
                 "value": false
             },
@@ -229,10 +195,6 @@
             }
         ],
         "category": [
-            {
-                "key": "KBC.datatype.type",
-                "value": "text"
-            },
             {
                 "key": "KBC.datatype.nullable",
                 "value": true
@@ -248,10 +210,6 @@
             {
                 "key": "KBC.sanitizedName",
                 "value": "category"
-            },
-            {
-                "key": "KBC.primaryKey",
-                "value": false
             },
             {
                 "key": "KBC.uniqueKey",
@@ -264,10 +222,6 @@
         ],
         "price": [
             {
-                "key": "KBC.datatype.type",
-                "value": "text"
-            },
-            {
                 "key": "KBC.datatype.nullable",
                 "value": true
             },
@@ -282,10 +236,6 @@
             {
                 "key": "KBC.sanitizedName",
                 "value": "price"
-            },
-            {
-                "key": "KBC.primaryKey",
-                "value": false
             },
             {
                 "key": "KBC.uniqueKey",
@@ -298,10 +248,6 @@
         ],
         "county": [
             {
-                "key": "KBC.datatype.type",
-                "value": "text"
-            },
-            {
                 "key": "KBC.datatype.nullable",
                 "value": true
             },
@@ -316,10 +262,6 @@
             {
                 "key": "KBC.sanitizedName",
                 "value": "county"
-            },
-            {
-                "key": "KBC.primaryKey",
-                "value": false
             },
             {
                 "key": "KBC.uniqueKey",
@@ -332,10 +274,6 @@
         ],
         "countycode": [
             {
-                "key": "KBC.datatype.type",
-                "value": "text"
-            },
-            {
                 "key": "KBC.datatype.nullable",
                 "value": true
             },
@@ -350,10 +288,6 @@
             {
                 "key": "KBC.sanitizedName",
                 "value": "countycode"
-            },
-            {
-                "key": "KBC.primaryKey",
-                "value": false
             },
             {
                 "key": "KBC.uniqueKey",
@@ -366,10 +300,6 @@
         ],
         "userstate": [
             {
-                "key": "KBC.datatype.type",
-                "value": "text"
-            },
-            {
                 "key": "KBC.datatype.nullable",
                 "value": true
             },
@@ -384,10 +314,6 @@
             {
                 "key": "KBC.sanitizedName",
                 "value": "userstate"
-            },
-            {
-                "key": "KBC.primaryKey",
-                "value": false
             },
             {
                 "key": "KBC.uniqueKey",
@@ -400,10 +326,6 @@
         ],
         "categorygroup": [
             {
-                "key": "KBC.datatype.type",
-                "value": "text"
-            },
-            {
                 "key": "KBC.datatype.nullable",
                 "value": true
             },
@@ -420,10 +342,6 @@
                 "value": "categorygroup"
             },
             {
-                "key": "KBC.primaryKey",
-                "value": false
-            },
-            {
                 "key": "KBC.uniqueKey",
                 "value": false
             },
@@ -432,19 +350,5 @@
                 "value": 12
             }
         ]
-    },
-    "columns": [
-        "usergender",
-        "usercity",
-        "usersentiment",
-        "zipcode",
-        "sku",
-        "createdat",
-        "category",
-        "price",
-        "county",
-        "countycode",
-        "userstate",
-        "categorygroup"
-    ]
+    }
 }
