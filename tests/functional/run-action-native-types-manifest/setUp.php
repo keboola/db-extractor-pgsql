@@ -16,4 +16,8 @@ return function (DatadirTest $test): void {
     // special table
     $manager->createEscapingTable();
     $manager->generateEscapingRows();
+
+    // types table
+    $manager->createTypesTable();
+    $manager->generateTypesRows();
 };

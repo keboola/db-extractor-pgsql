@@ -1,0 +1,97 @@
+{
+    "destination": "in.c-main.types",
+    "incremental": false,
+    "table_metadata": {
+        "KBC.name": "types",
+        "KBC.sanitizedName": "types",
+        "KBC.schema": "public",
+        "KBC.type": "table"
+    },
+    "schema": [
+        {
+            "nullable": false,
+            "primary_key": false,
+            "metadata": {
+                "KBC.sourceName": "character",
+                "KBC.sanitizedName": "character",
+                "KBC.uniqueKey": false,
+                "KBC.ordinalPosition": 1
+            },
+            "name": "character",
+            "data_type": {
+                "base": {
+                    "length": "123",
+                    "type": "STRING"
+                }
+            }
+        },
+        {
+            "nullable": false,
+            "primary_key": false,
+            "metadata": {
+                "KBC.sourceName": "integer",
+                "KBC.sanitizedName": "integer",
+                "KBC.uniqueKey": false,
+                "KBC.ordinalPosition": 2
+            },
+            "name": "integer",
+            "data_type": {
+                "base": {
+                    "default": "42",
+                    "type": "INTEGER"
+                }
+            }
+        },
+        {
+            "nullable": false,
+            "primary_key": false,
+            "metadata": {
+                "KBC.sourceName": "decimal",
+                "KBC.sanitizedName": "decimal",
+                "KBC.uniqueKey": false,
+                "KBC.ordinalPosition": 3
+            },
+            "name": "decimal",
+            "data_type": {
+                "base": {
+                    "default": "1.2",
+                    "length": "5,3",
+                    "type": "NUMERIC"
+                }
+            }
+        },
+        {
+            "nullable": false,
+            "primary_key": false,
+            "metadata": {
+                "KBC.sourceName": "boolean",
+                "KBC.sanitizedName": "boolean",
+                "KBC.uniqueKey": false,
+                "KBC.ordinalPosition": 4
+            },
+            "name": "boolean",
+            "data_type": {
+                "base": {
+                    "default": "false",
+                    "type": "BOOLEAN"
+                }
+            }
+        },
+        {
+            "nullable": true,
+            "primary_key": false,
+            "metadata": {
+                "KBC.sourceName": "date",
+                "KBC.sanitizedName": "date",
+                "KBC.uniqueKey": false,
+                "KBC.ordinalPosition": 5
+            },
+            "name": "date",
+            "data_type": {
+                "base": {
+                    "type": "DATE"
+                }
+            }
+        }
+    ]
+}

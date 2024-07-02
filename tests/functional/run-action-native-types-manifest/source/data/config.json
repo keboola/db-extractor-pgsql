@@ -21,6 +21,18 @@
           "schema": "public",
           "tableName": "sales"
         }
+      },
+      {
+        "id": 3,
+        "enabled": true,
+        "name": "types",
+        "outputTable": "in.c-main.types",
+        "incremental": false,
+        "primaryKey": null,
+        "table": {
+          "schema": "public",
+          "tableName": "types"
+        }
       }
     ],
     "db": {
