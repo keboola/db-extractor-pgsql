@@ -26,5 +26,6 @@ trait RemoveAllTablesTrait
         }
 
         $this->connection->query('DROP SEQUENCE IF EXISTS "user_id_seq"');
+        $this->connection->query('DROP SEQUENCE IF EXISTS "my_sequence"');
     }
 }

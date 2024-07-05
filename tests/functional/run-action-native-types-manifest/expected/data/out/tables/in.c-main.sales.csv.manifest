@@ -1,0 +1,205 @@
+{
+    "destination": "in.c-main.sales",
+    "incremental": false,
+    "table_metadata": {
+        "KBC.name": "sales",
+        "KBC.sanitizedName": "sales",
+        "KBC.schema": "public",
+        "KBC.type": "table"
+    },
+    "schema": [
+        {
+            "nullable": true,
+            "primary_key": false,
+            "metadata": {
+                "KBC.sourceName": "usergender",
+                "KBC.sanitizedName": "usergender",
+                "KBC.uniqueKey": false,
+                "KBC.ordinalPosition": 1
+            },
+            "name": "usergender",
+            "data_type": {
+                "base": {
+                    "type": "STRING"
+                }
+            }
+        },
+        {
+            "nullable": true,
+            "primary_key": false,
+            "metadata": {
+                "KBC.sourceName": "usercity",
+                "KBC.sanitizedName": "usercity",
+                "KBC.uniqueKey": false,
+                "KBC.ordinalPosition": 2
+            },
+            "name": "usercity",
+            "data_type": {
+                "base": {
+                    "type": "STRING"
+                }
+            }
+        },
+        {
+            "nullable": true,
+            "primary_key": false,
+            "metadata": {
+                "KBC.sourceName": "usersentiment",
+                "KBC.sanitizedName": "usersentiment",
+                "KBC.uniqueKey": false,
+                "KBC.ordinalPosition": 3
+            },
+            "name": "usersentiment",
+            "data_type": {
+                "base": {
+                    "type": "STRING"
+                }
+            }
+        },
+        {
+            "nullable": true,
+            "primary_key": false,
+            "metadata": {
+                "KBC.sourceName": "zipcode",
+                "KBC.sanitizedName": "zipcode",
+                "KBC.uniqueKey": false,
+                "KBC.ordinalPosition": 4
+            },
+            "name": "zipcode",
+            "data_type": {
+                "base": {
+                    "type": "STRING"
+                }
+            }
+        },
+        {
+            "nullable": true,
+            "primary_key": false,
+            "metadata": {
+                "KBC.sourceName": "sku",
+                "KBC.sanitizedName": "sku",
+                "KBC.uniqueKey": false,
+                "KBC.ordinalPosition": 5
+            },
+            "name": "sku",
+            "data_type": {
+                "base": {
+                    "type": "STRING"
+                }
+            }
+        },
+        {
+            "nullable": false,
+            "primary_key": false,
+            "metadata": {
+                "KBC.sourceName": "createdat",
+                "KBC.sanitizedName": "createdat",
+                "KBC.uniqueKey": false,
+                "KBC.ordinalPosition": 6
+            },
+            "name": "createdat",
+            "data_type": {
+                "base": {
+                    "length": "64",
+                    "type": "STRING"
+                }
+            }
+        },
+        {
+            "nullable": true,
+            "primary_key": false,
+            "metadata": {
+                "KBC.sourceName": "category",
+                "KBC.sanitizedName": "category",
+                "KBC.uniqueKey": false,
+                "KBC.ordinalPosition": 7
+            },
+            "name": "category",
+            "data_type": {
+                "base": {
+                    "type": "STRING"
+                }
+            }
+        },
+        {
+            "nullable": true,
+            "primary_key": false,
+            "metadata": {
+                "KBC.sourceName": "price",
+                "KBC.sanitizedName": "price",
+                "KBC.uniqueKey": false,
+                "KBC.ordinalPosition": 8
+            },
+            "name": "price",
+            "data_type": {
+                "base": {
+                    "type": "STRING"
+                }
+            }
+        },
+        {
+            "nullable": true,
+            "primary_key": false,
+            "metadata": {
+                "KBC.sourceName": "county",
+                "KBC.sanitizedName": "county",
+                "KBC.uniqueKey": false,
+                "KBC.ordinalPosition": 9
+            },
+            "name": "county",
+            "data_type": {
+                "base": {
+                    "type": "STRING"
+                }
+            }
+        },
+        {
+            "nullable": true,
+            "primary_key": false,
+            "metadata": {
+                "KBC.sourceName": "countycode",
+                "KBC.sanitizedName": "countycode",
+                "KBC.uniqueKey": false,
+                "KBC.ordinalPosition": 10
+            },
+            "name": "countycode",
+            "data_type": {
+                "base": {
+                    "type": "STRING"
+                }
+            }
+        },
+        {
+            "nullable": true,
+            "primary_key": false,
+            "metadata": {
+                "KBC.sourceName": "userstate",
+                "KBC.sanitizedName": "userstate",
+                "KBC.uniqueKey": false,
+                "KBC.ordinalPosition": 11
+            },
+            "name": "userstate",
+            "data_type": {
+                "base": {
+                    "type": "STRING"
+                }
+            }
+        },
+        {
+            "nullable": true,
+            "primary_key": false,
+            "metadata": {
+                "KBC.sourceName": "categorygroup",
+                "KBC.sanitizedName": "categorygroup",
+                "KBC.uniqueKey": false,
+                "KBC.ordinalPosition": 12
+            },
+            "name": "categorygroup",
+            "data_type": {
+                "base": {
+                    "type": "STRING"
+                }
+            }
+        }
+    ]
+}

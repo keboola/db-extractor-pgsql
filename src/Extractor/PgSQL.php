@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\DbExtractor\Extractor;
 
+use Keboola\Component\Config\DatatypeSupport;
 use Keboola\Datatype\Definition\Exception\InvalidLengthException;
 use Keboola\Datatype\Definition\GenericStorage;
 use Keboola\DbExtractor\Adapter\Connection\DbConnection;
@@ -24,10 +25,15 @@ class PgSQL extends BaseExtractor
 
     private PgSQLDbConnection $connection;
 
-    public function __construct(array $parameters, array $state, LoggerInterface $logger, string $action)
-    {
+    public function __construct(
+        array $parameters,
+        array $state,
+        LoggerInterface $logger,
+        string $action,
+        DatatypeSupport $datatypeSupport,
+    ) {
         $parameters['db']['ssh']['compression'] = true;
-        parent::__construct($parameters, $state, $logger, $action);
+        parent::__construct($parameters, $state, $logger, $action, $datatypeSupport);
     }
 
     /**

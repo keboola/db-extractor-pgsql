@@ -1,4 +1,3 @@
-version: "3"
 services:
   app: &app
     build: .
@@ -6,6 +5,7 @@ services:
     command: composer ci
     environment:
       - KBC_COMPONENT_RUN_MODE=run
+      - KBC_DATA_TYPE_SUPPORT=none
       - PGSQL_DB_HOST=pgsql
       - PGSQL_DB_SSL_HOST=pgsql-ssl
       - PGSQL_DB_SSL_HOST_BAD_CN=pgsql-ssl-bad-cn

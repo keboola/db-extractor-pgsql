@@ -4,5 +4,43 @@
     "columns": [
         "col1",
         "col2"
-    ]
+    ],
+    "column_metadata": {
+        "col1": [
+            {
+                "key": "KBC.datatype.nullable",
+                "value": true
+            },
+            {
+                "key": "KBC.sourceName",
+                "value": "col1"
+            },
+            {
+                "key": "KBC.sanitizedName",
+                "value": "col1"
+            },
+            {
+                "key": "KBC.uniqueKey",
+                "value": false
+            }
+        ],
+        "col2": [
+            {
+                "key": "KBC.datatype.nullable",
+                "value": true
+            },
+            {
+                "key": "KBC.sourceName",
+                "value": "col2"
+            },
+            {
+                "key": "KBC.sanitizedName",
+                "value": "col2"
+            },
+            {
+                "key": "KBC.uniqueKey",
+                "value": false
+            }
+        ]
+    }
 }

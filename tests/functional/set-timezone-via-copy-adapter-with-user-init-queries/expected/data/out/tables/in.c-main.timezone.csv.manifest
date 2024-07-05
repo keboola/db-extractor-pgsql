@@ -3,5 +3,25 @@
     "incremental": false,
     "columns": [
         "current_setting"
-    ]
+    ],
+    "column_metadata": {
+        "current_setting": [
+            {
+                "key": "KBC.datatype.nullable",
+                "value": true
+            },
+            {
+                "key": "KBC.sourceName",
+                "value": "current_setting"
+            },
+            {
+                "key": "KBC.sanitizedName",
+                "value": "current_setting"
+            },
+            {
+                "key": "KBC.uniqueKey",
+                "value": false
+            }
+        ]
+    }
 }
