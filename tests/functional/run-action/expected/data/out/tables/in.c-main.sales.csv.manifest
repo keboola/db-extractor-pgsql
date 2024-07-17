@@ -174,10 +174,6 @@
                 "value": "STRING"
             },
             {
-                "key": "KBC.datatype.length",
-                "value": "64"
-            },
-            {
                 "key": "KBC.sourceName",
                 "value": "createdat"
             },

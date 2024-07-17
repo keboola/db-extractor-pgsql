@@ -117,10 +117,6 @@ class PgsqlTest extends TestCase
                     'value' => 'STRING',
                 ],
                 [
-                    'key' => 'KBC.datatype.length',
-                    'value' => '123',
-                ],
-                [
                     'key' => 'KBC.sourceName',
                     'value' => 'character',
                 ],
@@ -175,10 +171,6 @@ class PgsqlTest extends TestCase
                 [
                     'key' => 'KBC.datatype.basetype',
                     'value' => 'NUMERIC',
-                ],
-                [
-                    'key' => 'KBC.datatype.length',
-                    'value' => '5,3',
                 ],
                 [
                     'key' => 'KBC.datatype.default',
@@ -288,10 +280,6 @@ class PgsqlTest extends TestCase
                     'value' => 'STRING',
                 ],
                 [
-                    'key' => 'KBC.datatype.length',
-                    'value' => '123',
-                ],
-                [
                     'key' => 'KBC.sourceName',
                     'value' => 'character',
                 ],
@@ -346,10 +334,6 @@ class PgsqlTest extends TestCase
                 [
                     'key' => 'KBC.datatype.basetype',
                     'value' => 'NUMERIC',
-                ],
-                [
-                    'key' => 'KBC.datatype.length',
-                    'value' => '5,3',
                 ],
                 [
                     'key' => 'KBC.datatype.default',

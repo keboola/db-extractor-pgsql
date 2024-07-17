@@ -100,7 +100,6 @@
             "name": "createdat",
             "data_type": {
                 "base": {
-                    "length": "64",
                     "type": "STRING"
                 }
             }
