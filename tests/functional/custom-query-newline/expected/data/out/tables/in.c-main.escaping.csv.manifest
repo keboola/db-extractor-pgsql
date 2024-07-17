@@ -5,6 +5,9 @@
         "col1",
         "col2"
     ],
+    "primary_key": [
+        "col1"
+    ],
     "column_metadata": {
         "col1": [
             {

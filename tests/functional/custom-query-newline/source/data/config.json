@@ -3,6 +3,7 @@
     "name": "sales",
     "query": "SELECT\n*\nFROM escaping;",
     "outputTable": "in.c-main.escaping",
+    "primaryKey": ["col1"],
     "db": {
       "host": "%env(string:PGSQL_DB_HOST)%",
       "port": "%env(string:PGSQL_DB_PORT)%",
