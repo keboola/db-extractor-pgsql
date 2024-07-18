@@ -20,7 +20,6 @@
             "name": "character",
             "data_type": {
                 "base": {
-                    "length": "123",
                     "type": "STRING"
                 }
             }
@@ -55,7 +54,6 @@
             "data_type": {
                 "base": {
                     "default": "1.2",
-                    "length": "5,3",
                     "type": "NUMERIC"
                 }
             }
