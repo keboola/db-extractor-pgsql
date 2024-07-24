@@ -229,16 +229,16 @@
         },
         {
             "name": "keboola/db-extractor-common",
-            "version": "17.0.5",
+            "version": "17.0.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/db-extractor-common.git",
-                "reference": "77808392887cbdec5d183f4b9f84bd1cbe1fbcd7"
+                "reference": "2e2b8763c853938406e6cba64aeaf6760bdaddff"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/db-extractor-common/zipball/77808392887cbdec5d183f4b9f84bd1cbe1fbcd7",
-                "reference": "77808392887cbdec5d183f4b9f84bd1cbe1fbcd7",
+                "url": "https://api.github.com/repos/keboola/db-extractor-common/zipball/2e2b8763c853938406e6cba64aeaf6760bdaddff",
+                "reference": "2e2b8763c853938406e6cba64aeaf6760bdaddff",
                 "shasum": ""
             },
             "require": {
@@ -299,9 +299,9 @@
             ],
             "description": "Common library from Keboola Database Extractors",
             "support": {
-                "source": "https://github.com/keboola/db-extractor-common/tree/17.0.5"
+                "source": "https://github.com/keboola/db-extractor-common/tree/17.0.8"
             },
-            "time": "2024-07-17T12:28:22+00:00"
+            "time": "2024-07-23T09:18:14+00:00"
         },
         {
             "name": "keboola/db-extractor-config",
@@ -499,16 +499,16 @@
         },
         {
             "name": "keboola/php-datatypes",
-            "version": "7.6.0",
+            "version": "7.7.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/php-datatypes.git",
-                "reference": "acafca2309e346206ccc69d15a5a581c45f9b28f"
+                "reference": "c869241a64de74c27a1f6b025cd6f3ee39034d38"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/php-datatypes/zipball/acafca2309e346206ccc69d15a5a581c45f9b28f",
-                "reference": "acafca2309e346206ccc69d15a5a581c45f9b28f",
+                "url": "https://api.github.com/repos/keboola/php-datatypes/zipball/c869241a64de74c27a1f6b025cd6f3ee39034d38",
+                "reference": "c869241a64de74c27a1f6b025cd6f3ee39034d38",
                 "shasum": ""
             },
             "require": {
@@ -541,9 +541,9 @@
             "description": "PHP datatypes for databases",
             "support": {
                 "issues": "https://github.com/keboola/php-datatypes/issues",
-                "source": "https://github.com/keboola/php-datatypes/tree/7.6.0"
+                "source": "https://github.com/keboola/php-datatypes/tree/7.7.0"
             },
-            "time": "2024-03-05T09:08:00+00:00"
+            "time": "2024-07-19T13:27:02+00:00"
         },
         {
             "name": "keboola/php-temp",
@@ -4379,16 +4379,16 @@
         },
         {
             "name": "squizlabs/php_codesniffer",
-            "version": "3.10.1",
+            "version": "3.10.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/PHPCSStandards/PHP_CodeSniffer.git",
-                "reference": "8f90f7a53ce271935282967f53d0894f8f1ff877"
+                "reference": "86e5f5dd9a840c46810ebe5ff1885581c42a3017"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/PHPCSStandards/PHP_CodeSniffer/zipball/8f90f7a53ce271935282967f53d0894f8f1ff877",
-                "reference": "8f90f7a53ce271935282967f53d0894f8f1ff877",
+                "url": "https://api.github.com/repos/PHPCSStandards/PHP_CodeSniffer/zipball/86e5f5dd9a840c46810ebe5ff1885581c42a3017",
+                "reference": "86e5f5dd9a840c46810ebe5ff1885581c42a3017",
                 "shasum": ""
             },
             "require": {
@@ -4455,7 +4455,7 @@
                     "type": "open_collective"
                 }
             ],
-            "time": "2024-05-22T21:24:41+00:00"
+            "time": "2024-07-21T23:26:44+00:00"
         }
     ],
     "aliases": [],
