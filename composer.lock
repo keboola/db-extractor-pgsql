@@ -439,16 +439,16 @@
         },
         {
             "name": "keboola/php-component",
-            "version": "10.1.2",
+            "version": "10.1.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/php-component.git",
-                "reference": "d2a3a9630d7c119961e28513b623735416cfcc3b"
+                "reference": "ed4ddea277ceb443567e10204a5d86576d7ffe7a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/php-component/zipball/d2a3a9630d7c119961e28513b623735416cfcc3b",
-                "reference": "d2a3a9630d7c119961e28513b623735416cfcc3b",
+                "url": "https://api.github.com/repos/keboola/php-component/zipball/ed4ddea277ceb443567e10204a5d86576d7ffe7a",
+                "reference": "ed4ddea277ceb443567e10204a5d86576d7ffe7a",
                 "shasum": ""
             },
             "require": {
@@ -493,9 +493,9 @@
             ],
             "support": {
                 "issues": "https://github.com/keboola/php-component/issues",
-                "source": "https://github.com/keboola/php-component/tree/10.1.2"
+                "source": "https://github.com/keboola/php-component/tree/10.1.4"
             },
-            "time": "2024-06-27T16:53:28+00:00"
+            "time": "2024-07-30T13:34:46+00:00"
         },
         {
             "name": "keboola/php-datatypes",
