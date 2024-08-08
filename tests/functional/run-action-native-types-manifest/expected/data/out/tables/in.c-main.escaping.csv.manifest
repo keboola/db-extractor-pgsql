@@ -10,7 +10,12 @@
                 "KBC.sanitizedName": "col1",
                 "KBC.uniqueKey": false
             },
-            "name": "col1"
+            "name": "col1",
+            "data_type": {
+                "base": {
+                    "type": "STRING"
+                }
+            }
         },
         {
             "nullable": true,
@@ -20,7 +25,12 @@
                 "KBC.sanitizedName": "col2",
                 "KBC.uniqueKey": false
             },
-            "name": "col2"
+            "name": "col2",
+            "data_type": {
+                "base": {
+                    "type": "STRING"
+                }
+            }
         }
     ]
 }
