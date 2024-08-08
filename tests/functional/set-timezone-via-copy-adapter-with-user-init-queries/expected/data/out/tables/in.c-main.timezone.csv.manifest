@@ -11,6 +11,10 @@
                 "value": true
             },
             {
+                "key": "KBC.datatype.basetype",
+                "value": "STRING"
+            },
+            {
                 "key": "KBC.sourceName",
                 "value": "current_setting"
             },

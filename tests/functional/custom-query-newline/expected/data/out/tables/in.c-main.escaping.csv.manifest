@@ -15,6 +15,10 @@
                 "value": true
             },
             {
+                "key": "KBC.datatype.basetype",
+                "value": "STRING"
+            },
+            {
                 "key": "KBC.sourceName",
                 "value": "col1"
             },
@@ -31,6 +35,10 @@
             {
                 "key": "KBC.datatype.nullable",
                 "value": true
+            },
+            {
+                "key": "KBC.datatype.basetype",
+                "value": "STRING"
             },
             {
                 "key": "KBC.sourceName",
