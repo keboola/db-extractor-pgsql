@@ -41,7 +41,7 @@
 
 - Clone the repository.
 - Create `.env` file with `PGSQL_VERSION=latest`.
-- Run `docker-compose build`.
+- Run `docker compose build`.
 
 ## License
 
