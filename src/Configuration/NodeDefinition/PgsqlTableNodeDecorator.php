@@ -25,6 +25,14 @@ class PgsqlTableNodeDecorator extends TableNodesDecorator
         // Fix BC: some old configs can be empty primary key
         $builder
             ->arrayNode('primaryKey')
+                ->beforeNormalization()
+                    ->ifArray()
+                    ->then(function ($v) {
+                        return array_filter($v, function ($value) {
+                            return $value !== '';
+                        });
+                    })
+                ->end()
                 ->prototype('scalar')->end();
         // @formatter:on
     }

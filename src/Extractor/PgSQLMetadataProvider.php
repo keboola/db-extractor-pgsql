@@ -108,8 +108,8 @@ class PgSQLMetadataProvider implements MetadataProvider
         // Length
         $length = null;
         if (preg_match('/(.*)\((\d+|\d+,\d+)\)/', $columnType, $parsedType) === 1) {
-            $columnType = $parsedType[1] ?? null;
-            $length = $parsedType[2] ?? null;
+            $columnType = $parsedType[1];
+            $length = $parsedType[2];
         }
 
         // Create  column
