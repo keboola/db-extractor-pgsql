@@ -51,7 +51,7 @@ class CursorQueryResult implements QueryResult
         try {
             $this->pdo->beginTransaction(); // cursors require a transaction
             $this->pdo->exec('SET TRANSACTION ISOLATION LEVEL SERIALIZABLE READ ONLY DEFERRABLE');
-            $cursorSql = sprintf('DECLARE %s CURSOR FOR %s FOR SHARE', $this->cursorName, $this->query);
+            $cursorSql = sprintf('DECLARE %s CURSOR FOR %s', $this->cursorName, $this->query);
             $cursorStmt = $this->pdo->prepare($cursorSql);
             $cursorStmt->execute();
 
