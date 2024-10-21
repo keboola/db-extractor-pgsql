@@ -1,4 +1,4 @@
-FROM php:8.2-cli-buster
+FROM php:8.2-cli-bookworm
 
 ARG COMPOSER_FLAGS="--prefer-dist --no-interaction"
 ARG DEBIAN_FRONTEND=noninteractive
@@ -12,7 +12,7 @@ COPY docker/composer-install.sh /tmp/composer-install.sh
 
 # Install dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends gnupg lsb-release curl \
-    && echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
+    && echo "deb http://apt.postgresql.org/pub/repos/apt/bionic-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
     && curl -sL https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
