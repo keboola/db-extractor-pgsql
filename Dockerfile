@@ -1,4 +1,4 @@
-FROM php:8.2-cli-buster AS base
+FROM php:8.2-cli-bookworm AS base
 
 ARG COMPOSER_FLAGS="--prefer-dist --no-interaction"
 ARG DEBIAN_FRONTEND=noninteractive
