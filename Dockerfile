@@ -1,4 +1,4 @@
-FROM php:8.2-cli-buster
+FROM php:8.2-cli-buster AS base
 
 ARG COMPOSER_FLAGS="--prefer-dist --no-interaction"
 ARG DEBIAN_FRONTEND=noninteractive
@@ -12,7 +12,7 @@ COPY docker/composer-install.sh /tmp/composer-install.sh
 
 # Install dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends gnupg lsb-release curl \
-    && echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
+    && echo "deb http://apt-archive.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
     && curl -sL https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -47,6 +47,22 @@ RUN \
     # https://stackoverflow.com/questions/53058362/openssl-v1-1-1-ssl-choose-client-version-unsupported-protocol
     && sed -i 's/MinProtocol\s*=.*/MinProtocol = TLSv1/g' /etc/ssl/openssl.cnf
 
+## Composer - deps always cached unless changed
+# First copy only composer files
+COPY composer.* /code/
+
+# Download dependencies, but don't run scripts or init autoloaders as the app is missing
+RUN composer install $COMPOSER_FLAGS --no-scripts --no-autoloader
+
+# Copy rest of the app
+COPY . /code/
+
+# Run normal composer - all deps are cached already
+RUN composer install $COMPOSER_FLAGS
+
+CMD php ./src/run.php
+
+FROM base AS disabled-pgsql-logs
 # Disable PgSQL server side debugging mesages.
 #
 # The database server can generate debug messages and send them to the client.
@@ -62,18 +78,3 @@ RUN \
 # - https://www.postgresql.org/docs/current/config-setting.html#CONFIG-SETTING-SHELL "20.1.4. Parameter Interaction via the Shell"
 # - https://www.postgresql.org/docs/16/runtime-config-client.html "20.11. Client Connection Defaults / client_min_messages"
 ENV PGOPTIONS="-c client_min_messages=ERROR"
-
-## Composer - deps always cached unless changed
-# First copy only composer files
-COPY composer.* /code/
-
-# Download dependencies, but don't run scripts or init autoloaders as the app is missing
-RUN composer install $COMPOSER_FLAGS --no-scripts --no-autoloader
-
-# Copy rest of the app
-COPY . /code/
-
-# Run normal composer - all deps are cached already
-RUN composer install $COMPOSER_FLAGS
-
-CMD php ./src/run.php
