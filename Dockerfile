@@ -8,6 +8,7 @@ ENV COMPOSER_PROCESS_TIMEOUT 3600
 WORKDIR /code/
 
 COPY docker/php-prod.ini /usr/local/etc/php/php.ini
+COPY docker/ssh-config /root/.ssh/config
 COPY docker/composer-install.sh /tmp/composer-install.sh
 
 # Install dependencies
