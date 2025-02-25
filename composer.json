@@ -2,7 +2,7 @@
     "name": "keboola/db-extractor-pgsql",
     "license": "MIT",
     "type": "project",
-    "description": "Reads data from Postgres databases for keboola connection",
+    "description": "Brings data from Postgres databases into Keboola",
     "authors": [
         {
             "name": "Keboola",
