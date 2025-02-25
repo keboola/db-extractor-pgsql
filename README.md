@@ -1,8 +1,9 @@
 # PostgreSQL DB Extractor
 [![GitHub Actions](https://github.com/keboola/db-extractor-pgsql/actions/workflows/push.yml/badge.svg)](https://github.com/keboola/db-extractor-pgsql/actions/workflows/push.yml)
 
+This component extracts data from a PostgresSQL database.
 
-## Example configuration
+## Example Configuration
 
 
     {
@@ -40,9 +41,9 @@
 ### Development
 
 - Clone the repository.
-- Create `.env` file with `PGSQL_VERSION=latest`.
+- Create a `.env` file with `PGSQL_VERSION=latest`.
 - Run `docker compose build`.
 
 ## License
 
-MIT licensed, see [LICENSE](./LICENSE) file.
+MIT licensed, see the [LICENSE](./LICENSE) file.
