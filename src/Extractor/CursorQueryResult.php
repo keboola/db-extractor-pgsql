@@ -51,6 +51,10 @@ class CursorQueryResult implements QueryResult
         try {
             $this->pdo->beginTransaction(); // cursors require a transaction
             $this->pdo->exec('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY');
+            // Set lock timeout to prevent hanging on locks
+            $this->pdo->exec('SET LOCAL lock_timeout = \'30s\'');
+            // Optimize for read-only operations
+            $this->pdo->exec('SET LOCAL synchronous_commit = off');
             $cursorSql = sprintf('DECLARE %s CURSOR FOR %s', $this->cursorName, $this->query);
             $cursorStmt = $this->pdo->prepare($cursorSql);
             $cursorStmt->execute();
