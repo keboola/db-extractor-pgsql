@@ -73,6 +73,11 @@ class CursorQueryResult implements QueryResult
         }
     }
 
+    public function __destruct()
+    {
+        $this->closeCursor();
+    }
+
     public function getIterator(): Iterator
     {
         try {
