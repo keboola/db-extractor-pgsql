@@ -28,6 +28,20 @@ class PgSQLResultWriter extends DefaultResultWriter
 
     protected function writeRow(array $row, CsvWriter $csvWriter): void
     {
+        // Skip and log if an unexpected non-array value is propagated as a row
+        if (!is_array($row)) {
+            $message = sprintf(
+                'PgSQLResultWriter: skipping non-array row (type: %s).',
+                gettype($row),
+            );
+            if (property_exists($this, 'logger') && $this->logger instanceof \Psr\Log\LoggerInterface) {
+                $this->logger->warning($message);
+            } else {
+                error_log($message);
+            }
+            return;
+        }
+
         if ($this->replaceBooleans) {
             array_walk($row, function (&$item): void {
                 if (is_bool($item)) {
