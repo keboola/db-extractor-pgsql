@@ -11,6 +11,7 @@ use Keboola\DbExtractor\Adapter\ValueObject\QueryResult;
 use Keboola\DbExtractor\Configuration\PgsqlExportConfig;
 use Keboola\DbExtractor\Exception\InvalidArgumentException;
 use Keboola\DbExtractorConfig\Configuration\ValueObject\ExportConfig;
+use Psr\Log\LoggerInterface;
 
 class PgSQLResultWriter extends DefaultResultWriter
 {
@@ -34,7 +35,7 @@ class PgSQLResultWriter extends DefaultResultWriter
                 'PgSQLResultWriter: skipping non-array row (type: %s).',
                 gettype($row),
             );
-            if (property_exists($this, 'logger') && $this->logger instanceof \Psr\Log\LoggerInterface) {
+            if (property_exists($this, 'logger') && $this->logger instanceof LoggerInterface) {
                 $this->logger->warning($message);
             } else {
                 error_log($message);
