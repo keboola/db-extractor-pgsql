@@ -28,7 +28,19 @@ class PgSQLDbConnection extends PdoConnection
             function () use ($query, $processor, $useCursor, $batchSize) {
                 $dbResult = $this->queryReconnectOnError($query, $useCursor, $batchSize);
                 // A db error can occur during fetching, so it must be wrapped/retried together
-                $result = $processor($dbResult);
+                try {
+                    $result = $processor($dbResult);
+                } catch (Throwable $processorError) {
+                    // Reconnect so the next retry starts with a fresh connection.
+                    // Without this, PDO retains the stale "in transaction" state from the failed
+                    // CursorQueryResult, causing "There is already an active transaction" on retry.
+                    try {
+                        $this->connect();
+                    } catch (Throwable $reconnectError) {
+                        // ignore - the retry will attempt to reconnect again
+                    }
+                    throw $processorError;
+                }
                 // Success of isAlive means that ALL data has been extracted
                 $this->isAlive();
                 return $result;
