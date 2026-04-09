@@ -1,3 +1,4 @@
+Copy adapter failed, falling back to PDO: ERROR:  column "something" does not exist LINE 1: CREATE TEMP VIEW "%x" AS SELECT something, fake;%A
 Export by "Copy" adapter failed: ERROR:  column "something" does not exist LINE 1: CREATE TEMP VIEW "%x" AS SELECT something, fake;%A
 Export by "PDO" adapter failed: [in.c-main.escaping]: DB query failed: SQLSTATE[42703]: Undefined column: 7 ERROR:  column "something" does not exist%A Tried 5 times.
 [in.c-main.escaping]: DB query failed: SQLSTATE[42703]: Undefined column: 7 ERROR:  column "something" does not exist %A Tried 5 times.
