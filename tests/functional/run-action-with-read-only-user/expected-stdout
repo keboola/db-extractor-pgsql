@@ -1,8 +1,10 @@
 Creating PDO connection to "pgsql:host=%s;port=5432;dbname=postgres;".
 Exporting "sales" to "in.c-main.escaping".
 Exporting by "Copy" adapter.
+Using direct COPY (transaction is read-only).
 Exported "7" rows to "in.c-main.escaping".
 Exporting "sales" to "in.c-main.sales".
 Exporting by "Copy" adapter.
+Using direct COPY (transaction is read-only).
 Found database server version: %d.
 Exported "100" rows to "in.c-main.sales".
