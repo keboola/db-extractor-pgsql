@@ -47,6 +47,11 @@ class PgSQLDsnFactory
         $dsn['user'] = $dbConfig->getUsername();
         $dsn['dbname'] = $dbConfig->getDatabase();
 
+        $dsn['keepalives'] = '1';
+        $dsn['keepalives_idle'] = '60';
+        $dsn['keepalives_interval'] = '10';
+        $dsn['keepalives_count'] = '20';
+
         if ($dbConfig->hasSSLConnection()) {
             $tempDir = new Temp('ssl');
             $sslConnection = $dbConfig->getSslConnectionConfig();

@@ -14,6 +14,11 @@ class PgsqlExportConfig extends ExportConfig
     /** If true, then the \copy command will not be used but the PDO fallback directly */
     private bool $forceFallback;
 
+    /** If true, then the \copy command will be used directly without creating a temp view */
+    private bool $enforceCopy;
+
+    private bool $copyAdapterRetriesEnabled;
+
     /** If true, then 1/0 booleans values will be replaced by T/F when PDO fallback is used */
     private bool $replaceBooleans;
 
@@ -34,6 +39,8 @@ class PgsqlExportConfig extends ExportConfig
             $data['retries'],
             // Only in the config row configuration
             $data['forceFallback'] ?? false,
+            $data['enforceCopy'] ?? false,
+            $data['copyAdapterRetriesEnabled'] ?? false,
             $data['useConsistentFallbackBooleanStyle'] ?? false,
             $data['batchSize'] ?? CursorQueryResult::DEFAULT_BATCH_SIZE,
         );
@@ -51,6 +58,8 @@ class PgsqlExportConfig extends ExportConfig
         array $primaryKey,
         int $maxRetries,
         bool $forceFallback,
+        bool $enforceCopy,
+        bool $copyAdapterRetriesEnabled,
         bool $replaceBooleans,
         int $batchSize,
     ) {
@@ -67,6 +76,8 @@ class PgsqlExportConfig extends ExportConfig
             $maxRetries,
         );
         $this->forceFallback = $forceFallback;
+        $this->enforceCopy = $enforceCopy;
+        $this->copyAdapterRetriesEnabled = $copyAdapterRetriesEnabled;
         $this->replaceBooleans = $replaceBooleans;
         $this->batchSize = $batchSize;
     }
@@ -74,6 +85,16 @@ class PgsqlExportConfig extends ExportConfig
     public function getForceFallback(): bool
     {
         return $this->forceFallback;
+    }
+
+    public function getEnforceCopy(): bool
+    {
+        return $this->enforceCopy;
+    }
+
+    public function isCopyAdapterRetriesEnabled(): bool
+    {
+        return $this->copyAdapterRetriesEnabled;
     }
 
     public function getReplaceBooleans(): bool

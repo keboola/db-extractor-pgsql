@@ -122,6 +122,8 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - name: Debug storage token (first 10 chars) - TEMPORARY
+        run: echo "KBC_STORAGE_TOKEN prefix = $(echo "$KBC_STORAGE_TOKEN" | cut -c1-10)"
       - name: Run KBC test jobs
         uses: keboola/action-run-configs-parallel@master
         with:
