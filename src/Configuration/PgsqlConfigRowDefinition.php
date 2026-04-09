@@ -22,6 +22,9 @@ class PgsqlConfigRowDefinition extends ConfigRowDefinition
                 ->booleanNode('forceFallback')
                     ->defaultFalse()
                 ->end()
+                ->booleanNode('enforceCopy')
+                    ->defaultFalse()
+                ->end()
                 ->integerNode('batchSize')->end()
             ->end();
         // @formatter:on

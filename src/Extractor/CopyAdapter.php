@@ -80,6 +80,7 @@ class CopyAdapter implements ExportAdapter
             );
         } catch (CopyAdapterException $pdoError) {
             @unlink($csvFilePath);
+            $this->logger->warning(sprintf('Copy adapter failed, falling back to PDO: %s', $pdoError->getMessage()));
             throw new UserException($pdoError->getMessage());
         }
     }
@@ -98,7 +99,9 @@ class CopyAdapter implements ExportAdapter
         $sql = '\encoding UTF8' . PHP_EOL .
             implode(PHP_EOL, $this->databaseConfig->getInitQueries()) . PHP_EOL;
 
-        if ($this->canUserCreateView() && !$this->isTransactionReadOnly()) {
+        $canCreateView = !$exportConfig->getEnforceCopy() && $this->canUserCreateView();
+        $isReadOnly = $this->isTransactionReadOnly();
+        if ($canCreateView && !$isReadOnly) {
             $viewName = uniqid();
             $sql .= 'CREATE TEMP VIEW "' . $viewName . '" AS ' . $trimmedQuery . ';' . PHP_EOL .
                 sprintf(
@@ -108,6 +111,13 @@ class CopyAdapter implements ExportAdapter
                 ) . PHP_EOL .
                 'DROP VIEW "' . $viewName . '";';
         } else {
+            if ($exportConfig->getEnforceCopy()) {
+                $this->logger->info('Using direct COPY (enforceCopy is enabled).');
+            } elseif (!$canCreateView) {
+                $this->logger->info('Using direct COPY (no CREATE privilege on current schema).');
+            } elseif ($isReadOnly) {
+                $this->logger->info('Using direct COPY (transaction is read-only).');
+            }
             $sql .= sprintf(
                 "\COPY (%s) TO '%s' WITH CSV DELIMITER ',' FORCE QUOTE *;",
                 $trimmedQuery,
@@ -139,8 +149,22 @@ class CopyAdapter implements ExportAdapter
         $process->setInput($sql); // send SQL to STDIN
         $process->setTimeout($timeout); // null => allow it to run for as long as it needs
         $process->run();
-        if ($process->getExitCode() !== 0) {
-            throw new CopyAdapterException($process->getErrorOutput());
+        $exitCode = $process->getExitCode();
+        $this->logger->debug(sprintf(
+            'psql process finished with exit code %d. Stderr: "%s". Stdout: "%s".',
+            $exitCode,
+            trim($process->getErrorOutput()),
+            trim($process->getOutput()),
+        ));
+        if ($exitCode !== 0) {
+            $errorMsg = trim($process->getErrorOutput());
+            if ($errorMsg === '') {
+                $errorMsg = trim($process->getOutput());
+            }
+            if ($errorMsg === '') {
+                $errorMsg = sprintf('psql process failed with exit code %d', $exitCode);
+            }
+            throw new CopyAdapterException($errorMsg);
         }
 
         return trim($process->getOutput());
