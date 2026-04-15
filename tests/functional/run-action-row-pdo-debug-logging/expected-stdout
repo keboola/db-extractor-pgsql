@@ -1,5 +1,5 @@
 [%s] DEBUG: Component initialization completed [] []
-Creating PDO connection to "pgsql:host=%s;port=5432;dbname=postgres;".
+Creating PDO connection to "pgsql:host=%s;port=5432;dbname=postgres;keepalives=1;keepalives_idle=60;keepalives_interval=10;keepalives_count=5;".
 Exporting "sales" to "in.c-main.escaping".
 Exporting by "Copy" adapter.
 Adapter "Copy" skipped: Disabled in configuration.

@@ -1,2 +1,2 @@
-Creating PDO connection to "pgsql:host=%s;port=5432;dbname=postgres;".
+Creating PDO connection to "pgsql:host=%s;port=5432;dbname=postgres;keepalives=1;keepalives_idle=60;keepalives_interval=10;keepalives_count=5;".
 Found database server version: %d.

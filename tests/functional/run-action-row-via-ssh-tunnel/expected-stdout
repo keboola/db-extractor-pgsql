@@ -1,5 +1,5 @@
 Creating SSH tunnel to 'sshproxy' on local port '1234'
-Creating PDO connection to "pgsql:host=127.0.0.1;port=1234;dbname=postgres;".
+Creating PDO connection to "pgsql:host=127.0.0.1;port=1234;dbname=postgres;keepalives=1;keepalives_idle=60;keepalives_interval=10;keepalives_count=5;".
 Exporting "sales" to "in.c-main.escaping".
 Exporting by "Copy" adapter.
 Exported "7" rows to "in.c-main.escaping".
