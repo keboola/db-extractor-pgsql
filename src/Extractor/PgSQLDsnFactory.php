@@ -47,6 +47,13 @@ class PgSQLDsnFactory
         $dsn['user'] = $dbConfig->getUsername();
         $dsn['dbname'] = $dbConfig->getDatabase();
 
+        // TCP keepalive parameters to prevent connection drops by NAT/firewall devices
+        // These call setsockopt() directly on the socket via libpq, bypassing kernel defaults
+        $dsn['keepalives'] = '1';
+        $dsn['keepalives_idle'] = '60';
+        $dsn['keepalives_interval'] = '10';
+        $dsn['keepalives_count'] = '5';
+
         if ($dbConfig->hasSSLConnection()) {
             $tempDir = new Temp('ssl');
             $sslConnection = $dbConfig->getSslConnectionConfig();
