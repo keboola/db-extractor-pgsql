@@ -98,22 +98,17 @@ class CopyAdapter implements ExportAdapter
         $sql = '\encoding UTF8' . PHP_EOL .
             implode(PHP_EOL, $this->databaseConfig->getInitQueries()) . PHP_EOL;
 
-        if ($this->canUserCreateView() && !$this->isTransactionReadOnly()) {
-            $viewName = uniqid();
-            $sql .= 'CREATE TEMP VIEW "' . $viewName . '" AS ' . $trimmedQuery . ';' . PHP_EOL .
-                sprintf(
-                    "\COPY (%s) TO '%s' WITH CSV DELIMITER ',' FORCE QUOTE *;",
-                    'SELECT * FROM "' . $viewName . '"',
-                    $csvPath,
-                ) . PHP_EOL .
-                'DROP VIEW "' . $viewName . '";';
-        } else {
-            $sql .= sprintf(
-                "\COPY (%s) TO '%s' WITH CSV DELIMITER ',' FORCE QUOTE *;",
+        // Export data using a server-side "COPY ... TO STDOUT" statement redirected to the output
+        // file with the psql "\o" meta-command. Unlike the client-side "\copy" meta-command,
+        // "COPY ... TO STDOUT" is a regular SQL statement, so it supports multi-line queries without
+        // wrapping them in a temporary view. This avoids any DDL (CREATE/DROP TEMP VIEW) on the
+        // source database during export.
+        $sql .= sprintf("\o '%s'", $csvPath) . PHP_EOL .
+            sprintf(
+                "COPY (%s) TO STDOUT WITH CSV DELIMITER ',' FORCE QUOTE *;",
                 $trimmedQuery,
-                $csvPath,
-            );
-        }
+            ) . PHP_EOL .
+            '\o';
 
         try {
             $this->runPsqlProcess($sql, null);
@@ -202,29 +197,5 @@ class CopyAdapter implements ExportAdapter
         }
 
         return $lastExportedRow[$columnIndex];
-    }
-
-    protected function canUserCreateView(): bool
-    {
-        try {
-            return $this->runPsqlProcess(
-                'SELECT has_schema_privilege(current_schema(), \'CREATE\');',
-                null,
-            ) === 't';
-        } catch (CopyAdapterException $e) {
-            throw new CopyAdapterQueryException($e->getMessage(), 0, $e);
-        }
-    }
-
-    protected function isTransactionReadOnly(): bool
-    {
-        try {
-            return $this->runPsqlProcess(
-                'SHOW transaction_read_only;',
-                null,
-            ) === 'on';
-        } catch (CopyAdapterException $e) {
-            throw new CopyAdapterQueryException($e->getMessage(), 0, $e);
-        }
     }
 }

@@ -2,7 +2,5 @@
 Creating PDO connection to "pgsql:host=%s;port=5432;dbname=postgres;".
 Exporting "sales" to "in.c-main.escaping".
 Exporting by "Copy" adapter.
-[%s] DEBUG: Running query: "SELECT has_schema_privilege(current_schema(), 'CREATE');". [] []
-[%s] DEBUG: Running query: "SHOW transaction_read_only;". [] []
-[%s] DEBUG: Running query: "\encoding UTF8  CREATE TEMP VIEW "%s" AS SELECT * FROM escaping; \COPY (SELECT * FROM "%s") TO '/tmp/run-%s.%s/out/tables/in.c-main.escaping.csv' WITH CSV DELIMITER ',' FORCE QUOTE *; DROP VIEW "%s";". [] []
+[%s] DEBUG: Running query: "\encoding UTF8  \o '/tmp/run-%s.%s/out/tables/in.c-main.escaping.csv' COPY (SELECT * FROM escaping) TO STDOUT WITH CSV DELIMITER ',' FORCE QUOTE *; \o". [] []
 Exported "7" rows to "in.c-main.escaping".
