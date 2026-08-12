@@ -100,6 +100,26 @@ class PgSQL extends BaseExtractor
 
     public function validateIncrementalFetching(ExportConfig $exportConfig): void
     {
+        $type = $this->getIncrementalFetchingColumnType($exportConfig);
+
+        if (!in_array($type, self::INCREMENTAL_TYPES, true)) {
+            throw new UserException(sprintf(
+                'Column "%s" specified for incremental fetching has unexpected type "%s", expected: "%s".',
+                $exportConfig->getIncrementalFetchingColumn(),
+                $type,
+                implode('", "', self::INCREMENTAL_TYPES),
+            ));
+        }
+    }
+
+    /**
+     * Detects the basetype (e.g. "TIMESTAMP", "INTEGER", "NUMERIC", "FLOAT") of the incremental fetching
+     * column. Overrides the default-null hook in db-extractor-common's BaseExtractor, opting PgSQL into
+     * the incremental fetching WINDOW feature (the type is needed to resolve relative/absolute bounds).
+     * Also reused by validateIncrementalFetching() for the INCREMENTAL_TYPES check.
+     */
+    public function getIncrementalFetchingColumnType(ExportConfig $exportConfig): ?string
+    {
         try {
             $column = $this
                 ->getMetadataProvider()
@@ -117,7 +137,6 @@ class PgSQL extends BaseExtractor
 
         try {
             $datatype = new GenericStorage($column->getType());
-            $type = $datatype->getBasetype();
         } catch (InvalidLengthException $e) {
             throw new UserException(
                 sprintf(
@@ -127,14 +146,7 @@ class PgSQL extends BaseExtractor
             );
         }
 
-        if (!in_array($type, self::INCREMENTAL_TYPES, true)) {
-            throw new UserException(sprintf(
-                'Column "%s" specified for incremental fetching has unexpected type "%s", expected: "%s".',
-                $exportConfig->getIncrementalFetchingColumn(),
-                $datatype->getBasetype(),
-                implode('", "', self::INCREMENTAL_TYPES),
-            ));
-        }
+        return $datatype->getBasetype();
     }
 
     public function getMaxOfIncrementalFetchingColumn(ExportConfig $exportConfig): ?string
