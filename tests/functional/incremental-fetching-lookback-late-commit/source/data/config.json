@@ -1,17 +1,16 @@
 {
   "parameters": {
-    "id": 3,
+    "id": 4,
     "enabled": true,
-    "name": "incremental-window-late-commit",
-    "outputTable": "in.c-main.incremental-window-late-commit",
+    "name": "incremental-lookback-late-commit",
+    "outputTable": "in.c-main.incremental-lookback-late-commit",
     "incremental": true,
     "incrementalFetchingColumn": "ts",
-    "incrementalFetchingMode": "window",
-    "incrementalFetchingStart": "2000-01-01",
+    "incrementalFetchingLookback": "10 minutes",
     "primaryKey": ["id"],
     "table": {
       "schema": "public",
-      "tableName": "incremental_window_late_commit"
+      "tableName": "incremental_fetching_lookback_late_commit"
     },
     "db": {
       "host": "%env(string:PGSQL_DB_HOST)%",

@@ -175,12 +175,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/db-extractor-adapter.git",
-                "reference": "9efe7210300e20c61cbe30b101993364815f786f"
+                "reference": "3a1250fd4e1e84239ccefa137e71816d869d02c4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/db-extractor-adapter/zipball/9efe7210300e20c61cbe30b101993364815f786f",
-                "reference": "9efe7210300e20c61cbe30b101993364815f786f",
+                "url": "https://api.github.com/repos/keboola/db-extractor-adapter/zipball/3a1250fd4e1e84239ccefa137e71816d869d02c4",
+                "reference": "3a1250fd4e1e84239ccefa137e71816d869d02c4",
                 "shasum": ""
             },
             "require": {
@@ -254,7 +254,7 @@
             "support": {
                 "source": "https://github.com/keboola/db-extractor-adapter/tree/cftl-771-incremental-fetching-window"
             },
-            "time": "2026-08-11T12:00:56+00:00"
+            "time": "2026-08-12T20:12:43+00:00"
         },
         {
             "name": "keboola/db-extractor-common",
@@ -262,12 +262,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/db-extractor-common.git",
-                "reference": "2a793a48d114ed8ce72a398d8907a538f3979877"
+                "reference": "b665588401b6491e8514ad28557f3d9932afd13a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/db-extractor-common/zipball/2a793a48d114ed8ce72a398d8907a538f3979877",
-                "reference": "2a793a48d114ed8ce72a398d8907a538f3979877",
+                "url": "https://api.github.com/repos/keboola/db-extractor-common/zipball/b665588401b6491e8514ad28557f3d9932afd13a",
+                "reference": "b665588401b6491e8514ad28557f3d9932afd13a",
                 "shasum": ""
             },
             "require": {
@@ -364,7 +364,7 @@
             "support": {
                 "source": "https://github.com/keboola/db-extractor-common/tree/cftl-771-incremental-fetching-window"
             },
-            "time": "2026-08-12T08:34:13+00:00"
+            "time": "2026-08-12T20:18:32+00:00"
         },
         {
             "name": "keboola/db-extractor-config",
@@ -372,12 +372,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/db-extractor-config.git",
-                "reference": "2a1030b79b851729e20b00c8468273ae67f16fff"
+                "reference": "56ac8143aefedd035ad6cf10f2f09750efbae7f5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/db-extractor-config/zipball/2a1030b79b851729e20b00c8468273ae67f16fff",
-                "reference": "2a1030b79b851729e20b00c8468273ae67f16fff",
+                "url": "https://api.github.com/repos/keboola/db-extractor-config/zipball/56ac8143aefedd035ad6cf10f2f09750efbae7f5",
+                "reference": "56ac8143aefedd035ad6cf10f2f09750efbae7f5",
                 "shasum": ""
             },
             "require": {
@@ -440,7 +440,7 @@
             "support": {
                 "source": "https://github.com/keboola/db-extractor-config/tree/cftl-771-incremental-fetching-window"
             },
-            "time": "2026-08-12T09:04:41+00:00"
+            "time": "2026-08-12T20:06:21+00:00"
         },
         {
             "name": "keboola/db-extractor-ssh-tunnel",
