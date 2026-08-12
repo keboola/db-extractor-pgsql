@@ -1,0 +1,23 @@
+{
+  "parameters": {
+    "id": 3,
+    "enabled": true,
+    "name": "incremental-window-late-commit",
+    "outputTable": "in.c-main.incremental-window-late-commit",
+    "incremental": true,
+    "incrementalFetchingColumn": "ts",
+    "incrementalFetchingStart": "2000-01-01",
+    "primaryKey": ["id"],
+    "table": {
+      "schema": "public",
+      "tableName": "incremental_window_late_commit"
+    },
+    "db": {
+      "host": "%env(string:PGSQL_DB_HOST)%",
+      "port": "%env(string:PGSQL_DB_PORT)%",
+      "user": "%env(string:PGSQL_DB_USER)%",
+      "#password": "%env(string:PGSQL_DB_PASSWORD)%",
+      "database": "%env(string:PGSQL_DB_DATABASE)%"
+    }
+  }
+}
