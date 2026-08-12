@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1f8774503f4f6487cc0ce90c32c8527c",
+    "content-hash": "c60b430dbf47542d7887d1aa94c827e2",
     "packages": [
         {
             "name": "doctrine/instantiator",
@@ -171,23 +171,23 @@
         },
         {
             "name": "keboola/db-extractor-adapter",
-            "version": "1.15.0",
+            "version": "dev-cftl-771-incremental-fetching-window",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/db-extractor-adapter.git",
-                "reference": "de0cf9da24739f46d5f7a6ede301cf1dd5a464df"
+                "reference": "9efe7210300e20c61cbe30b101993364815f786f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/db-extractor-adapter/zipball/de0cf9da24739f46d5f7a6ede301cf1dd5a464df",
-                "reference": "de0cf9da24739f46d5f7a6ede301cf1dd5a464df",
+                "url": "https://api.github.com/repos/keboola/db-extractor-adapter/zipball/9efe7210300e20c61cbe30b101993364815f786f",
+                "reference": "9efe7210300e20c61cbe30b101993364815f786f",
                 "shasum": ""
             },
             "require": {
                 "ext-iconv": "*",
                 "keboola/common-exceptions": "^1.0",
                 "keboola/csv": "^3.2",
-                "keboola/db-extractor-config": "^1.15",
+                "keboola/db-extractor-config": "dev-cftl-771-incremental-fetching-window as 1.15.999",
                 "keboola/db-extractor-table-format": "^3.7",
                 "keboola/retry": "^0.5",
                 "keboola/ssh-tunnel": "^2.2",
@@ -212,7 +212,35 @@
                     "Keboola\\DbExtractor\\Adapter\\": "src"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "Keboola\\DbExtractor\\Adapter\\Tests\\": "tests/phpunit"
+                }
+            },
+            "scripts": {
+                "tests": [
+                    "./vendor/bin/phpunit"
+                ],
+                "phpstan": [
+                    "phpstan analyse --no-progress --level=max ./src ./tests -c phpstan.neon"
+                ],
+                "phpcs": [
+                    "phpcs -n -s --ignore=vendor --extensions=php ."
+                ],
+                "phpcbf": [
+                    "phpcbf -n --ignore=vendor --extensions=php ."
+                ],
+                "build": [
+                    "@phpcs",
+                    "@phpstan",
+                    "@tests"
+                ],
+                "ci": [
+                    "@composer install",
+                    "@composer validate --no-check-all --strict",
+                    "@build"
+                ]
+            },
             "license": [
                 "MIT"
             ],
@@ -224,22 +252,22 @@
             ],
             "description": "Set of connection adapters for DB extractors.",
             "support": {
-                "source": "https://github.com/keboola/db-extractor-adapter/tree/1.15.0"
+                "source": "https://github.com/keboola/db-extractor-adapter/tree/cftl-771-incremental-fetching-window"
             },
-            "time": "2024-11-19T08:23:44+00:00"
+            "time": "2026-08-11T12:00:56+00:00"
         },
         {
             "name": "keboola/db-extractor-common",
-            "version": "17.1.2",
+            "version": "dev-cftl-771-incremental-fetching-window",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/db-extractor-common.git",
-                "reference": "ed1ec87c1af2afe278d977a16e903c73057ce5f5"
+                "reference": "2a793a48d114ed8ce72a398d8907a538f3979877"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/db-extractor-common/zipball/ed1ec87c1af2afe278d977a16e903c73057ce5f5",
-                "reference": "ed1ec87c1af2afe278d977a16e903c73057ce5f5",
+                "url": "https://api.github.com/repos/keboola/db-extractor-common/zipball/2a793a48d114ed8ce72a398d8907a538f3979877",
+                "reference": "2a793a48d114ed8ce72a398d8907a538f3979877",
                 "shasum": ""
             },
             "require": {
@@ -247,8 +275,8 @@
                 "ext-pdo": "*",
                 "keboola/common-exceptions": "^1.1",
                 "keboola/csv": "^3.2",
-                "keboola/db-extractor-adapter": "^1.14",
-                "keboola/db-extractor-config": "^1.15",
+                "keboola/db-extractor-adapter": "^1.15.1",
+                "keboola/db-extractor-config": "dev-cftl-771-incremental-fetching-window as 1.15.999",
                 "keboola/db-extractor-ssh-tunnel": "^1.3.0",
                 "keboola/db-extractor-table-format": "^3.8",
                 "keboola/php-component": "^10.0",
@@ -288,7 +316,41 @@
                     "Keboola\\DbExtractor\\": "src/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "Keboola\\DbExtractor\\Tests\\": "tests/phpunit/"
+                }
+            },
+            "scripts": {
+                "tests-phpunit": [
+                    "phpunit"
+                ],
+                "tests": [
+                    "@tests-phpunit"
+                ],
+                "phpstan": [
+                    "phpstan analyse ./src ./tests --level=max --no-progress -c phpstan.neon"
+                ],
+                "phpcs": [
+                    "phpcs -n --ignore=vendor --extensions=php ."
+                ],
+                "phpcbf": [
+                    "phpcbf -n --ignore=vendor --extensions=php ."
+                ],
+                "phplint": [
+                    "parallel-lint -j 10 --exclude vendor ."
+                ],
+                "build": [
+                    "@phplint",
+                    "@phpcs",
+                    "@phpstan",
+                    "@tests"
+                ],
+                "ci": [
+                    "@composer validate --no-check-publish --no-check-all",
+                    "@build"
+                ]
+            },
             "license": [
                 "MIT"
             ],
@@ -300,22 +362,22 @@
             ],
             "description": "Common library from Keboola Database Extractors",
             "support": {
-                "source": "https://github.com/keboola/db-extractor-common/tree/17.1.2"
+                "source": "https://github.com/keboola/db-extractor-common/tree/cftl-771-incremental-fetching-window"
             },
-            "time": "2024-12-03T20:07:25+00:00"
+            "time": "2026-08-12T08:34:13+00:00"
         },
         {
             "name": "keboola/db-extractor-config",
-            "version": "1.16.0",
+            "version": "dev-cftl-771-incremental-fetching-window",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/db-extractor-config.git",
-                "reference": "3056dee63987e4deca1246b0ace80c2a4be93f30"
+                "reference": "2a1030b79b851729e20b00c8468273ae67f16fff"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/db-extractor-config/zipball/3056dee63987e4deca1246b0ace80c2a4be93f30",
-                "reference": "3056dee63987e4deca1246b0ace80c2a4be93f30",
+                "url": "https://api.github.com/repos/keboola/db-extractor-config/zipball/2a1030b79b851729e20b00c8468273ae67f16fff",
+                "reference": "2a1030b79b851729e20b00c8468273ae67f16fff",
                 "shasum": ""
             },
             "require": {
@@ -336,28 +398,62 @@
                     "Keboola\\DbExtractorConfig\\": "src/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "Keboola\\DbExtractorConfig\\Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "tests-phpunit": [
+                    "phpunit"
+                ],
+                "tests": [
+                    "@tests-phpunit"
+                ],
+                "phpstan": [
+                    "phpstan analyse ./src ./tests --level=max --no-progress -c phpstan.neon"
+                ],
+                "phpcs": [
+                    "phpcs -n --ignore=vendor --extensions=php ."
+                ],
+                "phpcbf": [
+                    "phpcbf -n --ignore=vendor --extensions=php ."
+                ],
+                "phplint": [
+                    "parallel-lint -j 10 --exclude vendor ."
+                ],
+                "build": [
+                    "@phplint",
+                    "@phpcs",
+                    "@phpstan",
+                    "@tests"
+                ],
+                "ci": [
+                    "@composer validate --no-check-publish --no-check-all",
+                    "@build"
+                ]
+            },
             "license": [
                 "MIT"
             ],
             "description": "Config definition for database extractor",
             "support": {
-                "source": "https://github.com/keboola/db-extractor-config/tree/1.16.0"
+                "source": "https://github.com/keboola/db-extractor-config/tree/cftl-771-incremental-fetching-window"
             },
-            "time": "2024-09-17T10:53:59+00:00"
+            "time": "2026-08-12T09:04:41+00:00"
         },
         {
             "name": "keboola/db-extractor-ssh-tunnel",
-            "version": "1.3.0",
+            "version": "1.3.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/db-extractor-ssh-tunnel.git",
-                "reference": "15c276a32057cd35bd9675992edb4438b97a5639"
+                "reference": "70f6f1db76dcdc0809915b94e508fd4f8de506ea"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/db-extractor-ssh-tunnel/zipball/15c276a32057cd35bd9675992edb4438b97a5639",
-                "reference": "15c276a32057cd35bd9675992edb4438b97a5639",
+                "url": "https://api.github.com/repos/keboola/db-extractor-ssh-tunnel/zipball/70f6f1db76dcdc0809915b94e508fd4f8de506ea",
+                "reference": "70f6f1db76dcdc0809915b94e508fd4f8de506ea",
                 "shasum": ""
             },
             "require": {
@@ -385,9 +481,9 @@
             "description": "Create SSH tunnel for DB Extractors",
             "support": {
                 "issues": "https://github.com/keboola/db-extractor-ssh-tunnel/issues",
-                "source": "https://github.com/keboola/db-extractor-ssh-tunnel/tree/1.3.0"
+                "source": "https://github.com/keboola/db-extractor-ssh-tunnel/tree/1.3.2"
             },
-            "time": "2024-09-12T09:24:43+00:00"
+            "time": "2026-01-23T15:24:19+00:00"
         },
         {
             "name": "keboola/db-extractor-table-format",
@@ -771,25 +867,26 @@
         },
         {
             "name": "keboola/ssh-tunnel",
-            "version": "2.2.0",
+            "version": "2.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/ssh-tunnel.git",
-                "reference": "201593d79fd62acb171f7ab61f6bb2763af19bce"
+                "reference": "d97761af6bac33c67a2437339bbe0a4fb73ebef9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/ssh-tunnel/zipball/201593d79fd62acb171f7ab61f6bb2763af19bce",
-                "reference": "201593d79fd62acb171f7ab61f6bb2763af19bce",
+                "url": "https://api.github.com/repos/keboola/ssh-tunnel/zipball/d97761af6bac33c67a2437339bbe0a4fb73ebef9",
+                "reference": "d97761af6bac33c67a2437339bbe0a4fb73ebef9",
                 "shasum": ""
             },
             "require": {
-                "symfony/process": "^4.2|^5.0"
+                "php": ">=8.0",
+                "symfony/process": "^4.2|^5.0|^6.0|^7.0"
             },
             "require-dev": {
                 "keboola/coding-standard": ">=9.0.0",
-                "phpstan/phpstan": "^0.12.14",
-                "phpunit/phpunit": "^7.0"
+                "phpstan/phpstan": "^1.0",
+                "phpunit/phpunit": "^9.0"
             },
             "type": "library",
             "autoload": {
@@ -810,22 +907,22 @@
             "description": "Simple library for SSH tunneling",
             "support": {
                 "issues": "https://github.com/keboola/ssh-tunnel/issues",
-                "source": "https://github.com/keboola/ssh-tunnel/tree/2.2.0"
+                "source": "https://github.com/keboola/ssh-tunnel/tree/2.3.0"
             },
-            "time": "2024-09-30T13:45:15+00:00"
+            "time": "2026-03-30T12:31:28+00:00"
         },
         {
             "name": "monolog/monolog",
-            "version": "2.10.0",
+            "version": "2.11.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Seldaek/monolog.git",
-                "reference": "5cf826f2991858b54d5c3809bee745560a1042a7"
+                "reference": "37308608e599f34a1a4845b16440047ec98a172a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/5cf826f2991858b54d5c3809bee745560a1042a7",
-                "reference": "5cf826f2991858b54d5c3809bee745560a1042a7",
+                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/37308608e599f34a1a4845b16440047ec98a172a",
+                "reference": "37308608e599f34a1a4845b16440047ec98a172a",
                 "shasum": ""
             },
             "require": {
@@ -843,7 +940,7 @@
                 "graylog2/gelf-php": "^1.4.2 || ^2@dev",
                 "guzzlehttp/guzzle": "^7.4",
                 "guzzlehttp/psr7": "^2.2",
-                "mongodb/mongodb": "^1.8",
+                "mongodb/mongodb": "^1.8 || ^2.0",
                 "php-amqplib/php-amqplib": "~2.4 || ^3",
                 "phpspec/prophecy": "^1.15",
                 "phpstan/phpstan": "^1.10",
@@ -902,7 +999,7 @@
             ],
             "support": {
                 "issues": "https://github.com/Seldaek/monolog/issues",
-                "source": "https://github.com/Seldaek/monolog/tree/2.10.0"
+                "source": "https://github.com/Seldaek/monolog/tree/2.11.0"
             },
             "funding": [
                 {
@@ -914,7 +1011,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-11-12T12:43:37+00:00"
+            "time": "2026-01-01T13:05:00+00:00"
         },
         {
             "name": "myclabs/deep-copy",
@@ -1662,16 +1759,16 @@
         },
         {
             "name": "pimple/pimple",
-            "version": "v3.5.0",
+            "version": "v3.6.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/silexphp/Pimple.git",
-                "reference": "a94b3a4db7fb774b3d78dad2315ddc07629e1bed"
+                "reference": "8cfe7f74ac22a433d303914eba9ea4c2a834edce"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/silexphp/Pimple/zipball/a94b3a4db7fb774b3d78dad2315ddc07629e1bed",
-                "reference": "a94b3a4db7fb774b3d78dad2315ddc07629e1bed",
+                "url": "https://api.github.com/repos/silexphp/Pimple/zipball/8cfe7f74ac22a433d303914eba9ea4c2a834edce",
+                "reference": "8cfe7f74ac22a433d303914eba9ea4c2a834edce",
                 "shasum": ""
             },
             "require": {
@@ -1679,12 +1776,12 @@
                 "psr/container": "^1.1 || ^2.0"
             },
             "require-dev": {
-                "symfony/phpunit-bridge": "^5.4@dev"
+                "phpunit/phpunit": "*"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "3.4.x-dev"
+                    "dev-master": "3.x-dev"
                 }
             },
             "autoload": {
@@ -1709,9 +1806,9 @@
                 "dependency injection"
             ],
             "support": {
-                "source": "https://github.com/silexphp/Pimple/tree/v3.5.0"
+                "source": "https://github.com/silexphp/Pimple/tree/v3.6.2"
             },
-            "time": "2021-10-28T11:13:42+00:00"
+            "time": "2026-02-26T08:23:44+00:00"
         },
         {
             "name": "psr/container",
@@ -2781,16 +2878,16 @@
         },
         {
             "name": "seld/jsonlint",
-            "version": "1.11.0",
+            "version": "1.12.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Seldaek/jsonlint.git",
-                "reference": "1748aaf847fc731cfad7725aec413ee46f0cc3a2"
+                "reference": "9a90eb5d32d5a500296bf43f946d60246444d5f7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Seldaek/jsonlint/zipball/1748aaf847fc731cfad7725aec413ee46f0cc3a2",
-                "reference": "1748aaf847fc731cfad7725aec413ee46f0cc3a2",
+                "url": "https://api.github.com/repos/Seldaek/jsonlint/zipball/9a90eb5d32d5a500296bf43f946d60246444d5f7",
+                "reference": "9a90eb5d32d5a500296bf43f946d60246444d5f7",
                 "shasum": ""
             },
             "require": {
@@ -2829,7 +2926,7 @@
             ],
             "support": {
                 "issues": "https://github.com/Seldaek/jsonlint/issues",
-                "source": "https://github.com/Seldaek/jsonlint/tree/1.11.0"
+                "source": "https://github.com/Seldaek/jsonlint/tree/1.12.1"
             },
             "funding": [
                 {
@@ -2841,7 +2938,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-07-11T14:55:45+00:00"
+            "time": "2026-06-12T11:32:29+00:00"
         },
         {
             "name": "symfony/config",
@@ -4456,9 +4553,32 @@
             "time": "2024-07-21T23:26:44+00:00"
         }
     ],
-    "aliases": [],
+    "aliases": [
+        {
+            "package": "keboola/db-extractor-adapter",
+            "version": "dev-cftl-771-incremental-fetching-window",
+            "alias": "1.15.999",
+            "alias_normalized": "1.15.999.0"
+        },
+        {
+            "package": "keboola/db-extractor-common",
+            "version": "dev-cftl-771-incremental-fetching-window",
+            "alias": "17.1.999",
+            "alias_normalized": "17.1.999.0"
+        },
+        {
+            "package": "keboola/db-extractor-config",
+            "version": "dev-cftl-771-incremental-fetching-window",
+            "alias": "1.15.999",
+            "alias_normalized": "1.15.999.0"
+        }
+    ],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": {
+        "keboola/db-extractor-adapter": 20,
+        "keboola/db-extractor-common": 20,
+        "keboola/db-extractor-config": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
@@ -4468,5 +4588,5 @@
     "platform-dev": {
         "ext-json": "*"
     },
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.9.0"
 }

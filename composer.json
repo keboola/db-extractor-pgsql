@@ -9,13 +9,27 @@
             "email": "devel@keboola.com"
         }
     ],
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/keboola/db-extractor-config.git"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/keboola/db-extractor-adapter.git"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/keboola/db-extractor-common.git"
+        }
+    ],
     "require": {
         "php": "^8.2",
         "ext-PDO": "*",
         "keboola/csv": "^3.2",
-        "keboola/db-extractor-adapter": "^1.13",
-        "keboola/db-extractor-common": "^17.1",
-        "keboola/db-extractor-config": "^1.14",
+        "keboola/db-extractor-adapter": "dev-cftl-771-incremental-fetching-window as 1.15.999",
+        "keboola/db-extractor-common": "dev-cftl-771-incremental-fetching-window as 17.1.999",
+        "keboola/db-extractor-config": "dev-cftl-771-incremental-fetching-window as 1.15.999",
         "keboola/db-extractor-table-format": "^3.8",
         "keboola/php-component": "^10.1",
         "keboola/php-datatypes": "^7.2",
