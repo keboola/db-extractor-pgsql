@@ -372,12 +372,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/db-extractor-config.git",
-                "reference": "56ac8143aefedd035ad6cf10f2f09750efbae7f5"
+                "reference": "a6ff3d783f3f4ba9d749c4a2481d3587c8d531d5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/db-extractor-config/zipball/56ac8143aefedd035ad6cf10f2f09750efbae7f5",
-                "reference": "56ac8143aefedd035ad6cf10f2f09750efbae7f5",
+                "url": "https://api.github.com/repos/keboola/db-extractor-config/zipball/a6ff3d783f3f4ba9d749c4a2481d3587c8d531d5",
+                "reference": "a6ff3d783f3f4ba9d749c4a2481d3587c8d531d5",
                 "shasum": ""
             },
             "require": {
@@ -440,7 +440,7 @@
             "support": {
                 "source": "https://github.com/keboola/db-extractor-config/tree/cftl-771-incremental-fetching-window"
             },
-            "time": "2026-08-12T20:06:21+00:00"
+            "time": "2026-08-13T12:24:35+00:00"
         },
         {
             "name": "keboola/db-extractor-ssh-tunnel",
