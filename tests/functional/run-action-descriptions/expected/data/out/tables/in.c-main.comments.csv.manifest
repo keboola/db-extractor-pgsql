@@ -11,16 +11,16 @@
             "value": "comments"
         },
         {
-            "key": "KBC.description",
-            "value": "Table level comment"
-        },
-        {
             "key": "KBC.schema",
             "value": "public"
         },
         {
             "key": "KBC.type",
             "value": "table"
+        },
+        {
+            "key": "KBC.description",
+            "value": "Table level comment"
         }
     ],
     "columns": [

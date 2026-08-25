@@ -30,8 +30,10 @@ trait CommentsTableTrait
             sprintf('COMMENT ON TABLE %s IS %s', $this->quoteIdentifier($name), "'Table level comment'"),
             sprintf('COMMENT ON COLUMN %s.id IS %s', $this->quoteIdentifier($name), "'Surrogate key'"),
             sprintf('COMMENT ON COLUMN %s.name IS %s', $this->quoteIdentifier($name), "'Customer name'"),
-            // "note" is intentionally left without a comment
-            // An empty comment must be treated the same as no comment at all
+            // "note" is intentionally left without a comment.
+            // Postgres discards an empty comment rather than storing an empty
+            // string, so this column ends up identical to "note" -- it guards
+            // against COMMENT ON ... IS '' being reported as a description.
             sprintf('COMMENT ON COLUMN %s.empty_comment IS %s', $this->quoteIdentifier($name), "''"),
         ];
 

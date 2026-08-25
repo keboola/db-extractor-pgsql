@@ -4,7 +4,6 @@
     "table_metadata": {
         "KBC.name": "comments",
         "KBC.sanitizedName": "comments",
-        "KBC.description": "Table level comment",
         "KBC.schema": "public",
         "KBC.type": "table"
     },
