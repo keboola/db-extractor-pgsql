@@ -33,7 +33,8 @@ This component extracts data from a PostgresSQL database.
           "enabled": true,
           "primaryKey": null,
           "forceFallback": false, // use PDO export directly
-          "useConsistentFallbackBooleanStyle": false // convert boolean values to t/f when using PDO statement
+          "useConsistentFallbackBooleanStyle": false, // convert boolean values to t/f when using PDO statement
+          "propagateDescriptions": true // copy COMMENT ON TABLE/COLUMN into Storage descriptions
         }
       ]
     }
@@ -77,6 +78,21 @@ Example — a bounded window (backfill):
     }
 
 The modes are mutually exclusive; keys belonging to the other mode are ignored.
+
+## Table and column descriptions
+
+By default the extractor reads the PostgreSQL `COMMENT ON TABLE` and
+`COMMENT ON COLUMN` values of the extracted table and writes them to the
+description of the corresponding table and columns in Storage. Set
+`propagateDescriptions` to `false` to turn this off -- no descriptions are then
+written and the metadata query is left unchanged.
+
+Postgres discards an empty comment rather than storing an empty string, so a
+column with `COMMENT ON ... IS ''` gets no description.
+
+Descriptions are only available when a table is configured via `table`. In
+advanced query mode (`query`) the column list comes from the query result
+itself, which carries no comments, so nothing is propagated.
 
 ### Development
 
