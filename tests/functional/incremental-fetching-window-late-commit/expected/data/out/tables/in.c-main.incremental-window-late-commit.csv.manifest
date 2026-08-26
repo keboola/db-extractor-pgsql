@@ -1,0 +1,110 @@
+{
+    "destination": "in.c-main.incremental-window-late-commit",
+    "incremental": true,
+    "metadata": [
+        {
+            "key": "KBC.name",
+            "value": "incremental_window_late_commit"
+        },
+        {
+            "key": "KBC.sanitizedName",
+            "value": "incremental_window_late_commit"
+        },
+        {
+            "key": "KBC.schema",
+            "value": "public"
+        },
+        {
+            "key": "KBC.type",
+            "value": "table"
+        }
+    ],
+    "columns": [
+        "id",
+        "name",
+        "ts"
+    ],
+    "primary_key": [
+        "id"
+    ],
+    "column_metadata": {
+        "id": [
+            {
+                "key": "KBC.datatype.nullable",
+                "value": false
+            },
+            {
+                "key": "KBC.datatype.basetype",
+                "value": "INTEGER"
+            },
+            {
+                "key": "KBC.sourceName",
+                "value": "id"
+            },
+            {
+                "key": "KBC.sanitizedName",
+                "value": "id"
+            },
+            {
+                "key": "KBC.uniqueKey",
+                "value": false
+            },
+            {
+                "key": "KBC.ordinalPosition",
+                "value": 1
+            }
+        ],
+        "name": [
+            {
+                "key": "KBC.datatype.nullable",
+                "value": false
+            },
+            {
+                "key": "KBC.datatype.basetype",
+                "value": "STRING"
+            },
+            {
+                "key": "KBC.sourceName",
+                "value": "name"
+            },
+            {
+                "key": "KBC.sanitizedName",
+                "value": "name"
+            },
+            {
+                "key": "KBC.uniqueKey",
+                "value": false
+            },
+            {
+                "key": "KBC.ordinalPosition",
+                "value": 2
+            }
+        ],
+        "ts": [
+            {
+                "key": "KBC.datatype.nullable",
+                "value": false
+            },
+            {
+                "key": "KBC.datatype.basetype",
+                "value": "TIMESTAMP"
+            },
+            {
+                "key": "KBC.sourceName",
+                "value": "ts"
+            },
+            {
+                "key": "KBC.sanitizedName",
+                "value": "ts"
+            },
+            {
+                "key": "KBC.uniqueKey",
+                "value": false
+            },
+            {
+                "key": "KBC.ordinalPosition",
+                "value": 3
+            }
+        ]
+    }
+}

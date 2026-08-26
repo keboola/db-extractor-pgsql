@@ -17,7 +17,7 @@ env:
   # Test KBC project
   KBC_STORAGE_TOKEN: ${{ secrets.KBC_STORAGE_TOKEN }}
   KBC_TEST_PROJECT_URL: "https://connection.keboola.com/admin/projects/2703/dashboard"
-  KBC_TEST_PROJECT_CONFIGS: "285843250 287599200" # space separated list
+  KBC_TEST_PROJECT_CONFIGS: "285843250 287599200 01m07v011pn3paj40rk5kw671t" # space separated list; last = incremental window+lookback feature test
 jobs:
   build:
     runs-on: ubuntu-latest
