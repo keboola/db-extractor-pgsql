@@ -19,13 +19,20 @@ class PgSQLMetadataProvider implements MetadataProvider
 
     private PgSQLDbConnection $dbConnection;
 
+    /** If false, table and column COMMENTs are not read and no descriptions are propagated */
+    private bool $propagateDescriptions;
+
     /** @var TableCollection[] */
     private array $cache = [];
 
-    public function __construct(LoggerInterface $logger, PgSQLDbConnection $dbConnection)
-    {
+    public function __construct(
+        LoggerInterface $logger,
+        PgSQLDbConnection $dbConnection,
+        bool $propagateDescriptions = true,
+    ) {
         $this->logger = $logger;
         $this->dbConnection = $dbConnection;
+        $this->propagateDescriptions = $propagateDescriptions;
     }
 
     public function getTable(InputTable $table, bool $includeSystemColumns = false): Table
@@ -92,6 +99,11 @@ class PgSQLMetadataProvider implements MetadataProvider
             ->setName((string) $data['table_name'])
             ->setSchema($data['table_schema'] ?? '');
 
+        if ($this->propagateDescriptions) {
+            // Empty string and null are both normalized to "no description" by the builder
+            $table->setDescription($data['table_comment'] ?? null);
+        }
+
         $type = self::tableTypeFromCode($data['table_type']);
         if ($type) {
             $table->setType($type);
@@ -122,6 +134,10 @@ class PgSQLMetadataProvider implements MetadataProvider
             ->setNullable($data['nullable'])
             ->setOrdinalPosition($data['ordinal_position']);
 
+        if ($this->propagateDescriptions) {
+            $columnBuilder->setDescription($data['column_comment'] ?? null);
+        }
+
         // Default value
         $default = $columnType === 'character varying' && $data['default_value'] !== null ?
             str_replace("'", '', explode('::', $data['default_value'])[0]) :
@@ -149,6 +165,14 @@ class PgSQLMetadataProvider implements MetadataProvider
         $select[] = 'ns.nspname AS table_schema';
         $select[] = 'c.relname AS table_name';
         $select[] = 'c.relkind AS table_type';
+
+        if ($this->propagateDescriptions) {
+            $select[] = 'td.description AS table_comment';
+
+            if ($loadColumns) {
+                $select[] = 'cd.description AS column_comment';
+            }
+        }
 
         if ($loadColumns) {
             $select[] = 'a.attname AS column_name';
@@ -181,8 +205,22 @@ class PgSQLMetadataProvider implements MetadataProvider
 
             // Default values
             $sql[] = 'LEFT JOIN pg_catalog.pg_attrdef d ON (a.attrelid, a.attnum) = (d.adrelid, d.adnum)';
+
+            // COMMENT ON TABLE / COMMENT ON COLUMN
+            // Joined directly instead of calling obj_description()/col_description(),
+            // which would be evaluated per returned row
+            if ($this->propagateDescriptions) {
+                $sql[] = 'LEFT JOIN pg_catalog.pg_description td ON td.objoid = c.oid AND td.objsubid = 0';
+                $sql[] = 'LEFT JOIN pg_catalog.pg_description cd ON cd.objoid = c.oid';
+                $sql[] = 'AND cd.objsubid = a.attnum';
+            }
         } else {
             $sql[] = 'INNER JOIN pg_namespace ns ON ns.oid = c.relnamespace';
+
+            // COMMENT ON TABLE
+            if ($this->propagateDescriptions) {
+                $sql[] = 'LEFT JOIN pg_catalog.pg_description td ON td.objoid = c.oid AND td.objsubid = 0';
+            }
         }
 
         // Where --------

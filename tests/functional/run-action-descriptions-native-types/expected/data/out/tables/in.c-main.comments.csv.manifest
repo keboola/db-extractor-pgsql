@@ -1,0 +1,79 @@
+{
+    "destination": "in.c-main.comments",
+    "incremental": false,
+    "table_metadata": {
+        "KBC.name": "comments",
+        "KBC.sanitizedName": "comments",
+        "KBC.schema": "public",
+        "KBC.type": "table"
+    },
+    "schema": [
+        {
+            "nullable": false,
+            "primary_key": false,
+            "description": "Surrogate key",
+            "metadata": {
+                "KBC.sourceName": "id",
+                "KBC.sanitizedName": "id",
+                "KBC.uniqueKey": false,
+                "KBC.ordinalPosition": 1
+            },
+            "name": "id",
+            "data_type": {
+                "base": {
+                    "type": "INTEGER"
+                }
+            }
+        },
+        {
+            "nullable": true,
+            "primary_key": false,
+            "description": "Customer name",
+            "metadata": {
+                "KBC.sourceName": "name",
+                "KBC.sanitizedName": "name",
+                "KBC.uniqueKey": false,
+                "KBC.ordinalPosition": 2
+            },
+            "name": "name",
+            "data_type": {
+                "base": {
+                    "type": "STRING"
+                }
+            }
+        },
+        {
+            "nullable": true,
+            "primary_key": false,
+            "metadata": {
+                "KBC.sourceName": "note",
+                "KBC.sanitizedName": "note",
+                "KBC.uniqueKey": false,
+                "KBC.ordinalPosition": 3
+            },
+            "name": "note",
+            "data_type": {
+                "base": {
+                    "type": "STRING"
+                }
+            }
+        },
+        {
+            "nullable": true,
+            "primary_key": false,
+            "metadata": {
+                "KBC.sourceName": "empty_comment",
+                "KBC.sanitizedName": "empty_comment",
+                "KBC.uniqueKey": false,
+                "KBC.ordinalPosition": 4
+            },
+            "name": "empty_comment",
+            "data_type": {
+                "base": {
+                    "type": "STRING"
+                }
+            }
+        }
+    ],
+    "description": "Table level comment"
+}

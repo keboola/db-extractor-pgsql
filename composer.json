@@ -10,11 +10,11 @@
         }
     ],
     "require": {
-        "php": "^8.2",
+        "php": "^8.5",
         "ext-PDO": "*",
         "keboola/csv": "^3.2",
         "keboola/db-extractor-adapter": "^1.17",
-        "keboola/db-extractor-common": "^17.3",
+        "keboola/db-extractor-common": "^17.4",
         "keboola/db-extractor-config": "^1.17",
         "keboola/db-extractor-table-format": "^3.8",
         "keboola/php-component": "^10.1",
@@ -65,6 +65,9 @@
         ]
     },
     "config": {
+        "platform": {
+            "php": "8.5"
+        },
         "sort-packages": true,
         "allow-plugins": {
             "dealerdirect/phpcodesniffer-composer-installer": true,
