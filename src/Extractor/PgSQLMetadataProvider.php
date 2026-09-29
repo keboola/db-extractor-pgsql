@@ -15,6 +15,13 @@ use Psr\Log\LoggerInterface;
 
 class PgSQLMetadataProvider implements MetadataProvider
 {
+    /**
+     * pg_description is keyed on (objoid, classoid, objsubid) and OIDs are only unique within one
+     * catalog, so without this a comment on an object of another catalog sharing the table's OID
+     * (possible after an OID wraparound) could be read as the table's description
+     */
+    private const PG_CLASS_REGCLASS = "'pg_catalog.pg_class'::regclass";
+
     private LoggerInterface $logger;
 
     private PgSQLDbConnection $dbConnection;
@@ -210,16 +217,18 @@ class PgSQLMetadataProvider implements MetadataProvider
             // Joined directly instead of calling obj_description()/col_description(),
             // which would be evaluated per returned row
             if ($this->propagateDescriptions) {
-                $sql[] = 'LEFT JOIN pg_catalog.pg_description td ON td.objoid = c.oid AND td.objsubid = 0';
+                $sql[] = 'LEFT JOIN pg_catalog.pg_description td ON td.objoid = c.oid';
+                $sql[] = 'AND td.classoid = ' . self::PG_CLASS_REGCLASS . ' AND td.objsubid = 0';
                 $sql[] = 'LEFT JOIN pg_catalog.pg_description cd ON cd.objoid = c.oid';
-                $sql[] = 'AND cd.objsubid = a.attnum';
+                $sql[] = 'AND cd.classoid = ' . self::PG_CLASS_REGCLASS . ' AND cd.objsubid = a.attnum';
             }
         } else {
             $sql[] = 'INNER JOIN pg_namespace ns ON ns.oid = c.relnamespace';
 
             // COMMENT ON TABLE
             if ($this->propagateDescriptions) {
-                $sql[] = 'LEFT JOIN pg_catalog.pg_description td ON td.objoid = c.oid AND td.objsubid = 0';
+                $sql[] = 'LEFT JOIN pg_catalog.pg_description td ON td.objoid = c.oid';
+                $sql[] = 'AND td.classoid = ' . self::PG_CLASS_REGCLASS . ' AND td.objsubid = 0';
             }
         }
 

@@ -71,6 +71,9 @@ class PgSQLMetadataProviderTest extends TestCase
         Assert::assertStringContainsString('cd.description AS column_comment', $sql);
         Assert::assertStringContainsString('pg_catalog.pg_description td', $sql);
         Assert::assertStringContainsString('pg_catalog.pg_description cd', $sql);
+        // OIDs are only unique within a catalog, so both joins must be scoped to pg_class
+        Assert::assertStringContainsString("td.classoid = 'pg_catalog.pg_class'::regclass", $sql);
+        Assert::assertStringContainsString("cd.classoid = 'pg_catalog.pg_class'::regclass", $sql);
     }
 
     public function testQueryReadsTableCommentOnlyWithoutColumns(): void
@@ -80,6 +83,7 @@ class PgSQLMetadataProviderTest extends TestCase
 
         $sql = $connection->getMetadataQuery();
         Assert::assertStringContainsString('td.description AS table_comment', $sql);
+        Assert::assertStringContainsString("td.classoid = 'pg_catalog.pg_class'::regclass", $sql);
         Assert::assertStringNotContainsString('column_comment', $sql);
     }
 
@@ -97,6 +101,7 @@ class PgSQLMetadataProviderTest extends TestCase
 
         $sql = $connection->getMetadataQuery();
         Assert::assertStringNotContainsString('pg_description', $sql);
+        Assert::assertStringNotContainsString('classoid', $sql);
         Assert::assertStringNotContainsString('description', $sql);
         Assert::assertStringNotContainsString('comment', $sql);
     }
