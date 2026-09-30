@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9745cb3154fce9a0d17977422c66f9d7",
+    "content-hash": "2a7060d30bdaef57f6f2109000317867",
     "packages": [
         {
             "name": "doctrine/instantiator",
@@ -230,16 +230,16 @@
         },
         {
             "name": "keboola/db-extractor-common",
-            "version": "17.3.0",
+            "version": "17.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/db-extractor-common.git",
-                "reference": "ba1c35e3077419f056bdb763db04f110a1e95272"
+                "reference": "4691b5a37c19956b83a558ff2d77475412d63e0f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/db-extractor-common/zipball/ba1c35e3077419f056bdb763db04f110a1e95272",
-                "reference": "ba1c35e3077419f056bdb763db04f110a1e95272",
+                "url": "https://api.github.com/repos/keboola/db-extractor-common/zipball/4691b5a37c19956b83a558ff2d77475412d63e0f",
+                "reference": "4691b5a37c19956b83a558ff2d77475412d63e0f",
                 "shasum": ""
             },
             "require": {
@@ -256,7 +256,7 @@
                 "keboola/php-utils": "^2.3||^3.0||^4.0",
                 "keboola/retry": "^0.5",
                 "monolog/monolog": "^2.0",
-                "nette/utils": "^3.0",
+                "nette/utils": "^3.0 || ^4.0",
                 "php": ">=8.2",
                 "phpunit/phpunit": "^9.1",
                 "pimple/pimple": "^3.3",
@@ -300,9 +300,9 @@
             ],
             "description": "Common library from Keboola Database Extractors",
             "support": {
-                "source": "https://github.com/keboola/db-extractor-common/tree/17.3.0"
+                "source": "https://github.com/keboola/db-extractor-common/tree/17.4.0"
             },
-            "time": "2026-08-25T15:12:00+00:00"
+            "time": "2026-08-27T10:10:28+00:00"
         },
         {
             "name": "keboola/db-extractor-config",

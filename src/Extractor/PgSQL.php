@@ -41,7 +41,13 @@ class PgSQL extends BaseExtractor
      */
     public function createMetadataProvider(): MetadataProvider
     {
-        return new PgSQLMetadataProvider($this->logger, $this->connection);
+        return new PgSQLMetadataProvider(
+            $this->logger,
+            $this->connection,
+            // Not declared for sync actions and legacy configs, both of which keep
+            // unknown keys, so reading it straight from parameters is safe
+            (bool) ($this->parameters['propagateDescriptions'] ?? true),
+        );
     }
 
     protected function createExportAdapter(): ExportAdapter

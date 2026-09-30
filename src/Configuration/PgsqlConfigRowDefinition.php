@@ -23,6 +23,9 @@ class PgsqlConfigRowDefinition extends ConfigRowDefinition
                     ->defaultFalse()
                 ->end()
                 ->integerNode('batchSize')->end()
+                ->booleanNode('propagateDescriptions')
+                    ->defaultTrue()
+                ->end()
             ->end();
         // @formatter:on
 
