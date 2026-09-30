@@ -1,4 +1,4 @@
-FROM php:8.2-cli-trixie AS base
+FROM php:8.5-cli-trixie AS base
 
 ARG COMPOSER_FLAGS="--prefer-dist --no-interaction"
 ARG DEBIAN_FRONTEND=noninteractive
