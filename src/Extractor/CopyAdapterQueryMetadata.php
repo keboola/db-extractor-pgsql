@@ -28,8 +28,7 @@ class CopyAdapterQueryMetadata implements QueryMetadata
     {
         if ($this->columns === null) {
             $sql = sprintf('SELECT * FROM (%s) AS x LIMIT 0', rtrim($this->query, ';'));
-            // The PDO connection sits idle while psql runs the \copy export and may have been
-            // dropped meanwhile, so the query goes through the connection's reconnect-and-retry path
+            // The PDO connection idles during the psql \copy export and may be dropped; query() reconnects and retries
             $result = $this->connection->query($sql, DbConnection::DEFAULT_MAX_RETRIES);
             try {
                 $this->columns = $result->getMetadata()->getColumns();

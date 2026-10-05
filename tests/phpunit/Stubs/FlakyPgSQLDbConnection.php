@@ -15,8 +15,7 @@ use Retry\Policy\SimpleRetryPolicy;
 use Retry\RetryProxy;
 
 /**
- * Fails the first N queries the way a dropped SSL connection does, then answers from
- * canned metadata, so the reconnect-and-retry path can be asserted without a running Postgres.
+ * Fails the first N queries with a dropped-SSL error, then returns canned metadata.
  */
 class FlakyPgSQLDbConnection extends PgSQLDbConnection
 {
