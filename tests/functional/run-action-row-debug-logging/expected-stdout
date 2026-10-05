@@ -5,4 +5,5 @@ Exporting by "Copy" adapter.
 [%s] DEBUG: Running query: "SELECT has_schema_privilege(current_schema(), 'CREATE');". [] []
 [%s] DEBUG: Running query: "SHOW transaction_read_only;". [] []
 [%s] DEBUG: Running query: "\encoding UTF8  CREATE TEMP VIEW "%s" AS SELECT * FROM escaping; \COPY (SELECT * FROM "%s") TO '/tmp/run-%s.%s/out/tables/in.c-main.escaping.csv' WITH CSV DELIMITER ',' FORCE QUOTE *; DROP VIEW "%s";". [] []
+[%s] DEBUG: Running query "SELECT * FROM (SELECT * FROM escaping) AS x LIMIT 0". [] []
 Exported "7" rows to "in.c-main.escaping".
