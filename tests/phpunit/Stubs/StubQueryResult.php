@@ -19,7 +19,7 @@ class StubQueryResult implements QueryResult
     /**
      * @param array<array<string, mixed>> $rows
      */
-    public function __construct(private array $rows)
+    public function __construct(private array $rows, private ?QueryMetadata $metadata = null)
     {
     }
 
@@ -30,7 +30,11 @@ class StubQueryResult implements QueryResult
 
     public function getMetadata(): QueryMetadata
     {
-        throw new LogicException('Query metadata is not available in the stub.');
+        if ($this->metadata === null) {
+            throw new LogicException('Query metadata is not available in the stub.');
+        }
+
+        return $this->metadata;
     }
 
     public function getIterator(): Iterator
