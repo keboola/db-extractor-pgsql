@@ -16,18 +16,12 @@ class CopyAdapterQueryMetadata implements QueryMetadata
 
     private string $query;
 
-    private int $maxRetries;
-
     private ?ColumnCollection $columns = null;
 
-    public function __construct(
-        PgSQLDbConnection $connection,
-        string $query,
-        int $maxRetries = DbConnection::DEFAULT_MAX_RETRIES,
-    ) {
+    public function __construct(PgSQLDbConnection $connection, string $query)
+    {
         $this->connection = $connection;
         $this->query = $query;
-        $this->maxRetries = $maxRetries;
     }
 
     public function getColumns(): ColumnCollection
@@ -36,7 +30,7 @@ class CopyAdapterQueryMetadata implements QueryMetadata
             $sql = sprintf('SELECT * FROM (%s) AS x LIMIT 0', rtrim($this->query, ';'));
             // The PDO connection sits idle while psql runs the \copy export and may have been
             // dropped meanwhile, so the query goes through the connection's reconnect-and-retry path
-            $result = $this->connection->query($sql, $this->maxRetries);
+            $result = $this->connection->query($sql, DbConnection::DEFAULT_MAX_RETRIES);
             try {
                 $this->columns = $result->getMetadata()->getColumns();
             } catch (PDOException $e) {

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Keboola\DbExtractor\Tests;
 
 use Keboola\CommonExceptions\UserExceptionInterface;
+use Keboola\DbExtractor\Adapter\Connection\DbConnection;
 use Keboola\DbExtractor\Adapter\Exception\UserRetriedException;
 use Keboola\DbExtractor\Extractor\CopyAdapterQueryMetadata;
 use Keboola\DbExtractor\TableResultFormat\Metadata\Builder\ColumnBuilder;
@@ -52,7 +53,7 @@ class CopyAdapterQueryMetadataTest extends TestCase
     public function testPersistentConnectionDropFailsAsUserError(): void
     {
         $connection = new FlakyPgSQLDbConnection(PHP_INT_MAX, $this->columns('id'));
-        $metadata = new CopyAdapterQueryMetadata($connection, 'SELECT id FROM users', 3);
+        $metadata = new CopyAdapterQueryMetadata($connection, 'SELECT id FROM users');
 
         try {
             $metadata->getColumns();
@@ -62,8 +63,8 @@ class CopyAdapterQueryMetadataTest extends TestCase
             Assert::assertStringContainsString(FlakyPgSQLDbConnection::SSL_EOF_ERROR, $e->getMessage());
         }
 
-        Assert::assertCount(3, $connection->getQueries());
-        Assert::assertSame(3, $connection->getReconnectCount());
+        Assert::assertCount(DbConnection::DEFAULT_MAX_RETRIES, $connection->getQueries());
+        Assert::assertSame(DbConnection::DEFAULT_MAX_RETRIES, $connection->getReconnectCount());
     }
 
     private function columns(string ...$names): ColumnCollection

@@ -179,7 +179,7 @@ class CopyAdapter implements ExportAdapter
         return new ExportResult(
             $csvPath,
             $numRows,
-            new CopyAdapterQueryMetadata($this->connection, $query, $exportConfig->getMaxRetries()),
+            new CopyAdapterQueryMetadata($this->connection, $query),
             false,
             $incrementalLastFetchedValue,
         );
